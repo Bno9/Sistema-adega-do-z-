@@ -26,7 +26,10 @@ class Caixa:
         total = self.total()
         print(f"Total: {total:.2f}")
 
-        valor_pago = float(input("Valor recebido do cliente R$: "))
+        try:
+            valor_pago = float(input("Valor recebido do cliente R$: "))
+        except ValueError:
+            print("Digite apenas numeros")
 
         if valor_pago < total:
             print("Valor insuficiente!")

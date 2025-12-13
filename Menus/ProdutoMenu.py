@@ -13,25 +13,37 @@ class ProdutoMenu:
         3- Sair
         """)
 
-        escolha = int(input("Digite a opção desejada: "))
+        try:
+            escolha = int(input("Digite a opção desejada: "))
+        except ValueError:
+            print("Digite apenas numeros")
+            return
 
         if escolha == 1:
             from Utils.Produto import Produto
 
             print("Digite as informações do produto")
 
-            codigo = int(input("Leia ou digite o codigo do produto: "))
-            nome = input("Nome do produto: ")
-            preco_custo = float(input("Preço de custo: "))
-            preco_venda = float(input("Preço de venda: "))
-            quantidade = int(input("Quantidade: "))
+            try:
+                codigo = int(input("Leia ou digite o codigo do produto: "))
+                nome = input("Nome do produto: ")
+                preco_custo = float(input("Preço de custo: "))
+                preco_venda = float(input("Preço de venda: "))
+                quantidade = int(input("Quantidade: "))
 
-            objeto_produto = Produto(codigo, nome, preco_custo, preco_venda, quantidade)
-            self.referencia_main.estoque.adicionar_produto(objeto_produto)
+                objeto_produto = Produto(codigo, nome, preco_custo, preco_venda, quantidade)
+                self.referencia_main.estoque.adicionar_produto(objeto_produto)
+
+            except ValueError:
+                print("Digite apenas numeros")
+                return
 
         elif escolha == 2:
 
-            codigo_produto = int(input("Digite ou leia o código do produto que deseja alterar: "))
+            try:
+                codigo_produto = int(input("Digite ou leia o código do produto que deseja alterar: "))
+            except ValueError:
+                print("Digite apenas numeros")
 
             if codigo_produto in self.referencia_main.estoque.itens:
 
