@@ -31,7 +31,7 @@ class Main:
         
         except ValueError:
             print("Digite apenas numeros")
-            return #ou eu deixo esse return, ou eu coloco o código inteiro dentro do try (vou pensar em qual é melhor e por quais motivos)
+            return
 
         if escolha == 1:
             from Menus.CaixaMenu import CaixaMenu

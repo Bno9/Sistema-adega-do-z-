@@ -30,18 +30,20 @@ class ProdutoMenu:
                 preco_custo = float(input("Preço de custo: "))
                 preco_venda = float(input("Preço de venda: "))
                 quantidade = int(input("Quantidade: "))
+            
+            except ValueError:
+                print("Digite apenas numeros")
+                return
 
                 objeto_produto = Produto(codigo, nome, preco_custo, preco_venda, quantidade)
                 self.referencia_main.estoque.adicionar_produto(objeto_produto)
 
-            except ValueError:
-                print("Digite apenas numeros")
-                return
 
         elif escolha == 2:
 
             try:
                 codigo_produto = int(input("Digite ou leia o código do produto que deseja alterar: "))
+
             except ValueError:
                 print("Digite apenas numeros")
 
