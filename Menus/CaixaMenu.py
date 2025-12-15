@@ -12,11 +12,20 @@ class CaixaMenu:
         3- Sair
         """)
 
-        escolha = int(input("Escolha a opção desejada: "))
+        try:
+            escolha = int(input("Escolha a opção desejada: "))
+        except ValueError:
+            print("Digite apenas numeros")
+            return
+
 
         if escolha == 1:
 
-            codigo_produto = int(input("Leia o codigo do produto: "))
+            try:
+                codigo_produto = int(input("Leia o codigo do produto: "))
+            except ValueError:
+                print("Digite apenas numeros")
+                return
 
             if codigo_produto in self.referencia_main.estoque.itens:
 

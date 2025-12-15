@@ -26,7 +26,12 @@ class Main:
         4- Fechar
         """)
 
-        escolha = int(input("Digite o numero do que deseja acessar: "))
+        try:
+            escolha = int(input("Digite o numero do que deseja acessar: "))
+        
+        except ValueError:
+            print("Digite apenas numeros")
+            return
 
         if escolha == 1:
             from Menus.CaixaMenu import CaixaMenu
