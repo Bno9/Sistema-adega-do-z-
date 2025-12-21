@@ -18,26 +18,30 @@ class Caixa:
         print("Produto adicionado ao carrinho")
         print(f"Total: {self.total()}")
 
-    def finalizar_compra(self):
+    def finalizar_compra(self, valor_pago):
         if not self.calculo:
-            print("Nenhum item no carrinho")
-            return
+            return {
+                "sucesso": False,
+                "mensagem": "Nenhum item registrado"
+            }
 
         total = self.total()
-        print(f"Total: {total:.2f}")
 
         try:
-            valor_pago = float(input("Valor recebido do cliente R$: "))
+            valor_pago = float(valor_pago)
         except ValueError:
-            print("Digite apenas numeros")
+            return{
+                "sucesso": False,
+                "mensagem": "Erro de processamento"
+            }
 
         if valor_pago < total:
-            print("Valor insuficiente!")
-            return
+            return{
+                "sucesso": False,
+                "mensagem": "Valor recebido menor que total"
+            }
 
         troco = valor_pago - total
-
-        print(f"Troco: {troco:.2f}")
         
         for item, quantidade in self.calculo:
             self.estoque.itens[item.codigo].quantidade -= quantidade
@@ -51,8 +55,12 @@ class Caixa:
 
         self.calculo.clear()
 
-        print("Compra finalizada com sucesso")
-
+        return{
+                    "sucesso": True,
+                    "mensagem": "Compra finalizada com sucesso",
+                    "total": total,
+                    "troco": troco
+                }
 
     def total(self):
         return sum(item.preco_venda * quantidade for item, quantidade in self.calculo)
@@ -60,9 +68,23 @@ class Caixa:
 
     def listar_vendas(self): #Isso é uma função que vai ficar na parte de adm depois
         for d in self.vendas:
-            print(d)
+            print(d) #ainda incompleto
 
     def validar_compra_existente(self):
         if self.calculo:
-            print("Finalize a compra primeiro")
+            return {"sucesso": False,
+            "mensagem": "Finalize a compra primeiro"}
+
+        return {"sucesso": True,
+        "mensagem": "Nada"}
+
+    def validar_codigo(self, codigo_produto):
+        if codigo_produto in self.estoque.itens:
+
+            produto = self.estoque.itens[codigo_produto]
+            self.carrinho(produto)
             return True
+
+        else:
+            print("Produto não encontrado")
+            return False

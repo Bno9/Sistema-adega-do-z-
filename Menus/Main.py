@@ -2,63 +2,86 @@ import sys
 import os
 sys.path.append(os.path.dirname(os.path.dirname(__file__)))
 
-
+from tkinter import ttk
+from tkinter import *
 
 from Utils.Caixa import Caixa
 from Utils.Estoque import Estoque
 
+from Menus.CaixaMenu import CaixaMenu
+from Menus.EstoqueMenu import EstoqueMenu
+from Menus.ProdutoMenu import ProdutoMenu
+
 class Main:
 
-    def __init__(self):
-        self.running = True
-        self.state = self
+    def __init__(self, root):
+        self.root = root
+        self.frame_atual = None
         self.estoque = Estoque()
         self.caixa = Caixa(self.estoque)
 
+        self.trocar_frame(MenuPrincipal(self.root, self))
+
+    def trocar_frame(self, novo_frame):
+        if self.frame_atual:
+            self.frame_atual.destroy()
+        self.frame_atual = novo_frame
+        self.frame_atual.grid(column=0, row=0, sticky="nsew")
     
-    def Menu(self):
-        print("""
-        Adega do zé
+    def voltar_menu_principal(self):
+        self.trocar_frame(MenuPrincipal(self.root, self))
 
-        1- Abrir caixa
-        2- Conferir estoque
-        3- Cadastrar / Alterar produto
-        4- Fechar
-        """)
 
+class MenuPrincipal(ttk.Frame):
+
+    def __init__(self, root, main):
+        super().__init__(root, padding=(3, 3, 12, 12))
+        self.main = main
+
+        self.opcao = StringVar()
+        self.error = StringVar()
+        self.mapa = {
+            1:CaixaMenu,
+            2:EstoqueMenu,
+            3:ProdutoMenu,
+            4:None
+        }
+           
+        ttk.Label(self, text="""
+                Adega do zé
+
+                1- Abrir caixa
+                2- Conferir estoque
+                3- Cadastrar / Alterar produto
+                4- Fechar""").grid(column=0, row=0, sticky=W)
+
+
+        ttk.Entry(self, width=10, textvariable=self.opcao).grid(row=0, column=1, sticky=(W, E))
+
+        ttk.Label(self, textvariable=self.error).grid(column=1, row=2, sticky=(W, E))
+     
+        ttk.Button(self, text="Escolher", command=self.escolher).grid(column=3, row=0, sticky=W)
+
+    def escolher(self):
         try:
-            escolha = int(input("Digite o numero do que deseja acessar: "))
-        
+            opcao = int(self.opcao.get())
+
         except ValueError:
-            print("Digite apenas numeros")
+            self.error.set("Digite apenas numeros inteiros")
             return
 
-        if escolha == 1:
-            from Menus.CaixaMenu import CaixaMenu
-            self.change_state(CaixaMenu(self))
+        escolhido = self.mapa.get(opcao)
 
-        elif escolha == 2:
-            from Menus.EstoqueMenu import EstoqueMenu
-            self.change_state(EstoqueMenu(self))
+        if escolhido is None:
+            self.master.quit()
+            return
+            
+        self.main.trocar_frame(escolhido(self.master, self.main))
 
-        elif escolha == 3:
-            from Menus.ProdutoMenu import ProdutoMenu
-            self.change_state(ProdutoMenu(self))
-        
-        elif escolha == 4:
-            print("Fechando...")
-            self.running = False
+root = Tk()
+root.title("Menu principal")
 
-        else:
-            print("Opção inválida")
+m = Main(root)
 
 
-    def change_state(self, novo_estado):
-        self.state = novo_estado
-
-    
-
-m = Main()
-
-while m.running:
-    m.state.Menu()
+root.mainloop()
