@@ -85,20 +85,6 @@ class CaixaMenu(ttk.Frame):
         else:
             self.error.set("Opção inválida")
 
-    
-    def limpar_tela(self):
-        for widget in self.frame_conteudo.winfo_children():
-            widget.destroy()
-
-        campos = [self.error,
-            self.opcao,
-            self.codigo,
-            self.valor_pago
-            ]
-
-        for var in campos:
-            var.set("")
-
     def enviar_codigo(self):
         try:
             code = int(self.codigo.get())
@@ -124,7 +110,18 @@ class CaixaMenu(ttk.Frame):
         
         self.error.set(f"Total: {resultado['total']:.2f}, Troco: {resultado['troco']:.2f}")
 
+    def limpar_tela(self):
+        for widget in self.frame_conteudo.winfo_children():
+            widget.destroy()
 
+        campos = [self.error,
+            self.opcao,
+            self.codigo,
+            self.valor_pago
+            ]
+
+        for var in campos:
+            var.set("")
 
      
 #Falta arrumar o visual da interface. Atualmente ela apenas é funcional

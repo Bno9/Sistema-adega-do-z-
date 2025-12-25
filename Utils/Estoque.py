@@ -16,13 +16,13 @@ class Estoque:
     def remover_produto(self, codigo_produto):
         if codigo_produto in self.itens:
             del self.itens[codigo_produto]
+            return "Produto removido com sucesso"
         else:
-            print("Produto não encontrado")
+            return "Produto não encontrado"
 
     def listar_itens(self):
         if not self.itens:
-            print("Estoque vazio. Cadastre algum item")
-            return
+            return "Estoque vazio. Cadastre algum item"
             
         for item, valor in self.itens.items():
             print(valor)
