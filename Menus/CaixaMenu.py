@@ -7,11 +7,15 @@ class CaixaMenu(ttk.Frame):
         super().__init__(root, padding=10)
         self.referencia_main = referencia_main
         
+        #textos
+        self.error = StringVar()
+
+        #entradas
         self.opcao = StringVar()
         self.codigo = StringVar()
-        self.error = StringVar()
         self.valor_pago = StringVar()
 
+        #frame
         self.frame_conteudo = ttk.Frame(self)
         self.frame_conteudo.grid(row=2, column=0, columnspan=2, sticky="nsew")
         self.menu()
@@ -86,6 +90,15 @@ class CaixaMenu(ttk.Frame):
         for widget in self.frame_conteudo.winfo_children():
             widget.destroy()
 
+        campos = [self.error,
+            self.opcao,
+            self.codigo,
+            self.valor_pago
+            ]
+
+        for var in campos:
+            var.set("")
+
     def enviar_codigo(self):
         try:
             code = int(self.codigo.get())
@@ -110,3 +123,8 @@ class CaixaMenu(ttk.Frame):
             return
         
         self.error.set(f"Total: {resultado['total']:.2f}, Troco: {resultado['troco']:.2f}")
+
+
+
+     
+#Falta arrumar o visual da interface. Atualmente ela apenas é funcional

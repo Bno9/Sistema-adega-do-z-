@@ -1,11 +1,15 @@
-class EstoqueMenu:
+from tkinter import ttk
+from tkinter import *
 
-    def __init__(self, referencia_main):
+class EstoqueMenu(ttk.Frame):
+
+    def __init__(self, root, referencia_main):
+        super.__init__(root, paddin=10)
         self.referencia_main = referencia_main
 
 
-    def Menu(self):
-        print("""
+    def menu(self):
+        ttk.Label("""
         Menu do estoque
         
         1- Ver estoque
