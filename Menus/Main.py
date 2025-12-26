@@ -45,22 +45,20 @@ class MenuPrincipal(ttk.Frame):
             3:ProdutoMenu,
             4:None
         }
+
+        self.columnconfigure(0, weight=1)
            
-        ttk.Label(self, text="""
-                Adega do zé
+        ttk.Label(self, text="Adega do zé", font=("Arial", 16, "bold"),  anchor="center", padding=20).grid(column=0, row=0, sticky="ew", pady=20)
 
-
-                """).grid(column=0, row=0, sticky=W)
-
-        ttk.Label(self, textvariable=self.error).grid(column=2, row=2, sticky=(W, E))
+        ttk.Label(self, textvariable=self.error).grid(column=0, row=2, sticky="nsew")
      
-        ttk.Button(self, text="Abrir caixa", command=lambda: self.escolher(1)).grid(column=1, row=1, sticky=W)
+        ttk.Button(self, text="Abrir caixa", width=50, padding=30,  command=lambda: self.escolher(1)).grid(column=0, row=1, sticky=(S,N), pady=20)
 
-        ttk.Button(self, text="Estoque", command=lambda: self.escolher(2)).grid(column=1, row=2, sticky=W)
+        ttk.Button(self, text="Estoque", width=50, padding=30, command=lambda: self.escolher(2)).grid(column=0, row=2, sticky=(S,N), pady=20)
 
-        ttk.Button(self, text="Cadastrar / Editar produto", command=lambda: self.escolher(3)).grid(column=1, row=3, sticky=W)
+        ttk.Button(self, text="Cadastrar / Editar produto", width=50, padding=30, command=lambda: self.escolher(3)).grid(column=0, row=3, sticky=(S,N), pady=20)
 
-        ttk.Button(self, text="Sair", command=lambda: self.escolher(4)).grid(column=1, row=4, sticky=W)
+        ttk.Button(self, text="Sair", width=50, padding=30, command=lambda: self.escolher(4)).grid(column=0, row=4, sticky=(S,N), pady=20)
 
     def escolher(self, opcao):
         try:
@@ -79,7 +77,10 @@ class MenuPrincipal(ttk.Frame):
         self.main.trocar_frame(escolhido(self.master, self.main))
 
 root = Tk()
-root.title("Menu principal")
+root.title("Adega do zé")
+
+root.columnconfigure(0, weight=1)
+root.rowconfigure(0, weight=1)
 
 m = Main(root)
 
