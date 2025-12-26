@@ -42,7 +42,9 @@ class ProdutoMenu(ttk.Frame):
 
             ttk.Button(self.frame_conteudo, text="Editar produto", command=lambda: self.escolha(2)).grid(column=1, row=3, sticky=(W,E))
 
-            ttk.Button(self.frame_conteudo, text="Voltar", command=lambda: self.escolha(3)).grid(column=1, row=4, sticky=(W,E))
+            ttk.Button(self.frame_conteudo, text="Excluir produto", command=lambda: self.escolha(3)).grid(column=1, row=4, sticky=(W,E))
+
+            ttk.Button(self.frame_conteudo, text="Voltar", command=lambda: self.escolha(4)).grid(column=1, row=4, sticky=(W,E))
 
 
         def escolha(self, escolha):
@@ -88,8 +90,16 @@ class ProdutoMenu(ttk.Frame):
 
                 ttk.Button(self.frame_conteudo, width=10, text="Voltar", command=self.menu).grid(column=2, row= 4, sticky=(W,E))
 
-
             elif escolha == 3:
+                ttk.Label(self.frame_conteudo, text="Digite o código do produto que deseja remover").grid(column=0, row=0, sticky=(W,E))
+
+                ttk.Entry(self.frame_conteudo, textvariable=self.codigo).grid(column=0, row=1, sticky=(W,E))
+            
+                ttk.Button(self.frame_conteudo, text="Enviar", command=self.deletar).grid(column=2, row=2, sticky=(W,E))
+
+                ttk.Button(self.frame_conteudo, text="Voltar", command=self.menu).grid(column=1, row=2, sticky=(W,E))
+
+            elif escolha == 4:
                 self.referencia_main.voltar_menu_principal()
 
             else:
@@ -183,6 +193,14 @@ class ProdutoMenu(ttk.Frame):
 
             self.menu()
 
+        def deletar(self):
+            try:
+                codigo = int(self.codigo.get())
+                self.error.set(self.referencia_main.estoque.remover_produto(codigo))
+            except ValueError:
+                self.error.set("Digite apenas numeros")
+                return
+
         def limpar_tela(self):
             for widget in self.frame_conteudo.winfo_children():
                 widget.destroy()
@@ -198,6 +216,7 @@ class ProdutoMenu(ttk.Frame):
 
             for var in campos:
                 var.set("")
+
 
         
 #Falta arrumar o visual da interface. Atualmente ela apenas é funcional

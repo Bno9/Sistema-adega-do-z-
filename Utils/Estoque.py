@@ -20,12 +20,6 @@ class Estoque:
         else:
             return "Produto não encontrado"
 
-    def listar_itens(self):
-        if not self.itens:
-            return "Estoque vazio. Cadastre algum item"
-
-        return [valor for item,valor in self.itens.items()]
-    
     def conferir_se_existe(self, chave):
         for codigo, dados in self.itens.items():
             if chave == codigo:
