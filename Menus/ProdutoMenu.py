@@ -11,7 +11,6 @@ class ProdutoMenu(ttk.Frame):
             self.error = StringVar()
 
             #entradas
-            self.opcao = StringVar()
             self.codigo = StringVar()
             self.nome = StringVar()
             self.preco_custo = StringVar()
@@ -33,22 +32,23 @@ class ProdutoMenu(ttk.Frame):
             
             ttk.Label(self.frame_conteudo, text="""
             Menu de cadastro de produtos
+    
+    
+                """).grid(column=0, row=1, sticky="nsew")
             
-            1- Cadastrar produto
-            2- Editar produto
-            3- Sair
-            """).grid(column=0, row=1, sticky="nsew")
-
-            ttk.Entry(self.frame_conteudo, width=10, textvariable=self.opcao).grid(column=0, row=2, sticky=(W,E))
-
             ttk.Label(self.frame_conteudo, textvariable=self.error).grid(column=2, row=2, sticky=(W, E))
 
-            ttk.Button(self.frame_conteudo, text="Enviar", command=self.escolha).grid(column=3, row=2, sticky=(W,E))
+            ttk.Button(self.frame_conteudo, text="Cadastrar produto", command=lambda: self.escolha(1)).grid(column=1, row=2, sticky=(W,E))
 
-        def escolha(self):
+            ttk.Button(self.frame_conteudo, text="Editar produto", command=lambda: self.escolha(2)).grid(column=1, row=3, sticky=(W,E))
+
+            ttk.Button(self.frame_conteudo, text="Voltar", command=lambda: self.escolha(3)).grid(column=1, row=4, sticky=(W,E))
+
+
+        def escolha(self, escolha):
 
             try:
-                escolha = int(self.opcao.get())
+                escolha = int(escolha)
             except ValueError:
                 self.error.set("Digite apenas numeros")
                 return
@@ -84,7 +84,10 @@ class ProdutoMenu(ttk.Frame):
 
                 ttk.Label(self.frame_conteudo, width=10, textvariable=self.error).grid(row=2, column=2, sticky=(W,E))
 
-                ttk.Button(self.frame_conteudo, width=10, text="Editar Produto", command=self.editar).grid(column=4, row= 3, sticky=(W,E))
+                ttk.Button(self.frame_conteudo, width=10, text="Editar Produto", command=self.editar).grid(column=2, row= 3, sticky=(W,E))
+
+                ttk.Button(self.frame_conteudo, width=10, text="Voltar", command=self.menu).grid(column=2, row= 4, sticky=(W,E))
+
 
             elif escolha == 3:
                 self.referencia_main.voltar_menu_principal()
@@ -122,27 +125,31 @@ class ProdutoMenu(ttk.Frame):
  
             self.limpar_tela()
 
-            ttk.Label(self.frame_conteudo, text="""Escolha o que deseja alterar
-                    1- Código
-                    2- Nome
-                    3- Preço custo
-                    4- Preço venda
-                    5- Quantidade
-                    """).grid(column=0, row=0, sticky="nsew")
+            mapa = [
+                (1, "codigo"),
+                (2, "nome"),
+                (3, "preco_custo"),
+                (4, "preco_venda"),
+                (5, "quantidade")
+            ]
 
-            ttk.Entry(self.frame_conteudo, width=10, textvariable=self.opcao).grid(row=3, column=0, sticky=(W,E))
-            ttk.Button(self.frame_conteudo, text="Confirmar", command=self.processar_escolha).grid(column=0, row=2)
+            ttk.Label(self.frame_conteudo, text="""Escolha o que deseja alterar
+                    
+                    """).grid(column=0, row=0, sticky="nsew")
+            
+            for i, (opcao, texto) in enumerate(mapa, start=2):
+                ttk.Button(self.frame_conteudo, text=texto, command=lambda: self.processar_escolha(opcao)).grid(column=0, row=i)
          
-        def processar_escolha(self):
+        def processar_escolha(self, opcao):
             mapa = {
-                "1": "codigo",
-                "2": "nome",
-                "3": "preco_custo",
-                "4": "preco_venda",
-                "5": "quantidade"
+                1: "codigo",
+                2: "nome",
+                3: "preco_custo",
+                4: "preco_venda",
+                5: "quantidade"
             }
 
-            escolha = self.opcao.get()
+            escolha = opcao
 
             if escolha not in mapa:
                 self.error.set("Escolha inválida")
@@ -155,6 +162,7 @@ class ProdutoMenu(ttk.Frame):
             ttk.Label(self.frame_conteudo, text="Digite o novo valor").grid(column=0, row=0)
             ttk.Entry(self.frame_conteudo, textvariable=self.novo_valor).grid(column=0, row=1)
             ttk.Button(self.frame_conteudo, text="Salvar", command=self.salvar_alteracao).grid(column=0, row=2)
+            ttk.Button(self.frame_conteudo, text="Cancelar", command=self.menu).grid(column=0, row=2)
 
 
 
@@ -180,7 +188,6 @@ class ProdutoMenu(ttk.Frame):
                 widget.destroy()
 
             campos = [self.error,
-            self.opcao,
             self.codigo,
             self.nome,
             self.preco_custo,

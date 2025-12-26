@@ -12,7 +12,6 @@ class EstoqueMenu(ttk.Frame):
         self.estoque = StringVar()
 
         #entradas
-        self.opcao = StringVar()
         self.codigo = StringVar()
 
         #frame
@@ -26,18 +25,21 @@ class EstoqueMenu(ttk.Frame):
         ttk.Label(self.frame_conteudo, text="""
         Menu do estoque
         
-        1- Ver estoque
-        2- Remover produto 
-        3- Sair
+        
         """).grid(column=0, row=0, sticky=(W,E))
 
-        ttk.Entry(self.frame_conteudo, textvariable=self.opcao).grid(column=0, row=1, sticky=(W,E))
+        ttk.Label(self.frame_conteudo, textvariable=self.error).grid(column=2, row=2, sticky=(W,E))
 
-        ttk.Button(self.frame_conteudo, text="Enviar", command=self.escolha).grid(column=1, row=1, sticky=(W,E))
+        ttk.Button(self.frame_conteudo, text="Ver estoque", command=lambda: self.escolha(1)).grid(column=1, row=1, sticky=(W,E))
 
-    def escolha(self):
+        ttk.Button(self.frame_conteudo, text="Remover produto", command=lambda: self.escolha(2)).grid(column=1, row=2, sticky=(W,E))
+
+        ttk.Button(self.frame_conteudo, text="Sair", command=lambda: self.escolha(3)).grid(column=1, row=3, sticky=(W,E))
+
+
+    def escolha(self, escolha):
         try:
-            escolha = int(self.opcao.get())
+            escolha = int(escolha)
         except ValueError:
             self.error.set("Digite apenas numeros")
             return
@@ -81,8 +83,7 @@ class EstoqueMenu(ttk.Frame):
         for widget in self.frame_conteudo.winfo_children():
             widget.destroy()
 
-        campos = [self.error,
-            self.opcao
+        campos = [self.error
             ]
 
         for var in campos:

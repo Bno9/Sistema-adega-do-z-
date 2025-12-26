@@ -38,7 +38,6 @@ class MenuPrincipal(ttk.Frame):
         super().__init__(root, padding=(3, 3, 12, 12))
         self.main = main
 
-        self.opcao = StringVar()
         self.error = StringVar()
         self.mapa = {
             1:CaixaMenu,
@@ -50,21 +49,22 @@ class MenuPrincipal(ttk.Frame):
         ttk.Label(self, text="""
                 Adega do zé
 
-                1- Abrir caixa
-                2- Conferir estoque
-                3- Cadastrar / Alterar produto
-                4- Fechar""").grid(column=0, row=0, sticky=W)
 
+                """).grid(column=0, row=0, sticky=W)
 
-        ttk.Entry(self, width=10, textvariable=self.opcao).grid(row=0, column=1, sticky=(W, E))
-
-        ttk.Label(self, textvariable=self.error).grid(column=1, row=2, sticky=(W, E))
+        ttk.Label(self, textvariable=self.error).grid(column=2, row=2, sticky=(W, E))
      
-        ttk.Button(self, text="Escolher", command=self.escolher).grid(column=3, row=0, sticky=W)
+        ttk.Button(self, text="Abrir caixa", command=lambda: self.escolher(1)).grid(column=1, row=1, sticky=W)
 
-    def escolher(self):
+        ttk.Button(self, text="Estoque", command=lambda: self.escolher(2)).grid(column=1, row=2, sticky=W)
+
+        ttk.Button(self, text="Cadastrar / Editar produto", command=lambda: self.escolher(3)).grid(column=1, row=3, sticky=W)
+
+        ttk.Button(self, text="Sair", command=lambda: self.escolher(4)).grid(column=1, row=4, sticky=W)
+
+    def escolher(self, opcao):
         try:
-            opcao = int(self.opcao.get())
+            opcao = int(opcao)
 
         except ValueError:
             self.error.set("Digite apenas numeros inteiros")
