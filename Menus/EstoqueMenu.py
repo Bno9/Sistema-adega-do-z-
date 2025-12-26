@@ -9,6 +9,7 @@ class EstoqueMenu(ttk.Frame):
 
         #textos
         self.error= StringVar()
+        self.estoque = StringVar()
 
         #entradas
         self.opcao = StringVar()
@@ -46,7 +47,9 @@ class EstoqueMenu(ttk.Frame):
         if escolha == 1:
             ttk.Label(self.frame_conteudo, textvariable=self.error).grid(column=0, row=0, sticky=(W,E))
             
-            self.referencia_main.estoque.listar_itens()
+            ttk.Label(self.frame_conteudo, textvariable=self.estoque).grid(column=0,row=5, sticky="nsew")
+            
+            self.estoque.set(self.referencia_main.estoque.listar_itens())
 
             ttk.Button(self.frame_conteudo, text="Voltar", command=self.menu).grid(row=1, column=1, sticky=(W,E))
 

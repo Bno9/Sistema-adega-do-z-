@@ -23,9 +23,8 @@ class Estoque:
     def listar_itens(self):
         if not self.itens:
             return "Estoque vazio. Cadastre algum item"
-            
-        for item, valor in self.itens.items():
-            print(valor)
+
+        return [valor for item,valor in self.itens.items()]
     
     def conferir_se_existe(self, chave):
         for codigo, dados in self.itens.items():
