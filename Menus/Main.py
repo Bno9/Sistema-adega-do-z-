@@ -48,7 +48,12 @@ class MenuPrincipal(ttk.Frame):
 
         self.columnconfigure(0, weight=1)
            
-        ttk.Label(self, text="Adega do zé", font=("Arial", 16, "bold"),  anchor="center", padding=20).grid(column=0, row=0, sticky="ew", pady=20)
+        ttk.Label(
+            self, 
+            text="Adega do zé",
+            font=("Arial", 16, "bold"),
+            anchor="center",
+            padding=20).grid(column=0, row=0, sticky="ew", pady=20)
 
         ttk.Label(self, textvariable=self.error).grid(column=0, row=2, sticky="nsew")
      

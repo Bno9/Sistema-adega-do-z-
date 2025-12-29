@@ -10,6 +10,12 @@ class EstoqueMenu(ttk.Frame):
         self.frame_conteudo = ttk.Frame(self)
         self.frame_conteudo.grid(row=0, column=0, sticky="nsew")
 
+        
+        self.rowconfigure(0, weight=1)
+        self.columnconfigure(0, weight=1)
+        self.frame_conteudo.rowconfigure(0, weight=1)
+        self.frame_conteudo.columnconfigure(0, weight=1)
+
         self.ordem = {"nome": False,
         "codigo": False}
 

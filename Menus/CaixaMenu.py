@@ -15,8 +15,11 @@ class CaixaMenu(ttk.Frame):
         self.valor_pago = StringVar()
 
         #frame
+        self.columnconfigure(0, weight=1)
+        self.rowconfigure(0, weight=1)
         self.frame_conteudo = ttk.Frame(self)
-        self.frame_conteudo.grid(row=2, column=0, columnspan=2, sticky="nsew")
+        self.frame_conteudo.grid(row=0, column=0, sticky="nsew")
+        self.frame_conteudo.columnconfigure(0,weight=1)
         self.menu()
 
     def menu(self):
@@ -24,15 +27,13 @@ class CaixaMenu(ttk.Frame):
 
         ttk.Label(self.frame_conteudo, text="""
         Menu do caixa
-   
+        """, font=("Arial",16)).grid(column=0, row=0, pady=20)
 
-        """).grid(column=0, row=1, sticky="nsew")
-
-        ttk.Button(self.frame_conteudo, text="Ler código", command=lambda: self.escolha(1)).grid(column=0, row=1, sticky=(W,E))
-        ttk.Button(self.frame_conteudo, text="Finalizar compra", command=lambda: self.escolha(2)).grid(column=0, row=2, sticky=(W,E))
-        ttk.Button(self.frame_conteudo, text="Sair", command=lambda: self.escolha(3)).grid(column=0, row=3, sticky=(W,E))
+        ttk.Button(self.frame_conteudo, text="Ler código", width=50, padding=30, command=lambda: self.escolha(1)).grid(column=0, row=1, pady=10)
+        ttk.Button(self.frame_conteudo, text="Finalizar compra", width=50, padding=30, command=lambda: self.escolha(2)).grid(column=0, row=2, pady=10)
+        ttk.Button(self.frame_conteudo, text="Sair", width=50, padding=30, command=lambda: self.escolha(3)).grid(column=0, row=3, pady=10)
                                          
-        ttk.Label(self.frame_conteudo, textvariable=self.error).grid(column=1, row=2, sticky=(W, E))
+        ttk.Label(self.frame_conteudo, textvariable=self.error).grid(column=0, row=4, pady=10)
 
         
     def escolha(self, opcao):
@@ -47,28 +48,28 @@ class CaixaMenu(ttk.Frame):
         if opcao == 1:
             self.limpar_tela()
 
-            ttk.Entry(self.frame_conteudo, width=10, textvariable=self.codigo).grid(row=0, column=1, sticky=(W,E))
+            ttk.Entry(self.frame_conteudo, width=30, textvariable=self.codigo).grid(row=1, column=0, pady=5)
 
-            ttk.Label(self.frame_conteudo, text="Digite o código do produto").grid(row=0, column=2, sticky=(W,E))
+            ttk.Label(self.frame_conteudo, text="Digite o código do produto", font=20).grid(column=0, row=0, pady=5)
 
-            ttk.Label(self.frame_conteudo, textvariable=self.error).grid(column=1, row=2, sticky=(W, E))
+            ttk.Label(self.frame_conteudo, textvariable=self.error).grid(column=0, row=4, pady=5)
 
-            ttk.Button(self.frame_conteudo, text="Enviar", command=self.enviar_codigo).grid(column=1, row=1, sticky=(W,E))
+            ttk.Button(self.frame_conteudo, text="Enviar", width=50, padding=30, command=self.enviar_codigo).grid(column=0, row=2, pady=5)
 
-            ttk.Button(self.frame_conteudo, text="Voltar", command=self.menu).grid(column=2, row=1, sticky=(W,E))
+            ttk.Button(self.frame_conteudo, text="Voltar", width=50, padding=30, command=self.menu).grid(column=0, row=3, pady=5)
 
         elif opcao == 2:
             self.limpar_tela()
 
-            ttk.Entry(self.frame_conteudo, width=10, textvariable=self.valor_pago).grid(row=0, column=1, sticky=(W,E))
+            ttk.Entry(self.frame_conteudo, width=30, textvariable=self.valor_pago).grid(row=1, column=0, pady=5)
 
-            ttk.Label(self.frame_conteudo, width=10, text="Digite o valor").grid(row=0, column=2, sticky=(W,E))
+            ttk.Label(self.frame_conteudo, text="Digite o valor", font=20).grid(row=0, column=0, pady=5)
 
-            ttk.Label(self.frame_conteudo, textvariable=self.error).grid(column=1, row=2, sticky=(W, E))
+            ttk.Label(self.frame_conteudo, foreground="red", textvariable=self.error).grid(column=0, row=4, pady=5)
 
-            ttk.Button(self.frame_conteudo, text="Finalizar", command=self.finalizar_compra).grid(column=1, row=1, sticky=(W,E))
+            ttk.Button(self.frame_conteudo, text="Finalizar", width=50, padding=30, command=self.finalizar_compra).grid(column=0, row=2, pady=5)
 
-            ttk.Button(self.frame_conteudo, text="Voltar", command=self.menu).grid(column=2, row=1, sticky=(W,E))
+            ttk.Button(self.frame_conteudo, text="Voltar", width=50, padding=30, command=self.menu).grid(column=0, row=3, pady=5)
 
         elif opcao == 3:
             resultado = self.referencia_main.caixa.validar_compra_existente()
@@ -120,4 +121,14 @@ class CaixaMenu(ttk.Frame):
             var.set("")
 
      
-#Falta arrumar o visual da interface. Atualmente ela apenas é funcional
+#Falta terminar de arrumar a interface aqui e depois fazer umas mudanças
+
+#Tirar esses botoes de ler código ou não sei oq
+
+#Todo o caixa vai funcionar por tecla
+
+#Esc vai sair e voltar pro menu principal
+
+#Enter com código vai enviar o código direto e mostrar o item na tela junto do total
+
+#Enter sem o código vai tentar finalizar a compra (e vai precisar de confrmação)
