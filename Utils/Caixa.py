@@ -3,23 +3,22 @@ class Caixa:
     def __init__(self, estoque):
         self.estoque = estoque
         self.vendas = []
-        self.calculo = []
+        self.itens_no_carrinho = []
 
-    def carrinho(self, produto):
-        for i, (item, quantidade) in enumerate(self.calculo):
+    def carrinho_caixa(self, produto, quantidade=1):
+        """Método que adiciona os produtos a tela de soma do caixa"""
+
+        for i, (item, quantidade_atual) in enumerate(self.itens_no_carrinho):
             if produto.codigo == item.codigo:
-                self.calculo[i] = (item, quantidade + 1)
-
-                print("Produto adicionado ao carrinho")
-                print(f"Total: {self.total()}")
+                self.itens_no_carrinho[i] = (item, quantidade_atual + quantidade)
                 return
 
-        self.calculo.append((produto, 1))
-        print("Produto adicionado ao carrinho")
-        print(f"Total: {self.total()}")
+        self.itens_no_carrinho.append((produto, quantidade))
 
     def finalizar_compra(self, valor_pago):
-        if not self.calculo:
+        """Método que finaliza a compra e da baixa no estoque"""
+        
+        if not self.itens_no_carrinho:
             return {
                 "sucesso": False,
                 "mensagem": "Nenhum item registrado"
@@ -43,17 +42,17 @@ class Caixa:
 
         troco = valor_pago - total
         
-        for item, quantidade in self.calculo:
-            self.estoque.itens[item.codigo].quantidade -= quantidade
+        for item, quantidade in self.itens_no_carrinho:
+            self.estoque.dar_baixa(item, quantidade)
 
         self.vendas.append({
-            "itens": [{"codigo": p.codigo, "nome": p.nome, "quantidade": q, "total_produto": p.preco_venda*q} for p, q in self.calculo],
+            "itens": [{"codigo": p.codigo, "nome": p.nome, "quantidade": q, "total_produto": p.preco_venda*q} for p, q in self.itens_no_carrinho],
             "total": total,
             "recebido": valor_pago,
             "troco": troco
         })
 
-        self.calculo.clear()
+        self.itens_no_carrinho.clear()
 
         return{
                     "sucesso": True,
@@ -63,28 +62,27 @@ class Caixa:
                 }
 
     def total(self):
-        return sum(item.preco_venda * quantidade for item, quantidade in self.calculo)
+        return sum(item.preco_venda * quantidade for item, quantidade in self.itens_no_carrinho)
     
-
-    def listar_vendas(self): #Isso é uma função que vai ficar na parte de adm depois
-        for d in self.vendas:
-            print(d) #ainda incompleto
+    def listar_vendas(self): 
+        for venda in self.vendas:
+            print(venda) #ainda incompleto (pretendo fazer uma tela ou um bloco de notas para exibir essa parte)
 
     def validar_compra_existente(self):
-        if self.calculo:
-            return {"sucesso": False,
+        """Método para validar se existe uma compra pendente
+        Usado para evitar o fechamento do caixa sem finalizar a compra"""
+
+        if self.itens_no_carrinho:
+            return {"sucesso": True,
             "mensagem": "Finalize a compra primeiro"}
 
-        return {"sucesso": True,
-        "mensagem": "Nada"}
+        return False
 
-    def validar_codigo(self, codigo_produto):
+    def validar_codigo(self, codigo_produto, quantidade=1):
         if codigo_produto in self.estoque.itens:
-
             produto = self.estoque.itens[codigo_produto]
-            self.carrinho(produto)
-            return True
 
-        else:
-            print("Produto não encontrado")
-            return False
+            self.carrinho_caixa(produto, quantidade) 
+            return f"Total: {self.total}" #falta aplicar na interface
+
+        return False

@@ -74,7 +74,7 @@ class CaixaMenu(ttk.Frame):
         elif opcao == 3:
             resultado = self.referencia_main.caixa.validar_compra_existente()
 
-            if not resultado["sucesso"]:
+            if resultado["sucesso"]:
                 self.error.set(resultado["mensagem"])
                 return
                 

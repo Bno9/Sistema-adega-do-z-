@@ -13,7 +13,7 @@ from Menus.EstoqueMenu import EstoqueMenu
 from Menus.ProdutoMenu import ProdutoMenu
 
 class Main:
-     """
+    """
     Controla o fluxo principal da aplicação.
 
     - Recebe o root do tkinter para ter controle da interface gráfica
@@ -49,13 +49,13 @@ class MenuPrincipal(ttk.Frame):
     """Classe principal que controla toda interface e herda da classe ttk.Frame"""
 
     def __init__(self, root, main):
-           """
-            Inicializa o menu principal.
+        """
+        Inicializa o menu principal.
 
-            Args:
-                root (Tk): Instância principal do Tkinter.
-                main (Main): Controlador principal da aplicação.
-            """
+        Args:
+            root (Tk): Instância principal do Tkinter.
+            main (Main): Controlador principal da aplicação.
+        """
 
         super().__init__(root, padding=(3, 3, 12, 12)) #instancia o root usando o init da classe pai
         self.main = main
@@ -84,7 +84,7 @@ class MenuPrincipal(ttk.Frame):
         ttk.Label(
             self,
             textvariable=self.error
-            ).grid(column=0, row=2, sticky="nsew")
+            ).grid(column=0, row=5, sticky=(S,N), pady=20)
      
         ttk.Button(
             self, 
