@@ -17,12 +17,16 @@ class ProdutoMenu(ttk.Frame):
             self.preco_venda = StringVar()
             self.quantidade = StringVar()
             self.novo_valor = StringVar()
-
             self.entries = []
 
             #atributos
             self.produto = None
             self.atributo = None
+            self.mapa_telas = {1: self.tela_cadastro,
+                               2: self.tela_editar,
+                               3: self.tela_excluir,
+                               4: self.voltar}
+            self.pode_usar_atalho = False
 
             #frame
             self.columnconfigure(0, weight=1)
@@ -34,104 +38,209 @@ class ProdutoMenu(ttk.Frame):
 
             self.menu()
 
+        #telas
+
         def menu(self):
             self.limpar_tela()
+            self.pode_usar_atalho = True
+
+            buttons = [("Cadastrar produto", 1),
+                       ("Editar produto", 2),
+                       ("Excluir produto", 3),
+                       ("Voltar", 4)]
             
-            ttk.Label(self.frame_conteudo, text="""
-            Menu de cadastro de produtos
-                """, font=("Arial", 16),  anchor="center", padding=20).grid(column=0, row=0, pady=20)
+            ttk.Label(self.frame_conteudo, 
+                      text="""
+                      Menu de cadastro de produtos
+                      """, 
+                      font=("Arial", 16),  
+                      anchor="center", 
+                      padding=20
+                      ).grid(column=0, row=0, pady=20)
             
-            ttk.Label(self.frame_conteudo, textvariable=self.error).grid(column=0, row=6, pady=20)
+            ttk.Label(self.frame_conteudo, 
+                      textvariable=self.error,
+                      foreground="red"
+                      ).grid(column=0, row=6, pady=20)
+            
+            for i, (texto, comando) in enumerate(buttons, start=2):
+                ttk.Button(self.frame_conteudo, 
+                        text=texto, 
+                        width=50, 
+                        padding=30, 
+                        command=lambda c=comando: self.escolha_tela(c)
+                        ).grid(column=0, row=i, pady=20)
+                
+            self.frame_conteudo.bind("<Escape>", lambda e: self.voltar()) #tenho que dar um jeito de fazer isso aqui funcionar
 
-            ttk.Button(self.frame_conteudo, text="Cadastrar produto", width=50, padding=30, command=lambda: self.escolha(1)).grid(column=0, row=2, pady=20)
-
-            ttk.Button(self.frame_conteudo, text="Editar produto", width=50, padding=30, command=lambda: self.escolha(2)).grid(column=0, row=3, pady=20)
-
-            ttk.Button(self.frame_conteudo, text="Excluir produto", width=50, padding=30, command=lambda: self.escolha(3)).grid(column=0, row=4, pady=20)
-
-            ttk.Button(self.frame_conteudo, text="Voltar", width=50, padding=30, command=lambda: self.escolha(4)).grid(column=0, row=5, pady=20)
-
-
-        def escolha(self, escolha):
-
+        def escolha_tela(self, escolha):
             try:
                 escolha = int(escolha)
             except ValueError:
                 self.error.set("Digite apenas numeros")
                 return
+            
+            escolhido = self.mapa_telas.get(escolha, "Escolha uma das opções disponiveis")
+            self.pode_usar_atalho = False
 
             self.limpar_tela()
 
-            if escolha == 1:
-                from Utils.Produto import Produto
+            escolhido()
 
-                form_frame = ttk.Frame(self.frame_conteudo)
-                form_frame.grid(row=0, column=0, sticky="n", pady=30)
+        def tela_cadastro(self):
+            form_frame = ttk.Frame(self.frame_conteudo)
+            form_frame.grid(row=0, column=0, sticky="n", pady=30)
+            form_frame.columnconfigure(0, weight=1)
+            form_frame.columnconfigure(1, weight=2)
+            for i in range(15):
+                form_frame.rowconfigure(i, weight=1)
 
-                form_frame.columnconfigure(0, weight=1)
-                form_frame.columnconfigure(1, weight=2)
-                for i in range(15):
-                    form_frame.rowconfigure(i, weight=1)
+            campos = [("Código", self.codigo),
+                ("Nome", self.nome),
+                ("Preço custo", self.preco_custo),
+                ("Preço venda", self.preco_venda),
+                ("Quantidade", self.quantidade)]
 
+            self.entries.clear()
 
-                campos = [("Código", self.codigo),
-                    ("Nome", self.nome),
-                    ("Preço custo", self.preco_custo),
-                    ("Preço venda", self.preco_venda),
-                    ("Quantidade", self.quantidade)]
-
-                self.entries.clear()
-
-                ttk.Label(form_frame, text="Digite as informações do produto", font=12, anchor="center").grid(column=0, row=0, columnspan=2, pady=20)
+            ttk.Label(form_frame, 
+                      text="Digite as informações do produto", 
+                      font=12, 
+                      anchor="center"
+                      ).grid(column=0, row=0, columnspan=2, pady=20)
 
                 
-                for i, (texto, variavel) in enumerate(campos, start=2):
-                    ttk.Label(form_frame, width=10, text=texto, anchor="e", font=12).grid(column=0, row=i, sticky="e", pady=5, padx=10)
+            for i, (texto, variavel) in enumerate(campos, start=2):
+                ttk.Label(form_frame, 
+                          width=10, 
+                          text=texto, 
+                          anchor="e", 
+                          font=12
+                          ).grid(column=0, row=i, sticky="e", pady=5, padx=10)
 
-                    entry = ttk.Entry(form_frame, textvariable=variavel, width=30)
-                    entry.grid(row=i, column=1, pady=5, padx=10, sticky="w")
-                    self.entries.append(entry)
+                entry = ttk.Entry(form_frame, 
+                                  textvariable=variavel, 
+                                  width=30)
+                
+                entry.grid(row=i, 
+                           column=1, 
+                           pady=5, 
+                           padx=10, 
+                           sticky="w")
+                    
+                self.entries.append(entry)
 
-                #Teclas para mudar campo
-                for i, entry in enumerate(self.entries):
-                    entry.bind("<Return>", lambda e, idx=i: self.proximo_campo(idx)) #enter
-                    entry.bind("<Down>", lambda e, idx=i: self.proximo_campo(idx)) #seta pra baixo
-                    entry.bind("<Up>", lambda e, idx=i: self.campo_anterior(idx)) #seta pra cima
+            #Teclas para mudar campo
+            for i, entry in enumerate(self.entries):
+                entry.bind("<Return>", lambda e, idx=i: self.proximo_campo(idx)) #enter
+                entry.bind("<Down>", lambda e, idx=i: self.proximo_campo(idx)) #seta pra baixo
+                entry.bind("<Up>", lambda e, idx=i: self.campo_anterior(idx)) #seta pra cima
+                entry.bind("<Escape>", lambda e, idx=i: self.menu())
 
-                ttk.Label(form_frame, textvariable=self.error, foreground="red").grid(column=0, row=len(campos)+5, columnspan=2, pady=10)
+            ttk.Label(form_frame, 
+                      textvariable=self.error, 
+                      foreground="red"
+                      ).grid(column=0, row=len(campos)+5, columnspan=2, pady=10)
 
-                ttk.Button(form_frame, width=30, padding=20, text="Cadastrar", command=self.criar).grid(column=0, row= len(campos)+2, columnspan=2, pady=10)
-                ttk.Button(form_frame, width=30, padding=20, text="Voltar", command=self.menu).grid(column=0, row= len(campos)+3, columnspan=2)
-
-                self.entries[0].focus_set()
-
-
-            elif escolha == 2:
-
-                ttk.Label(self.frame_conteudo, text="Digite o código do produto", font=16).grid(column=0, row=0, pady=20)
-                ttk.Entry(self.frame_conteudo, width=30, textvariable=self.codigo).grid(column=0, row=1, pady=20)
-
-                ttk.Label(self.frame_conteudo, width=30, textvariable=self.error).grid(row=2, column=0, pady=20)
-
-                ttk.Button(self.frame_conteudo, width=50, padding=30, text="Editar Produto", command=self.editar).grid(column=0, row= 3, pady=20)
-
-                ttk.Button(self.frame_conteudo, width=50, padding=30, text="Voltar", command=self.menu).grid(column=0, row= 4, pady=20)
-
-            elif escolha == 3:
-                ttk.Label(self.frame_conteudo, text="Digite o código do produto que deseja remover").grid(column=0, row=0, pady=20)
-
-                ttk.Entry(self.frame_conteudo, width=30, textvariable=self.codigo).grid(column=0, row=1, pady=20)
+            ttk.Button(form_frame, 
+                       width=30, 
+                       padding=20, 
+                       text="Cadastrar", 
+                       command=self.criar
+                       ).grid(column=0, row= len(campos)+2, columnspan=2, pady=10)
             
-                ttk.Button(self.frame_conteudo, text="Enviar", width=50, padding=30, command=self.deletar).grid(column=0, row=2, pady=20)
+            ttk.Button(form_frame, 
+                       width=30, 
+                       padding=20, 
+                       text="Voltar", 
+                       command=self.menu
+                       ).grid(column=0, row= len(campos)+3, columnspan=2)
 
-                ttk.Button(self.frame_conteudo, text="Voltar", width=50, padding=30, command=self.menu).grid(column=0, row=2, pady=20)
+            self.entries[0].focus_set()
 
-            elif escolha == 4:
-                self.referencia_main.voltar_menu_principal()
+        def tela_editar(self):
+            frame = ttk.Frame(self.frame_conteudo)
+            frame.grid(column=0, row=0, pady=40)
+            
+            ttk.Label(frame,
+                    text="Digite o código do produto", 
+                    font=16
+                    ).grid(column=0, row=0, pady=20)
 
-            else:
-                self.error.set("Escolha uma das opções disponiveis")
-        
+            ttk.Label(frame, 
+                      width=30, 
+                      textvariable=self.error,
+                      foreground="red"
+                      ).grid(row=2, column=0, pady=20)
+
+            entry_codigo = ttk.Entry(frame, 
+                      width=30, 
+                      textvariable=self.codigo
+                      )
+            entry_codigo.grid(column=0, row=1, pady=20)
+            entry_codigo.focus_set()
+            entry_codigo.bind("<Escape>", lambda e: self.menu())
+            entry_codigo.bind("<Return>", lambda e: self.editar())
+
+            ttk.Button(frame, 
+                       width=50, 
+                       padding=30, 
+                       text="Editar Produto", 
+                       command=self.editar
+                       ).grid(column=0, row= 3, pady=20)
+
+            ttk.Button(frame, 
+                       width=50, 
+                       padding=30, 
+                       text="Voltar", 
+                       command=self.menu
+                       ).grid(column=0, row= 4, pady=20)
+
+
+        def tela_excluir(self):
+            frame = ttk.Frame(self.frame_conteudo)
+            frame.grid(column=0, row=0, pady=40)
+
+            ttk.Label(frame, 
+                      text="Digite o código do produto que deseja remover"
+                      ).grid(column=0, row=0, pady=20)
+            
+            ttk.Label(frame, 
+                      textvariable=self.error
+                      ).grid(column=0, row=4, pady=20)
+
+            entry_codigo = ttk.Entry(frame, 
+                      width=30, 
+                      textvariable=self.codigo
+                      )
+            
+            entry_codigo.grid(column=0, row=1, pady=20)
+            entry_codigo.focus_set()
+            entry_codigo.bind("<Escape>", lambda e: self.menu())
+            entry_codigo.bind("<Return>", lambda e: self.deletar())
+            
+            ttk.Button(frame, 
+                       text="Enviar", 
+                       width=50, 
+                       padding=30, 
+                       command=self.deletar
+                       ).grid(column=0, row=2, pady=20)
+
+            ttk.Button(frame, 
+                       text="Voltar", 
+                       width=50, 
+                       padding=30, 
+                       command=self.menu
+                       ).grid(column=0, row=3, pady=20)
+
+        def voltar(self):
+            self.referencia_main.voltar_menu_principal()
+
+
+
+
+        #comandos
+ 
         def criar(self):
                 try:
                     codigo = int(self.codigo.get())
@@ -146,7 +255,7 @@ class ProdutoMenu(ttk.Frame):
         
                 resultado = self.referencia_main.estoque.criar_produto(codigo,nome,preco_custo,preco_venda,quantidade)
 
-                self.error.set(resultado["sucesso"])
+                self.error.set(resultado)
 
                 self.frame_conteudo.after(2000, self.limpar_campos)
 
@@ -156,7 +265,7 @@ class ProdutoMenu(ttk.Frame):
             except ValueError:
                 self.error.set("Digite apenas numeros")
 
-            if not self.referencia_main.estoque.conferir_se_existe(codigo_produto):
+            if not self.referencia_main.estoque.conferir_se_existe_no_estoque(codigo_produto):
                 self.error.set("Produto não encontrado")
                 return
 
@@ -172,13 +281,18 @@ class ProdutoMenu(ttk.Frame):
                 (5, "quantidade")
             ]
 
-            ttk.Label(self.frame_conteudo, text="""Escolha o que deseja alterar
-                    
-                    """).grid(column=0, row=0, sticky="nsew")
+            ttk.Label(self.frame_conteudo, text="""Escolha o que deseja alterar""").grid(column=0, row=0, sticky="ew")
             
             for i, (opcao, texto) in enumerate(mapa, start=2):
-                ttk.Button(self.frame_conteudo, text=texto, command=lambda: self.processar_escolha(opcao)).grid(column=0, row=i)
+                ttk.Button(self.frame_conteudo, text=texto, width=30, padding=30, command=lambda: self.processar_escolha(opcao)).grid(column=0, row=i, pady=20)
          
+
+            ttk.Button(self.frame_conteudo,
+                       text="Cancelar",
+                       width=30,
+                       padding=30,
+                       command=self.menu).grid(column=0, row=len(mapa)+1, pady=20)
+
         def processar_escolha(self, opcao):
             mapa = {
                 1: "codigo",
@@ -199,10 +313,36 @@ class ProdutoMenu(ttk.Frame):
             self.limpar_tela()
             self.limpar_campos()
 
-            ttk.Label(self.frame_conteudo, text="Digite o novo valor").grid(column=0, row=0)
-            ttk.Entry(self.frame_conteudo, textvariable=self.novo_valor).grid(column=0, row=1)
-            ttk.Button(self.frame_conteudo, text="Salvar", command=self.salvar_alteracao).grid(column=0, row=2)
-            ttk.Button(self.frame_conteudo, text="Cancelar", command=self.menu).grid(column=0, row=3)
+            ttk.Label(self.frame_conteudo, 
+                      text="Digite o novo valor"
+                      ).grid(column=0, row=0, pady=20)
+            
+            ttk.Label(self.frame_conteudo, 
+                      textvariable=self.error
+                      ).grid(column=0, row=4, pady=20)
+            
+            entry_foco = ttk.Entry(self.frame_conteudo, 
+                      textvariable=self.novo_valor
+                      )
+            entry_foco.grid(column=0, row=1, pady=20)
+            entry_foco.focus_set()
+            entry_foco.bind("<Escape>", lambda e: self.menu())
+            entry_foco.bind("<Return>", lambda e: self.salvar_alteracao())
+            
+            
+            ttk.Button(self.frame_conteudo,
+                    text="Salvar", 
+                    command=self.salvar_alteracao,
+                    width=30,
+                    padding=30
+                    ).grid(column=0, row=2, pady=20)
+            
+            ttk.Button(self.frame_conteudo, 
+                       text="Cancelar", 
+                       command=self.menu,
+                       width=30,
+                       padding=30
+                       ).grid(column=0, row=3, pady=20)
 
 
 
@@ -215,13 +355,11 @@ class ProdutoMenu(ttk.Frame):
                 elif self.atributo in ["preco_custo", "preco_venda"]:
                     valor = float(valor)
             except ValueError:
-                self.error.set("Valor inválido")
+                self.error.set("Valor inválido") #isso aparece sempre que tento editar o nome
                 return
 
             setattr(self.produto, self.atributo, valor)
-            self.error.set("Produto alterado com sucesso!")
-
-            self.menu()
+            self.error.set("Produto alterado com sucesso!") #nao ta alterando codigo nem nome
 
         def deletar(self):
             try:
@@ -230,11 +368,14 @@ class ProdutoMenu(ttk.Frame):
             except ValueError:
                 self.error.set("Digite apenas numeros")
                 return
+            
+
+        
+        #telas e campos
 
         def limpar_tela(self):
             for widget in self.frame_conteudo.winfo_children():
                 widget.destroy()
-            
             self.limpar_campos() #sempre que eu quiser limpar a tela eu vou querer limpar os campos
 
         def limpar_campos(self):
@@ -251,14 +392,17 @@ class ProdutoMenu(ttk.Frame):
                 var.set("")
 
         def proximo_campo(self, indice):
-            if indice + 1 < len(self.entries):
-                self.entries[indice + 1].focus_set()
-            else:
-                self.criar()
-                self.entries[0].focus_set()
+                if indice + 1 < len(self.entries):
+                    self.entries[indice + 1].focus_set()
+                else:
+                    self.criar()
+                    self.entries[0].focus_set()
 
         def campo_anterior(self, indice):
             if indice - 1 >= 0:
-                self.entries[indice - 1].focus_set() #aqui posso refatorar depois pra deixar em 1 função só
+                self.entries[indice - 1].focus_set()
 
-#aqui falta só arrumar a interface dos ultimos if e metodos
+
+        def teclas_menu(self, tecla):
+            if tecla.char in ["1", "2", "3", "4"] and self.pode_usar_atalho:
+                self.escolha_tela(int(tecla.char))

@@ -32,8 +32,29 @@ class Main:
         self.frame_atual = None
         self.estoque = Estoque()
         self.caixa = Caixa(self.estoque)
+        self.root.bind_all("<Key>", self.tecla_apertada)
+
+        #produtos criados para teste
+        self.estoque.criar_produto(1,"Whisky",2.20,5,10)
+        self.estoque.criar_produto(34,"Red label",50,80,2)
+        self.estoque.criar_produto(913495182,"Cigarro",10,30,10)
+        self.estoque.criar_produto(2,"Agua sem gas",1,3,100)
+
+
+        #mapa das classes
+        self.mapa = {
+            1:CaixaMenu,
+            2:EstoqueMenu,
+            3:ProdutoMenu,
+            4:None
+        }
 
         self.trocar_frame(MenuPrincipal(self.root, self))
+
+    def tecla_apertada(self, tecla):
+        if hasattr(self.frame_atual, "teclas_menu"):
+            self.frame_atual.teclas_menu(tecla)
+
 
     def trocar_frame(self, novo_frame):
         if self.frame_atual:
@@ -61,17 +82,12 @@ class MenuPrincipal(ttk.Frame):
         self.main = main
 
         self.error = StringVar()
-
-        #mapa das classes
-        self.mapa = {
-            1:CaixaMenu,
-            2:EstoqueMenu,
-            3:ProdutoMenu,
-            4:None
-        }
-
+        
         #ajustando coluna para centralizar interface
         self.columnconfigure(0, weight=1)
+
+        self.focus_set()
+        self.bind("<Escape>", lambda main: self.escolher(4))
            
         ttk.Label(
             self, 
@@ -126,7 +142,7 @@ class MenuPrincipal(ttk.Frame):
             self.error.set("Digite apenas numeros inteiros")
             return
 
-        escolhido = self.mapa.get(opcao)
+        escolhido = self.main.mapa.get(opcao)
 
         if escolhido is None:
             self.error.set("Finalizando programa...")
@@ -135,12 +151,18 @@ class MenuPrincipal(ttk.Frame):
             
         self.main.trocar_frame(escolhido(self.master, self.main))
 
+    def teclas_menu(self, tecla):
+        if tecla.char in ["1", "2", "3", "4"]:
+            self.escolher(int(tecla.char))
+
 root = Tk()
 root.title("Adega do zé")
 
 root.columnconfigure(0, weight=1)
 root.rowconfigure(0, weight=1)
 
+
 m = Main(root) #Instanciando a main
 
 root.mainloop() #Loop de eventos do tkinter
+

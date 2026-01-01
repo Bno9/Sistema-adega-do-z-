@@ -76,7 +76,7 @@ class Caixa:
             return {"sucesso": True,
             "mensagem": "Finalize a compra primeiro"}
 
-        return False
+        return {"sucesso": False}
 
     def validar_codigo(self, codigo_produto, quantidade=1):
         if codigo_produto in self.estoque.itens:

@@ -10,11 +10,11 @@ class Estoque:
         obj_produto = Produto(*args) #Cria o objeto produto usando a classe Produto
 
         if self.conferir_se_existe_no_estoque(obj_produto.codigo):
-            return{"sucesso": "Um item já está cadastrado com esse código"}
+            return "Um item já está cadastrado com esse código"
                  
         self.itens[obj_produto.codigo] = obj_produto #Salva no dicionario a chave (código) e o valor (objeto)
         
-        return {"sucesso": f"item {obj_produto.nome} criado"}
+        return f"item {obj_produto.nome} criado"
       
     def remover_produto(self, codigo_produto):
         if codigo_produto in self.itens:
