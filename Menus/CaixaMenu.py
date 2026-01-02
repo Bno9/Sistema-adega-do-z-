@@ -79,6 +79,7 @@ class CaixaMenu(ttk.Frame):
             self.frame_conteudo,
             columns=("codigo", "nome", "preco", "quantidade"),
             show="headings",
+            selectmode="browse",
             yscrollcommand=self.scroll.set
         )
         self.tabela.grid(row=2, column=0,columnspan=11, sticky="nsew", padx=10)
@@ -121,8 +122,9 @@ class CaixaMenu(ttk.Frame):
             command=self.voltar
         ).grid(row=0, column=1, padx=10)
         
-        #bind esc
+        #bind
         self.bind_all("<Escape>", self.voltar)
+        self.tabela.bind("<Delete>", lambda e: self.excluir_item())
 
         self.atualizar_tabela()
         self.atualizar_total()
@@ -253,6 +255,20 @@ Troco: R$ {resultado['troco']:.2f}"""
         self.atualizar_tabela()
         self.atualizar_total()
         self.quantidade.set(1)
+
+    def excluir_item(self):
+        #seleção de linha
+        selecionado = self.tabela.selection()
+
+        if not selecionado:
+            return
+
+        item_id = selecionado[0] #id do item
+        valores = self.tabela.item(item_id, "values") #valores do item
+
+        self.referencia_main.caixa.excluir_do_carrinho(int(valores[0]))
+        self.atualizar_tabela()
+        self.atualizar_total()
 
     def atualizar_total(self):
         total = self.referencia_main.caixa.total()
