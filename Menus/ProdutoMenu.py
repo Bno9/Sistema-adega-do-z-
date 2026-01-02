@@ -8,7 +8,7 @@ class ProdutoMenu(ttk.Frame):
             self.referencia_main = referencia_main
 
             #textos
-            self.error = StringVar()
+            self.status = StringVar()
 
             #entradas
             self.codigo = StringVar()
@@ -59,7 +59,7 @@ class ProdutoMenu(ttk.Frame):
                       ).grid(column=0, row=0, pady=20)
             
             ttk.Label(self.frame_conteudo, 
-                      textvariable=self.error,
+                      textvariable=self.status,
                       foreground="red"
                       ).grid(column=0, row=6, pady=20)
             
@@ -71,13 +71,13 @@ class ProdutoMenu(ttk.Frame):
                         command=lambda c=comando: self.escolha_tela(c)
                         ).grid(column=0, row=i, pady=20)
                 
-            self.frame_conteudo.bind("<Escape>", lambda e: self.voltar()) #tenho que dar um jeito de fazer isso aqui funcionar
+            self.bind_all("<Escape>", lambda e: self.voltar())
 
         def escolha_tela(self, escolha):
             try:
                 escolha = int(escolha)
             except ValueError:
-                self.error.set("Digite apenas numeros")
+                self.status.set("Digite apenas numeros")
                 return
             
             escolhido = self.mapa_telas.get(escolha, "Escolha uma das opções disponiveis")
@@ -88,6 +88,7 @@ class ProdutoMenu(ttk.Frame):
             escolhido()
 
         def tela_cadastro(self):
+            self.unbind_all("<Escape>")
             form_frame = ttk.Frame(self.frame_conteudo)
             form_frame.grid(row=0, column=0, sticky="n", pady=30)
             form_frame.columnconfigure(0, weight=1)
@@ -138,7 +139,7 @@ class ProdutoMenu(ttk.Frame):
                 entry.bind("<Escape>", lambda e, idx=i: self.menu())
 
             ttk.Label(form_frame, 
-                      textvariable=self.error, 
+                      textvariable=self.status, 
                       foreground="red"
                       ).grid(column=0, row=len(campos)+5, columnspan=2, pady=10)
 
@@ -159,6 +160,7 @@ class ProdutoMenu(ttk.Frame):
             self.entries[0].focus_set()
 
         def tela_editar(self):
+            self.unbind_all("<Escape>")
             frame = ttk.Frame(self.frame_conteudo)
             frame.grid(column=0, row=0, pady=40)
             
@@ -169,7 +171,7 @@ class ProdutoMenu(ttk.Frame):
 
             ttk.Label(frame, 
                       width=30, 
-                      textvariable=self.error,
+                      textvariable=self.status,
                       foreground="red"
                       ).grid(row=2, column=0, pady=20)
 
@@ -198,6 +200,7 @@ class ProdutoMenu(ttk.Frame):
 
 
         def tela_excluir(self):
+            self.unbind_all("<Escape>")
             frame = ttk.Frame(self.frame_conteudo)
             frame.grid(column=0, row=0, pady=40)
 
@@ -206,7 +209,7 @@ class ProdutoMenu(ttk.Frame):
                       ).grid(column=0, row=0, pady=20)
             
             ttk.Label(frame, 
-                      textvariable=self.error
+                      textvariable=self.status
                       ).grid(column=0, row=4, pady=20)
 
             entry_codigo = ttk.Entry(frame, 
@@ -238,10 +241,10 @@ class ProdutoMenu(ttk.Frame):
 
 
 
-
         #comandos
  
         def criar(self):
+                self.unbind_all("<Escape>")
                 try:
                     codigo = int(self.codigo.get())
                     nome = self.nome.get()
@@ -250,23 +253,24 @@ class ProdutoMenu(ttk.Frame):
                     quantidade = int(self.quantidade.get())
                 
                 except ValueError:
-                    self.error.set("Digite apenas numeros")
+                    self.status.set("Digite apenas numeros")
                     return
         
                 resultado = self.referencia_main.estoque.criar_produto(codigo,nome,preco_custo,preco_venda,quantidade)
 
-                self.error.set(resultado)
+                self.status.set(resultado)
 
                 self.frame_conteudo.after(2000, self.limpar_campos)
 
         def editar(self):
+            self.unbind_all("<Escape>")
             try:
                 codigo_produto = int(self.codigo.get())
             except ValueError:
-                self.error.set("Digite apenas numeros")
+                self.status.set("Digite apenas numeros")
 
             if not self.referencia_main.estoque.conferir_se_existe_no_estoque(codigo_produto):
-                self.error.set("Produto não encontrado")
+                self.status.set("Produto não encontrado")
                 return
 
             self.produto = self.referencia_main.estoque.itens[codigo_produto]
@@ -305,7 +309,7 @@ class ProdutoMenu(ttk.Frame):
             escolha = opcao
 
             if escolha not in mapa:
-                self.error.set("Escolha inválida")
+                self.status.set("Escolha inválida")
                 return
 
             self.atributo = mapa[escolha]
@@ -318,7 +322,7 @@ class ProdutoMenu(ttk.Frame):
                       ).grid(column=0, row=0, pady=20)
             
             ttk.Label(self.frame_conteudo, 
-                      textvariable=self.error
+                      textvariable=self.status
                       ).grid(column=0, row=4, pady=20)
             
             entry_foco = ttk.Entry(self.frame_conteudo, 
@@ -355,18 +359,18 @@ class ProdutoMenu(ttk.Frame):
                 elif self.atributo in ["preco_custo", "preco_venda"]:
                     valor = float(valor)
             except ValueError:
-                self.error.set("Valor inválido") #isso aparece sempre que tento editar o nome
+                self.status.set("Valor inválido") #isso aparece sempre que tento editar o nome
                 return
 
             setattr(self.produto, self.atributo, valor)
-            self.error.set("Produto alterado com sucesso!") #nao ta alterando codigo nem nome
+            self.status.set("Produto alterado com sucesso!") #nao ta alterando codigo nem nome
 
         def deletar(self):
             try:
                 codigo = int(self.codigo.get())
-                self.error.set(self.referencia_main.estoque.remover_produto(codigo))
+                self.status.set(self.referencia_main.estoque.remover_produto(codigo))
             except ValueError:
-                self.error.set("Digite apenas numeros")
+                self.status.set("Digite apenas numeros")
                 return
             
 
@@ -379,7 +383,7 @@ class ProdutoMenu(ttk.Frame):
             self.limpar_campos() #sempre que eu quiser limpar a tela eu vou querer limpar os campos
 
         def limpar_campos(self):
-            campos = [self.error,
+            campos = [self.status,
             self.codigo,
             self.nome,
             self.preco_custo,

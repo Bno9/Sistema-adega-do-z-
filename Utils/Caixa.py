@@ -83,6 +83,12 @@ class Caixa:
             produto = self.estoque.itens[codigo_produto]
 
             self.carrinho_caixa(produto, quantidade) 
-            return f"Total: {self.total}" #falta aplicar na interface
+            return True
 
         return False
+
+    def excluir_do_carrinho(self, produto_codigo):
+        for i, (item, _) in enumerate(self.itens_no_carrinho):
+            if produto_codigo == item.codigo:
+                del self.itens_no_carrinho[i]
+                return True
