@@ -83,6 +83,6 @@ class Caixa:
             produto = self.estoque.itens[codigo_produto]
 
             self.carrinho_caixa(produto, quantidade) 
-            return f"Total: {self.total}" #falta aplicar na interface
+            return True
 
         return False

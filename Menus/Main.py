@@ -81,7 +81,7 @@ class MenuPrincipal(ttk.Frame):
         super().__init__(root, padding=(3, 3, 12, 12)) #instancia o root usando o init da classe pai
         self.main = main
 
-        self.error = StringVar()
+        self.status = StringVar()
         
         #ajustando coluna para centralizar interface
         self.columnconfigure(0, weight=1)
@@ -99,7 +99,7 @@ class MenuPrincipal(ttk.Frame):
 
         ttk.Label(
             self,
-            textvariable=self.error
+            textvariable=self.status
             ).grid(column=0, row=5, sticky=(S,N), pady=20)
      
         ttk.Button(
@@ -139,13 +139,13 @@ class MenuPrincipal(ttk.Frame):
             opcao = int(opcao)
 
         except ValueError:
-            self.error.set("Digite apenas numeros inteiros")
+            self.status.set("Digite apenas numeros inteiros")
             return
 
         escolhido = self.main.mapa.get(opcao)
 
         if escolhido is None:
-            self.error.set("Finalizando programa...")
+            self.status.set("Finalizando programa...")
             self.master.after(2000, self.master.quit)
             return
             
