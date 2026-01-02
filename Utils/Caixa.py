@@ -3,66 +3,86 @@ class Caixa:
     def __init__(self, estoque):
         self.estoque = estoque
         self.vendas = []
-        self.calculo = []
+        self.itens_no_carrinho = []
 
-    def carrinho(self, produto):
-        for i, (item, quantidade) in enumerate(self.calculo):
+    def carrinho_caixa(self, produto, quantidade=1):
+        """Método que adiciona os produtos a tela de soma do caixa"""
+
+        for i, (item, quantidade_atual) in enumerate(self.itens_no_carrinho):
             if produto.codigo == item.codigo:
-                self.calculo[i] = (item, quantidade + 1)
-
-                print("Produto adicionado ao carrinho")
-                print(f"Total: {self.total()}")
+                self.itens_no_carrinho[i] = (item, quantidade_atual + quantidade)
                 return
 
-        self.calculo.append((produto, 1))
-        print("Produto adicionado ao carrinho")
-        print(f"Total: {self.total()}")
+        self.itens_no_carrinho.append((produto, quantidade))
 
-    def finalizar_compra(self):
-        if not self.calculo:
-            print("Nenhum item no carrinho")
-            return
+    def finalizar_compra(self, valor_pago):
+        """Método que finaliza a compra e da baixa no estoque"""
+        
+        if not self.itens_no_carrinho:
+            return {
+                "sucesso": False,
+                "mensagem": "Nenhum item registrado"
+            }
 
         total = self.total()
-        print(f"Total: {total:.2f}")
 
         try:
-            valor_pago = float(input("Valor recebido do cliente R$: "))
+            valor_pago = float(valor_pago)
         except ValueError:
-            print("Digite apenas numeros")
+            return{
+                "sucesso": False,
+                "mensagem": "Erro de processamento"
+            }
 
         if valor_pago < total:
-            print("Valor insuficiente!")
-            return
+            return{
+                "sucesso": False,
+                "mensagem": "Valor recebido menor que total"
+            }
 
         troco = valor_pago - total
-
-        print(f"Troco: {troco:.2f}")
         
-        for item, quantidade in self.calculo:
-            self.estoque.itens[item.codigo].quantidade -= quantidade
+        for item, quantidade in self.itens_no_carrinho:
+            self.estoque.dar_baixa(item, quantidade)
 
         self.vendas.append({
-            "itens": [{"codigo": p.codigo, "nome": p.nome, "quantidade": q, "total_produto": p.preco_venda*q} for p, q in self.calculo],
+            "itens": [{"codigo": p.codigo, "nome": p.nome, "quantidade": q, "total_produto": p.preco_venda*q} for p, q in self.itens_no_carrinho],
             "total": total,
             "recebido": valor_pago,
             "troco": troco
         })
 
-        self.calculo.clear()
+        self.itens_no_carrinho.clear()
 
-        print("Compra finalizada com sucesso")
-
+        return{
+                    "sucesso": True,
+                    "mensagem": "Compra finalizada com sucesso",
+                    "total": total,
+                    "troco": troco
+                }
 
     def total(self):
-        return sum(item.preco_venda * quantidade for item, quantidade in self.calculo)
+        return sum(item.preco_venda * quantidade for item, quantidade in self.itens_no_carrinho)
     
-
-    def listar_vendas(self): #Isso é uma função que vai ficar na parte de adm depois
-        for d in self.vendas:
-            print(d)
+    def listar_vendas(self): 
+        for venda in self.vendas:
+            print(venda) #ainda incompleto (pretendo fazer uma tela ou um bloco de notas para exibir essa parte)
 
     def validar_compra_existente(self):
-        if self.calculo:
-            print("Finalize a compra primeiro")
-            return True
+        """Método para validar se existe uma compra pendente
+        Usado para evitar o fechamento do caixa sem finalizar a compra"""
+
+        if self.itens_no_carrinho:
+            return {"sucesso": True,
+            "mensagem": "Finalize a compra primeiro"}
+
+        return {"sucesso": False}
+
+    def validar_codigo(self, codigo_produto, quantidade=1):
+        if codigo_produto in self.estoque.itens:
+            produto = self.estoque.itens[codigo_produto]
+
+            self.carrinho_caixa(produto, quantidade) 
+            return f"Total: {self.total}" #falta aplicar na interface
+
+        return False

@@ -2,63 +2,167 @@ import sys
 import os
 sys.path.append(os.path.dirname(os.path.dirname(__file__)))
 
-
+from tkinter import ttk
+from tkinter import *
 
 from Utils.Caixa import Caixa
 from Utils.Estoque import Estoque
 
-class Main:
+from Menus.CaixaMenu import CaixaMenu
+from Menus.EstoqueMenu import EstoqueMenu
+from Menus.ProdutoMenu import ProdutoMenu
 
-    def __init__(self):
-        self.running = True
-        self.state = self
+class Main:
+    """
+    Controla o fluxo principal da aplicação.
+
+    - Recebe o root do tkinter para ter controle da interface gráfica
+    - Possui métodos para trocar de tela
+    - Permite retornar ao menu principal
+    """
+
+    def __init__(self, root):
+        """
+        Inicializa a aplicação principal
+
+        Cria instâncias de Caixa e Estoque
+        e mantém o controle do frame atual
+        """
+        self.root = root
+        self.frame_atual = None
         self.estoque = Estoque()
         self.caixa = Caixa(self.estoque)
+        self.root.bind_all("<Key>", self.tecla_apertada)
 
+        #produtos criados para teste
+        self.estoque.criar_produto(1,"Whisky",2.20,5,10)
+        self.estoque.criar_produto(34,"Red label",50,80,2)
+        self.estoque.criar_produto(913495182,"Cigarro",10,30,10)
+        self.estoque.criar_produto(2,"Agua sem gas",1,3,100)
+
+
+        #mapa das classes
+        self.mapa = {
+            1:CaixaMenu,
+            2:EstoqueMenu,
+            3:ProdutoMenu,
+            4:None
+        }
+
+        self.trocar_frame(MenuPrincipal(self.root, self))
+
+    def tecla_apertada(self, tecla):
+        if hasattr(self.frame_atual, "teclas_menu"):
+            self.frame_atual.teclas_menu(tecla)
+
+
+    def trocar_frame(self, novo_frame):
+        if self.frame_atual:
+            self.frame_atual.destroy()
+
+        self.frame_atual = novo_frame
+        self.frame_atual.grid(column=0, row=0, sticky="nsew")
     
-    def Menu(self):
-        print("""
-        Adega do zé
+    def voltar_menu_principal(self):
+        self.trocar_frame(MenuPrincipal(self.root, self))
 
-        1- Abrir caixa
-        2- Conferir estoque
-        3- Cadastrar / Alterar produto
-        4- Fechar
-        """)
+class MenuPrincipal(ttk.Frame):
+    """Classe principal que controla toda interface e herda da classe ttk.Frame"""
 
-        try:
-            escolha = int(input("Digite o numero do que deseja acessar: "))
+    def __init__(self, root, main):
+        """
+        Inicializa o menu principal.
+
+        Args:
+            root (Tk): Instância principal do Tkinter.
+            main (Main): Controlador principal da aplicação.
+        """
+
+        super().__init__(root, padding=(3, 3, 12, 12)) #instancia o root usando o init da classe pai
+        self.main = main
+
+        self.error = StringVar()
         
+        #ajustando coluna para centralizar interface
+        self.columnconfigure(0, weight=1)
+
+        self.focus_set()
+        self.bind("<Escape>", lambda main: self.escolher(4))
+           
+        ttk.Label(
+            self, 
+            text="Adega do zé",
+            font=("Arial", 16, "bold"),
+            anchor="center",
+            padding=20
+            ).grid(column=0, row=0, sticky="ew", pady=20)
+
+        ttk.Label(
+            self,
+            textvariable=self.error
+            ).grid(column=0, row=5, sticky=(S,N), pady=20)
+     
+        ttk.Button(
+            self, 
+            text="Abrir caixa", 
+            width=50, 
+            padding=30,  
+            command=lambda: self.escolher(1)
+            ).grid(column=0, row=1, sticky=(S,N), pady=20)
+
+        ttk.Button(self, 
+            text="Estoque", 
+            width=50, 
+            padding=30, 
+            command=lambda: self.escolher(2)
+            ).grid(column=0, row=2, sticky=(S,N), pady=20)
+
+        ttk.Button(self, 
+            text="Cadastrar / Editar produto", 
+            width=50, 
+            padding=30, 
+            command=lambda: self.escolher(3)
+            ).grid(column=0, row=3, sticky=(S,N), pady=20)
+
+        ttk.Button(self, 
+            text="Sair", 
+            width=50, 
+            padding=30, 
+            command=lambda: self.escolher(4)
+            ).grid(column=0, row=4, sticky=(S,N), pady=20)
+
+    def escolher(self, opcao):
+        """Recebe a opção escolhida,
+         Converte a opção em int, busca a tela correspondente no mapa
+         Chama o metodo da classe main para trocar de interface, enviando o root e a classe main"""
+        try:
+            opcao = int(opcao)
+
         except ValueError:
-            print("Digite apenas numeros")
+            self.error.set("Digite apenas numeros inteiros")
             return
 
-        if escolha == 1:
-            from Menus.CaixaMenu import CaixaMenu
-            self.change_state(CaixaMenu(self))
+        escolhido = self.main.mapa.get(opcao)
 
-        elif escolha == 2:
-            from Menus.EstoqueMenu import EstoqueMenu
-            self.change_state(EstoqueMenu(self))
+        if escolhido is None:
+            self.error.set("Finalizando programa...")
+            self.master.after(2000, self.master.quit)
+            return
+            
+        self.main.trocar_frame(escolhido(self.master, self.main))
 
-        elif escolha == 3:
-            from Menus.ProdutoMenu import ProdutoMenu
-            self.change_state(ProdutoMenu(self))
-        
-        elif escolha == 4:
-            print("Fechando...")
-            self.running = False
+    def teclas_menu(self, tecla):
+        if tecla.char in ["1", "2", "3", "4"]:
+            self.escolher(int(tecla.char))
 
-        else:
-            print("Opção inválida")
+root = Tk()
+root.title("Adega do zé")
+
+root.columnconfigure(0, weight=1)
+root.rowconfigure(0, weight=1)
 
 
-    def change_state(self, novo_estado):
-        self.state = novo_estado
+m = Main(root) #Instanciando a main
 
-    
+root.mainloop() #Loop de eventos do tkinter
 
-m = Main()
-
-while m.running:
-    m.state.Menu()
