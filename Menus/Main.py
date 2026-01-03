@@ -216,10 +216,9 @@ class MenuPrincipal(ctk.CTkFrame):
         if tecla.char in ["1", "2", "3", "4"]:
             self.escolher(int(tecla.char))
 
-root = Tk()
+root = ctk.CTk()
 root.title("Adega do zé")
-
-
+root.configure(bg="#1e1e1e")
 
 root.columnconfigure(0, weight=1)
 root.rowconfigure(0, weight=1)

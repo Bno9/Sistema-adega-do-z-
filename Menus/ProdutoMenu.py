@@ -1,10 +1,12 @@
 from tkinter import ttk
 from tkinter import *
 
-class ProdutoMenu(ttk.Frame):
+import customtkinter as ctk
+
+class ProdutoMenu(ctk.CTkFrame):
 
         def __init__(self, root, referencia_main):
-            super().__init__(root, padding=10)
+            super().__init__(master=root, fg_color="#1e1e1e")
             self.referencia_main = referencia_main
 
             #textos
@@ -32,9 +34,10 @@ class ProdutoMenu(ttk.Frame):
             self.columnconfigure(0, weight=1)
             self.rowconfigure(0, weight=1)
 
-            self.frame_conteudo = ttk.Frame(self)
+            self.frame_conteudo = ctk.CTkFrame(self, fg_color="#1e1e1e")
             self.frame_conteudo.grid(row=0, column=0, sticky="nsew")
             self.frame_conteudo.columnconfigure(0, weight=1)
+            self.frame_conteudo.rowconfigure((0,1,2,3,4,5,6), weight=1)
 
             self.menu()
 
@@ -50,27 +53,33 @@ class ProdutoMenu(ttk.Frame):
                        ("Voltar", 4)]
             
             #label principal
-            ttk.Label(self.frame_conteudo, 
-                      text="""
-                      Menu de cadastro de produtos
-                      """, 
-                      font=("Arial", 16),  
-                      anchor="center", 
-                      padding=20
-                      ).grid(column=0, row=0, pady=20)
+            ctk.CTkLabel(self.frame_conteudo, 
+                      text="""Menu de cadastro de produtos""", 
+                      text_color="white",
+                      fg_color="#1e1e1e",
+                      font=("arial", 26, "bold")
+                      ).grid(column=0, row=0, columnspan=2, pady=20)
             
             #label status
-            ttk.Label(self.frame_conteudo, 
+            ctk.CTkLabel(self.frame_conteudo, 
                       textvariable=self.status,
-                      foreground="red"
+                      font=("Arial", 24, "bold"),
+                      text_color="red"
                       ).grid(column=0, row=6, pady=20)
             
             #botoes de escolha
             for i, (texto, comando) in enumerate(buttons, start=2):
-                ttk.Button(self.frame_conteudo, 
+                ctk.CTkButton(self.frame_conteudo, 
                         text=texto, 
-                        width=50, 
-                        padding=30, 
+                        text_color="black", 
+                        corner_radius=40,
+                        border_color="black",
+                        hover_color="white",
+                        border_width=5,
+                        width=300,  
+                        height=200,
+                        font=("Arial", 30, "bold"),
+                        fg_color="orange",
                         command=lambda c=comando: self.escolha_tela(c)
                         ).grid(column=0, row=i, pady=20)
                 
@@ -94,7 +103,7 @@ class ProdutoMenu(ttk.Frame):
             self.unbind("<Escape>")
 
             #frame para tela de cadastro
-            form_frame = ttk.Frame(self.frame_conteudo)
+            form_frame = ctk.CTkFrame(self.frame_conteudo, fg_color="#1e1e1e")
             form_frame.grid(row=0, column=0, sticky="n", pady=30)
             form_frame.columnconfigure(0, weight=1)
             form_frame.columnconfigure(1, weight=2)
@@ -110,26 +119,28 @@ class ProdutoMenu(ttk.Frame):
             self.entries.clear()
 
             #label principal
-            ttk.Label(form_frame, 
-                      text="Digite as informações do produto", 
-                      font=12, 
-                      anchor="center"
+            ctk.CTkLabel(form_frame, 
+                        text="Digite as informações do produto", 
+                        text_color="white",
+                        fg_color="#1e1e1e",
+                        font=("arial", 24, "bold")
                       ).grid(column=0, row=0, columnspan=2, pady=20)
 
             
             #labels/entrys
             for i, (texto, variavel) in enumerate(campos, start=2):
-                ttk.Label(form_frame, 
-                          width=10, 
-                          text=texto, 
-                          anchor="e", 
-                          font=12
-                          ).grid(column=0, row=i, sticky="e", pady=5, padx=10)
+                ctk.CTkLabel(form_frame, 
+                            text=texto, 
+                            text_color="white",
+                            fg_color="#1e1e1e",
+                            font=("arial", 32, "bold")
+                          ).grid(column=0, row=i, pady=5, padx=10)
 
 
-                entry = ttk.Entry(form_frame, 
+                entry = ctk.CTkEntry(form_frame, 
                                   textvariable=variavel, 
-                                  width=30)
+                                  width=300,
+                                  font=("Arial", 20, "bold"))
                 
                 entry.grid(row=i, 
                            column=1, 
@@ -147,26 +158,42 @@ class ProdutoMenu(ttk.Frame):
                 entry.bind("<Escape>", lambda e, idx=i: self.menu())
 
             #label status
-            ttk.Label(form_frame, 
+            ctk.CTkLabel(form_frame, 
                       textvariable=self.status, 
-                      foreground="red"
+                      text_color="red",
+                        fg_color="#1e1e1e",
+                        font=("arial", 32, "bold")
                       ).grid(column=0, row=len(campos)+5, columnspan=2, pady=10)
 
             #botao cadastrar
-            ttk.Button(form_frame, 
-                       width=30, 
-                       padding=20, 
+            ctk.CTkButton(form_frame,
                        text="Cadastrar", 
+                        text_color="black", 
+                        corner_radius=40,
+                        border_color="black",
+                        hover_color="white",
+                        border_width=5,
+                        width=300,  
+                        height=200,
+                        font=("Arial", 30, "bold"),
+                        fg_color="orange",
                        command=self.criar
-                       ).grid(column=0, row= len(campos)+2, columnspan=2, pady=10)
+                       ).grid(column=0, row= len(campos)+4, padx=10, pady=100)
             
             #botao voltar
-            ttk.Button(form_frame, 
-                       width=30, 
-                       padding=20, 
+            ctk.CTkButton(form_frame,  
                        text="Voltar", 
+                        text_color="black", 
+                        corner_radius=40,
+                        border_color="black",
+                        hover_color="white",
+                        border_width=5,
+                        width=300,  
+                        height=200,
+                        font=("Arial", 30, "bold"),
+                        fg_color="orange",
                        command=self.menu
-                       ).grid(column=0, row= len(campos)+3, columnspan=2)
+                       ).grid(column=1, row= len(campos)+4, padx=10, pady=100)
 
             self.entries[0].focus_set()
 
@@ -174,92 +201,130 @@ class ProdutoMenu(ttk.Frame):
             self.unbind("<Escape>")
 
             #frame tela editar
-            frame = ttk.Frame(self.frame_conteudo)
+            frame = ctk.CTkFrame(self.frame_conteudo, fg_color="#1e1e1e")
             frame.grid(column=0, row=0, pady=40)
             
             #label principal
-            ttk.Label(frame,
+            ctk.CTkLabel(frame,
                     text="Digite o código do produto", 
-                    font=16
-                    ).grid(column=0, row=0, pady=20)
+                     text_color="white",
+                    fg_color="#1e1e1e",
+                    font=("arial", 30, "bold")
+                    ).grid(column=0, row=0, columnspan=2, pady=20)
 
             #label status
-            ttk.Label(frame, 
+            ctk.CTkLabel(frame, 
                       width=30, 
                       textvariable=self.status,
-                      foreground="red"
-                      ).grid(row=2, column=0, pady=20)
+                      font=("Arial", 24, "bold"),
+                      text_color="red"
+                      ).grid(row=2, column=0, columnspan=2, pady=20)
 
             #entry código
-            entry_codigo = ttk.Entry(frame, 
-                      width=30, 
+            entry_codigo = ctk.CTkEntry(frame, 
+                      width=300,
+                      font=("Arial", 20, "bold"),
                       textvariable=self.codigo
                       )
-            entry_codigo.grid(column=0, row=1, pady=20)
+            entry_codigo.grid(column=0, row=1, columnspan=2, pady=20)
             entry_codigo.focus_set()
             entry_codigo.bind("<Escape>", lambda e: self.menu())
             entry_codigo.bind("<Return>", lambda e: self.editar())
 
             #botao editar
-            ttk.Button(frame, 
-                       width=50, 
-                       padding=30, 
+            ctk.CTkButton(frame,  
                        text="Editar Produto", 
+                        text_color="black", 
+                        corner_radius=40,
+                        border_color="black",
+                        hover_color="white",
+                        border_width=5,
+                        width=300,  
+                        height=200,
+                        font=("Arial", 30, "bold"),
+                        fg_color="orange",
                        command=self.editar
                        ).grid(column=0, row= 3, pady=20)
 
             #botao voltar
-            ttk.Button(frame, 
-                       width=50, 
-                       padding=30, 
+            ctk.CTkButton(frame, 
                        text="Voltar", 
+                        text_color="black", 
+                        corner_radius=40,
+                        border_color="black",
+                        hover_color="white",
+                        border_width=5,
+                        width=300,  
+                        height=200,
+                        font=("Arial", 30, "bold"),
+                        fg_color="orange",
                        command=self.menu
-                       ).grid(column=0, row= 4, pady=20)
+                       ).grid(column=1, row= 3, pady=20)
 
 
         def tela_excluir(self):
             self.unbind("<Escape>")
 
             #frame tela excluir
-            frame = ttk.Frame(self.frame_conteudo)
+            frame = ctk.CTkFrame(self.frame_conteudo, fg_color="#1e1e1e")
             frame.grid(column=0, row=0, pady=40)
 
             #label principal
-            ttk.Label(frame, 
-                      text="Digite o código do produto que deseja remover"
-                      ).grid(column=0, row=0, pady=20)
+            ctk.CTkLabel(frame, 
+                      text="Digite o código do produto que deseja remover",
+                      text_color="white",
+                        fg_color="#1e1e1e",
+                        font=("arial", 32, "bold")
+                        ).grid(column=0, row=0, columnspan=2, pady=20)
             
             #label status
-            ttk.Label(frame, 
-                      textvariable=self.status
-                      ).grid(column=0, row=4, pady=20)
+            ctk.CTkLabel(frame, 
+                      textvariable=self.status,
+                      font=("Arial", 24, "bold"),
+                      text_color="red"
+                      ).grid(column=0, row=4, columnspan=2, pady=20)
 
             #entry codigo
-            entry_codigo = ttk.Entry(frame, 
-                      width=30, 
-                      textvariable=self.codigo
+            entry_codigo = ctk.CTkEntry(frame,  
+                      textvariable=self.codigo,
+                      width=300,
+                      font=("Arial", 20, "bold")
                       )
             
-            entry_codigo.grid(column=0, row=1, pady=20)
+            entry_codigo.grid(column=0, row=1, columnspan=2, pady=20)
             entry_codigo.focus_set()
             entry_codigo.bind("<Escape>", lambda e: self.menu())
             entry_codigo.bind("<Return>", lambda e: self.deletar())
             
             #botao enviar
-            ttk.Button(frame, 
+            ctk.CTkButton(frame, 
                        text="Enviar", 
-                       width=50, 
-                       padding=30, 
+                       text_color="black", 
+                        corner_radius=40,
+                        border_color="black",
+                        hover_color="white",
+                        border_width=5,
+                        width=300,  
+                        height=200,
+                        font=("Arial", 30, "bold"),
+                        fg_color="orange",
                        command=self.deletar
                        ).grid(column=0, row=2, pady=20)
 
             #botao voltar
-            ttk.Button(frame, 
+            ctk.CTkButton(frame, 
                        text="Voltar", 
-                       width=50, 
-                       padding=30, 
+                      text_color="black", 
+                        corner_radius=40,
+                        border_color="black",
+                        hover_color="white",
+                        border_width=5,
+                        width=300,  
+                        height=200,
+                        font=("Arial", 30, "bold"),
+                        fg_color="orange",
                        command=self.menu
-                       ).grid(column=0, row=3, pady=20)
+                       ).grid(column=1, row=2, pady=20)
 
         def voltar(self):
             self.referencia_main.voltar_menu_principal()
@@ -312,17 +377,41 @@ class ProdutoMenu(ttk.Frame):
             ]
 
             #label escolha
-            ttk.Label(self.frame_conteudo, text="""Escolha o que deseja alterar""").grid(column=0, row=0, sticky="ew")
+            ctk.CTkLabel(self.frame_conteudo, 
+                         text="""Escolha o que deseja alterar""",
+                         text_color="white",
+                            fg_color="#1e1e1e",
+                            font=("arial", 24, "bold")
+            ).grid(column=0, row=0, sticky="ew")
             
             #botões de escolha
             for i, (opcao, texto) in enumerate(mapa, start=2):
-                ttk.Button(self.frame_conteudo, text=texto, width=30, padding=30, command=lambda: self.processar_escolha(opcao)).grid(column=0, row=i, pady=20)
+                ctk.CTkButton(self.frame_conteudo, 
+                              text=texto, 
+                              text_color="black", 
+                                corner_radius=40,
+                                border_color="black",
+                                hover_color="white",
+                                border_width=5,
+                                width=600,  
+                                height=300,
+                                font=("Arial", 30, "bold"),
+                                fg_color="orange",
+                              command=lambda: self.processar_escolha(opcao)
+                              ).grid(column=0, row=i, pady=20)
          
             #botao cancelar
-            ttk.Button(self.frame_conteudo,
+            ctk.CTkButton(self.frame_conteudo,
                        text="Cancelar",
-                       width=30,
-                       padding=30,
+                       text_color="black", 
+                        corner_radius=40,
+                        border_color="black",
+                        hover_color="white",
+                        border_width=5,
+                        width=600,  
+                        height=300,
+                        font=("Arial", 30, "bold"),
+                        fg_color="orange",
                        command=self.menu).grid(column=0, row=len(mapa)+1, pady=20)
 
         def processar_escolha(self, opcao):
@@ -346,18 +435,25 @@ class ProdutoMenu(ttk.Frame):
             self.limpar_campos()
 
             #label novo valor
-            ttk.Label(self.frame_conteudo, 
-                      text="Digite o novo valor"
+            ctk.CTkLabel(self.frame_conteudo, 
+                      text="Digite o novo valor",
+                      text_color="white",
+                        fg_color="#1e1e1e",
+                        font=("arial", 16, "bold")
                       ).grid(column=0, row=0, pady=20)
             
             #label status
-            ttk.Label(self.frame_conteudo, 
-                      textvariable=self.status
+            ctk.CTkLabel(self.frame_conteudo, 
+                      textvariable=self.status,
+                      font=("Arial", 24, "bold"),
+                        text_color="red"
                       ).grid(column=0, row=4, pady=20)
             
             #entry novo valor
-            entry_foco = ttk.Entry(self.frame_conteudo, 
-                      textvariable=self.novo_valor
+            entry_foco = ctk.CTkEntry(self.frame_conteudo, 
+                      textvariable=self.novo_valor,
+                      width=300,
+                        font=("Arial", 20, "bold")
                       )
             entry_foco.grid(column=0, row=1, pady=20)
             entry_foco.focus_set()
@@ -365,19 +461,33 @@ class ProdutoMenu(ttk.Frame):
             entry_foco.bind("<Return>", lambda e: self.salvar_alteracao())
             
             #botao salvar
-            ttk.Button(self.frame_conteudo,
+            ctk.CTkButton(self.frame_conteudo,
                     text="Salvar", 
                     command=self.salvar_alteracao,
-                    width=30,
-                    padding=30
+                    text_color="black", 
+                    corner_radius=40,
+                    border_color="black",
+                    hover_color="white",
+                    border_width=5,
+                    width=600,  
+                    height=300,
+                    font=("Arial", 30, "bold"),
+                    fg_color="orange",
                     ).grid(column=0, row=2, pady=20)
             
             #botao cancelar
-            ttk.Button(self.frame_conteudo, 
+            ctk.CTkButton(self.frame_conteudo, 
                        text="Cancelar", 
                        command=self.menu,
-                       width=30,
-                       padding=30
+                       text_color="black", 
+                        corner_radius=40,
+                        border_color="black",
+                        hover_color="white",
+                        border_width=5,
+                        width=600,  
+                        height=300,
+                        font=("Arial", 30, "bold"),
+                        fg_color="orange",
                        ).grid(column=0, row=3, pady=20)
 
 

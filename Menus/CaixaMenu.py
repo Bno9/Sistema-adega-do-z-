@@ -253,7 +253,7 @@ class CaixaMenu(ctk.CTkFrame):
         ctk.CTkLabel(
             self.modal,
             textvariable=self.status_modal,
-            text_color="red",
+            text_color="white",
             fg_color="#1e1e1e",
             font=("arial", 20, "bold")
         ).grid(row=4, column=0, pady=5)
