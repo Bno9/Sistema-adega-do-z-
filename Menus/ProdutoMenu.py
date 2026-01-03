@@ -74,7 +74,7 @@ class ProdutoMenu(ttk.Frame):
                         command=lambda c=comando: self.escolha_tela(c)
                         ).grid(column=0, row=i, pady=20)
                 
-            self.bind_all("<Escape>", lambda e: self.voltar())
+            self.master.bind("<Escape>", lambda e: self.voltar())
 
         def escolha_tela(self, escolha):
             try:
@@ -91,7 +91,7 @@ class ProdutoMenu(ttk.Frame):
             escolhido()
 
         def tela_cadastro(self):
-            self.unbind_all("<Escape>")
+            self.unbind("<Escape>")
 
             #frame para tela de cadastro
             form_frame = ttk.Frame(self.frame_conteudo)
@@ -171,7 +171,7 @@ class ProdutoMenu(ttk.Frame):
             self.entries[0].focus_set()
 
         def tela_editar(self):
-            self.unbind_all("<Escape>")
+            self.unbind("<Escape>")
 
             #frame tela editar
             frame = ttk.Frame(self.frame_conteudo)
@@ -218,7 +218,7 @@ class ProdutoMenu(ttk.Frame):
 
 
         def tela_excluir(self):
-            self.unbind_all("<Escape>")
+            self.unbind("<Escape>")
 
             #frame tela excluir
             frame = ttk.Frame(self.frame_conteudo)
@@ -269,7 +269,7 @@ class ProdutoMenu(ttk.Frame):
  
         def criar(self):
                 """Recebe as entradas e envia para a classe estoque criar e salvar o produto"""
-                self.unbind_all("<Escape>")
+                self.unbind("<Escape>")
                 try:
                     codigo = int(self.codigo.get())
                     nome = self.nome.get()
@@ -289,7 +289,7 @@ class ProdutoMenu(ttk.Frame):
 
         def editar(self):
             """Recebe o valor e altera o atributo do produto"""
-            self.unbind_all("<Escape>")
+            self.unbind("<Escape>")
             try:
                 codigo_produto = int(self.codigo.get())
             except ValueError:

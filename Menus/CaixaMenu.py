@@ -77,7 +77,7 @@ class CaixaMenu(ctk.CTkFrame):
         ctk.CTkLabel(
             self.frame_conteudo,
             textvariable=self.status,
-            text_color="red",
+            text_color="white",
             fg_color="#1e1e1e",
             font=("arial", 32, "bold")
         ).grid(row=1, column=1, padx=10)
@@ -177,7 +177,7 @@ class CaixaMenu(ctk.CTkFrame):
         ).grid(row=0, column=1, padx=10)
         
         #binds
-        self.master.bind_all("<Escape>", self.voltar)
+        self.master.bind("<Escape>", self.voltar)
         self.tabela.bind("<Delete>", lambda e: self.excluir_item())
 
         #carregar layout
@@ -213,11 +213,17 @@ class CaixaMenu(ctk.CTkFrame):
         """Tela de finalização da compra
             Exibe valor pago e troco"""
         
-        self.modal = ctk.CTkFrame(self.frame_conteudo, fg_color="#1e1e1e")
-        self.modal.place(relx=0.5, rely=0.5, anchor="center")
+        self.modal = ctk.CTkToplevel(self.master, fg_color="#1e1e1e")
+        self.modal.title("Finalizar compra")
+        self.modal.geometry("300x330")
+        self.modal.resizable(False, False)
+
+        self.modal.transient(self.master)
+        self.modal.grab_set()
+        self.modal.focus_force()
 
         self.status_modal.set("")
-        self.master.unbind_all("<Escape>")
+        self.master.unbind("<Escape>")
         
         #criação botão ok
         self.botao_ok = ctk.CTkButton(
@@ -247,7 +253,7 @@ class CaixaMenu(ctk.CTkFrame):
         ctk.CTkLabel(
             self.modal,
             textvariable=self.status_modal,
-            text_color="white",
+            text_color="red",
             fg_color="#1e1e1e",
             font=("arial", 20, "bold")
         ).grid(row=4, column=0, pady=5)
@@ -345,7 +351,7 @@ Troco: R$ {resultado['troco']:.2f}"""
 
         self.botao_ok.grid(row=5, column=0, pady=10)
 
-        self.master.bind_all("<Return>", lambda e: self.fechar_modal())
+        self.master.bind("<Return>", lambda e: self.fechar_modal())
 
         self.entry_valor_pago.destroy()
         self.botao_finalizar.destroy()
@@ -399,14 +405,17 @@ Troco: R$ {resultado['troco']:.2f}"""
             self.status.set(resultado["mensagem"])
             return
         
-        self.master.unbind_all("<Escape>")
+        self.master.unbind("<Escape>")
         self.referencia_main.voltar_menu_principal()
 
-    def fechar_modal(self):
+    def fechar_modal(self): #essa função ta dando um erro no ctk que eu não faço ideia do que é, mas pelo menos o programa continua. Vou precisar pesquisar pra arrumar, m
         self.limpar_campos()
         self.entry_codigo.focus_set()
-        self.master.bind_all("<Escape>", self.voltar)
-        self.master.unbind_all("<Return>")
+        self.master.bind("<Escape>", self.voltar)
+        self.master.unbind("<Return>")
+        
+
+        self.modal.grab_release()
         self.modal.destroy()
 
     def limpar_campos(self):

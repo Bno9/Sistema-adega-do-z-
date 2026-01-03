@@ -94,7 +94,7 @@ class MenuPrincipal(ctk.CTkFrame):
         self.columnconfigure((0,1), weight=1)
         self.rowconfigure((0,1,2), weight=1)
 
-        self.master.bind_all("<Escape>", lambda e: self.escolher(4))
+        self.master.bind("<Escape>", lambda e: self.escolher(4))
 
         #Imagem para usar no label principal
         try:

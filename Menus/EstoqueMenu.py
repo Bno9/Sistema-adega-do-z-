@@ -19,7 +19,7 @@ class EstoqueMenu(ctk.CTkFrame):
         self.ordem = {"nome": False,
         "codigo": False}
 
-        self.master.bind_all("<Escape>", self.voltar)
+        self.master.bind("<Escape>", self.voltar)
 
         #Estilo para tabela
         style = ttk.Style()
@@ -138,5 +138,5 @@ class EstoqueMenu(ctk.CTkFrame):
 
 
     def voltar(self, event):
-        self.master.unbind_all("<Escape>")
+        self.master.unbind("<Escape>")
         self.referencia_main.voltar_menu_principal()
