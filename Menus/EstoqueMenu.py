@@ -101,22 +101,25 @@ class EstoqueMenu(ctk.CTkFrame):
         for item in self.tabela.get_children(): #retorna o id de cada linha
             self.tabela.delete(item)
 
-        estoque = self.referencia_main.estoque.itens
+        estoque = self.referencia_main.estoque.get_banco()
 
         if not estoque:
             return
 
-        for produto in estoque.values(): #pega o objeto no estoque e insere na tabela
+        for produto in estoque: #pega o objeto no estoque e insere na tabela
+            _, codigo, nome, preco_custo, preco_venda, quantidade = produto
+            #primeiro valor é o id
+
             self.tabela.insert(
                 "",
                 "end",
                 values=(
-                    produto.codigo,
-                    produto.nome,
-                    f"R$: {produto.preco_custo:.2f}",
-                    f"R$: {produto.preco_venda:.2f}",
-                    produto.quantidade,
-                    f"{((produto.preco_venda - produto.preco_custo) / produto.preco_venda) * 100:.2f}%"
+                    codigo,
+                    nome,
+                    f"R$: {preco_custo:.2f}",
+                    f"R$: {preco_venda:.2f}",
+                    quantidade,
+                    f"{((preco_venda - preco_custo) / preco_venda) * 100:.2f}%"
                 )
             )
 

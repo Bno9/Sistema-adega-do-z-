@@ -7,6 +7,7 @@ from tkinter import *
 import customtkinter as ctk
 from PIL import Image, UnidentifiedImageError
 
+import sqlite3
 
 from Utils.Caixa import Caixa
 from Utils.Estoque import Estoque
@@ -32,9 +33,10 @@ class Main:
         e mantém o controle do frame atual
         """
         self.root = root
+        self.con = sqlite3.connect("estoque.db")
         self.frame_atual = None
-        self.estoque = Estoque()
-        self.caixa = Caixa(self.estoque)
+        self.estoque = Estoque(self.con)
+        self.caixa = Caixa(self.estoque, self.con)
         self.root.bind_all("<Key>", self.tecla_apertada)
 
         #produtos criados para teste
@@ -206,6 +208,7 @@ class MenuPrincipal(ctk.CTkFrame):
         escolhido = self.main.mapa.get(opcao)
 
         if escolhido is None:
+            self.main.con.close()
             self.status.set("Finalizando programa...")
             self.master.after(2000, self.master.quit)
             return
@@ -223,8 +226,8 @@ root.configure(bg="#1e1e1e")
 root.columnconfigure(0, weight=1)
 root.rowconfigure(0, weight=1)
 
-
 m = Main(root) #Instanciando a main
+
 
 root.mainloop() #Loop de eventos do tkinter
 

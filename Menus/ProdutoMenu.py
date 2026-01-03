@@ -354,7 +354,9 @@ class ProdutoMenu(ctk.CTkFrame):
 
         def editar(self):
             """Recebe o valor e altera o atributo do produto"""
+
             self.unbind("<Escape>")
+
             try:
                 codigo_produto = int(self.codigo.get())
             except ValueError:
@@ -364,7 +366,7 @@ class ProdutoMenu(ctk.CTkFrame):
                 self.status.set("Produto não encontrado")
                 return
 
-            self.produto = self.referencia_main.estoque.itens[codigo_produto]
+            self.produto = self.referencia_main.estoque.get_produto(codigo_produto)
  
             self.limpar_tela()
 
@@ -397,7 +399,7 @@ class ProdutoMenu(ctk.CTkFrame):
                                 height=300,
                                 font=("Arial", 30, "bold"),
                                 fg_color="orange",
-                              command=lambda: self.processar_escolha(opcao)
+                              command=lambda c=opcao: self.processar_escolha(c)
                               ).grid(column=0, row=i, pady=20)
          
             #botao cancelar
@@ -433,21 +435,22 @@ class ProdutoMenu(ctk.CTkFrame):
 
             self.limpar_tela()
             self.limpar_campos()
+            
 
             #label novo valor
             ctk.CTkLabel(self.frame_conteudo, 
                       text="Digite o novo valor",
                       text_color="white",
                         fg_color="#1e1e1e",
-                        font=("arial", 16, "bold")
-                      ).grid(column=0, row=0, pady=20)
+                        font=("arial", 26, "bold")
+                      ).grid(column=0, row=0, columnspan=2, pady=20)
             
             #label status
             ctk.CTkLabel(self.frame_conteudo, 
                       textvariable=self.status,
                       font=("Arial", 24, "bold"),
                         text_color="red"
-                      ).grid(column=0, row=4, pady=20)
+                      ).grid(column=0, row=4, columnspan=2, pady=20)
             
             #entry novo valor
             entry_foco = ctk.CTkEntry(self.frame_conteudo, 
@@ -455,7 +458,7 @@ class ProdutoMenu(ctk.CTkFrame):
                       width=300,
                         font=("Arial", 20, "bold")
                       )
-            entry_foco.grid(column=0, row=1, pady=20)
+            entry_foco.grid(column=0, row=1, columnspan=2, pady=20)
             entry_foco.focus_set()
             entry_foco.bind("<Escape>", lambda e: self.menu())
             entry_foco.bind("<Return>", lambda e: self.salvar_alteracao())
@@ -469,8 +472,8 @@ class ProdutoMenu(ctk.CTkFrame):
                     border_color="black",
                     hover_color="white",
                     border_width=5,
-                    width=600,  
-                    height=300,
+                    width=300,  
+                    height=200,
                     font=("Arial", 30, "bold"),
                     fg_color="orange",
                     ).grid(column=0, row=2, pady=20)
@@ -484,29 +487,19 @@ class ProdutoMenu(ctk.CTkFrame):
                         border_color="black",
                         hover_color="white",
                         border_width=5,
-                        width=600,  
-                        height=300,
+                        width=300,  
+                        height=200,
                         font=("Arial", 30, "bold"),
                         fg_color="orange",
-                       ).grid(column=0, row=3, pady=20)
+                       ).grid(column=1, row=2, pady=20)
 
 
 
         def salvar_alteracao(self):
             valor = self.novo_valor.get()
-
-            try:
-                if self.atributo in ["codigo", "quantidade"]:
-                    valor = int(valor)
-                elif self.atributo in ["preco_custo", "preco_venda"]:
-                    valor = float(valor)
-            except ValueError:
-                self.status.set("Valor inválido") #isso aparece sempre que tento editar o nome
-                return
-
-            setattr(self.produto, self.atributo, valor)
-            self.status.set("Produto alterado com sucesso!") #nao ta alterando codigo nem nome
-
+                                                                           #eu poderia desempacotar o valor pra ficar mais facil, mas preferi deixar o indice mesmo
+            self.status.set(self.referencia_main.estoque.atualizar_produto(self.produto[1], self.atributo, valor))
+        
         def deletar(self):
             try:
                 codigo = int(self.codigo.get())

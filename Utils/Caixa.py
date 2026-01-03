@@ -1,9 +1,10 @@
 class Caixa:
     
-    def __init__(self, estoque):
+    def __init__(self, estoque, con):
         self.estoque = estoque
-        self.vendas = []
-        self.itens_no_carrinho = []
+        self.con = con
+        self.vendas = [] #esse aqui vai ter que virar um banco de dados futuramente
+        self.itens_no_carrinho = [] #aqui eu mantive objetos produto porque ficou mais facil e nao precisei mexer muito no codigo
 
     def carrinho_caixa(self, produto, quantidade=1):
         """Método que adiciona os produtos a tela de soma do caixa"""
@@ -43,7 +44,7 @@ class Caixa:
         troco = valor_pago - total
         
         for item, quantidade in self.itens_no_carrinho:
-            self.estoque.dar_baixa(item, quantidade)
+            self.estoque.dar_baixa(item.codigo, quantidade)
 
         self.vendas.append({
             "itens": [{"codigo": p.codigo, "nome": p.nome, "quantidade": q, "total_produto": p.preco_venda*q} for p, q in self.itens_no_carrinho],
@@ -79,9 +80,14 @@ class Caixa:
         return {"sucesso": False}
 
     def validar_codigo(self, codigo_produto, quantidade=1):
-        if codigo_produto in self.estoque.itens:
-            produto = self.estoque.itens[codigo_produto]
+        if self.estoque.conferir_se_existe_no_estoque(codigo_produto):
+            cursor_estoque = self.estoque.cur
+            cursor_estoque.execute("SELECT codigo, nome, preco_custo, preco_venda, quantidade FROM produtos WHERE codigo=?", (codigo_produto,))
+            row = cursor_estoque.fetchone()
 
+            from Utils.Produto import Produto
+            produto = Produto(*row)
+        
             self.carrinho_caixa(produto, quantidade) 
             return True
 

@@ -1,26 +1,24 @@
-import customtkinter 
+import sqlite3
 
-class App(customtkinter.CTk):
-    def __init__(self):
-        super().__init__()
+con = sqlite3.connect("estoque.db")
+cur = con.cursor()
 
-        self.title("my app")
-        self.geometry("400x180")
-        self.grid_columnconfigure(0, weight=1)
-        self.grid_rowconfigure((0, 1), weight=1)
+cur.execute("""
+CREATE TABLE IF NOT EXISTS produtos (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    nome TEXT NOT NULL,
+    quantidade INTEGER,
+    preco REAL
+)
+""")
 
-        self.checkbox_1 = customtkinter.CTkCheckBox(self, text="checkbox 1")
-        self.checkbox_1.grid(row=0, column=0, padx=10, pady=(10, 0), sticky="w")
-        self.checkbox_2 = customtkinter.CTkCheckBox(self, text="checkbox 2")
-        self.checkbox_2.grid(row=1, column=0, padx=10, pady=(10, 0), sticky="w")
-        self.button = customtkinter.CTkButton(self, text="my button", command=self.button_callback)
-        self.button.grid(row=3, column=0, padx=10, pady=10, sticky="ew")
+cur.execute("INSERT INTO produtos (nome, quantidade, preco) VALUES (?, ?, ?)",
+            ("Cerveja", 10, 5.50))
 
-    def button_callback(self):
-        self.label = customtkinter.CTkLabel(self, text="Teste")
-        self.label.grid(row=4, column=0, padx=10, pady=10, sticky="ew")
+con.commit()
 
-app = App()
+cur.execute("SELECT * FROM produtos")
+for row in cur.fetchall():
+    print(row)
 
-app.resizable(False, False)
-app.mainloop()
+con.close()
