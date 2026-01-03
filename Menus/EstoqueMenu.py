@@ -90,7 +90,6 @@ class EstoqueMenu(ttk.Frame):
             )
 
     def ordenar_estoque(self, coluna):
-
         reverso = self.ordem.get(coluna, False)
 
         dados = [(self.tabela.set(id_linha, coluna), id_linha)

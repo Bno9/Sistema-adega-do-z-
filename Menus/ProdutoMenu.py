@@ -49,6 +49,7 @@ class ProdutoMenu(ttk.Frame):
                        ("Excluir produto", 3),
                        ("Voltar", 4)]
             
+            #label principal
             ttk.Label(self.frame_conteudo, 
                       text="""
                       Menu de cadastro de produtos
@@ -58,11 +59,13 @@ class ProdutoMenu(ttk.Frame):
                       padding=20
                       ).grid(column=0, row=0, pady=20)
             
+            #label status
             ttk.Label(self.frame_conteudo, 
                       textvariable=self.status,
                       foreground="red"
                       ).grid(column=0, row=6, pady=20)
             
+            #botoes de escolha
             for i, (texto, comando) in enumerate(buttons, start=2):
                 ttk.Button(self.frame_conteudo, 
                         text=texto, 
@@ -89,6 +92,8 @@ class ProdutoMenu(ttk.Frame):
 
         def tela_cadastro(self):
             self.unbind_all("<Escape>")
+
+            #frame para tela de cadastro
             form_frame = ttk.Frame(self.frame_conteudo)
             form_frame.grid(row=0, column=0, sticky="n", pady=30)
             form_frame.columnconfigure(0, weight=1)
@@ -104,13 +109,15 @@ class ProdutoMenu(ttk.Frame):
 
             self.entries.clear()
 
+            #label principal
             ttk.Label(form_frame, 
                       text="Digite as informações do produto", 
                       font=12, 
                       anchor="center"
                       ).grid(column=0, row=0, columnspan=2, pady=20)
 
-                
+            
+            #labels/entrys
             for i, (texto, variavel) in enumerate(campos, start=2):
                 ttk.Label(form_frame, 
                           width=10, 
@@ -118,6 +125,7 @@ class ProdutoMenu(ttk.Frame):
                           anchor="e", 
                           font=12
                           ).grid(column=0, row=i, sticky="e", pady=5, padx=10)
+
 
                 entry = ttk.Entry(form_frame, 
                                   textvariable=variavel, 
@@ -131,18 +139,20 @@ class ProdutoMenu(ttk.Frame):
                     
                 self.entries.append(entry)
 
-            #Teclas para mudar campo
+            #teclas para mudar campo
             for i, entry in enumerate(self.entries):
                 entry.bind("<Return>", lambda e, idx=i: self.proximo_campo(idx)) #enter
                 entry.bind("<Down>", lambda e, idx=i: self.proximo_campo(idx)) #seta pra baixo
                 entry.bind("<Up>", lambda e, idx=i: self.campo_anterior(idx)) #seta pra cima
                 entry.bind("<Escape>", lambda e, idx=i: self.menu())
 
+            #label status
             ttk.Label(form_frame, 
                       textvariable=self.status, 
                       foreground="red"
                       ).grid(column=0, row=len(campos)+5, columnspan=2, pady=10)
 
+            #botao cadastrar
             ttk.Button(form_frame, 
                        width=30, 
                        padding=20, 
@@ -150,6 +160,7 @@ class ProdutoMenu(ttk.Frame):
                        command=self.criar
                        ).grid(column=0, row= len(campos)+2, columnspan=2, pady=10)
             
+            #botao voltar
             ttk.Button(form_frame, 
                        width=30, 
                        padding=20, 
@@ -161,20 +172,25 @@ class ProdutoMenu(ttk.Frame):
 
         def tela_editar(self):
             self.unbind_all("<Escape>")
+
+            #frame tela editar
             frame = ttk.Frame(self.frame_conteudo)
             frame.grid(column=0, row=0, pady=40)
             
+            #label principal
             ttk.Label(frame,
                     text="Digite o código do produto", 
                     font=16
                     ).grid(column=0, row=0, pady=20)
 
+            #label status
             ttk.Label(frame, 
                       width=30, 
                       textvariable=self.status,
                       foreground="red"
                       ).grid(row=2, column=0, pady=20)
 
+            #entry código
             entry_codigo = ttk.Entry(frame, 
                       width=30, 
                       textvariable=self.codigo
@@ -184,6 +200,7 @@ class ProdutoMenu(ttk.Frame):
             entry_codigo.bind("<Escape>", lambda e: self.menu())
             entry_codigo.bind("<Return>", lambda e: self.editar())
 
+            #botao editar
             ttk.Button(frame, 
                        width=50, 
                        padding=30, 
@@ -191,6 +208,7 @@ class ProdutoMenu(ttk.Frame):
                        command=self.editar
                        ).grid(column=0, row= 3, pady=20)
 
+            #botao voltar
             ttk.Button(frame, 
                        width=50, 
                        padding=30, 
@@ -201,17 +219,22 @@ class ProdutoMenu(ttk.Frame):
 
         def tela_excluir(self):
             self.unbind_all("<Escape>")
+
+            #frame tela excluir
             frame = ttk.Frame(self.frame_conteudo)
             frame.grid(column=0, row=0, pady=40)
 
+            #label principal
             ttk.Label(frame, 
                       text="Digite o código do produto que deseja remover"
                       ).grid(column=0, row=0, pady=20)
             
+            #label status
             ttk.Label(frame, 
                       textvariable=self.status
                       ).grid(column=0, row=4, pady=20)
 
+            #entry codigo
             entry_codigo = ttk.Entry(frame, 
                       width=30, 
                       textvariable=self.codigo
@@ -222,6 +245,7 @@ class ProdutoMenu(ttk.Frame):
             entry_codigo.bind("<Escape>", lambda e: self.menu())
             entry_codigo.bind("<Return>", lambda e: self.deletar())
             
+            #botao enviar
             ttk.Button(frame, 
                        text="Enviar", 
                        width=50, 
@@ -229,6 +253,7 @@ class ProdutoMenu(ttk.Frame):
                        command=self.deletar
                        ).grid(column=0, row=2, pady=20)
 
+            #botao voltar
             ttk.Button(frame, 
                        text="Voltar", 
                        width=50, 
@@ -240,10 +265,10 @@ class ProdutoMenu(ttk.Frame):
             self.referencia_main.voltar_menu_principal()
 
 
-
-        #comandos
+        #métodos
  
         def criar(self):
+                """Recebe as entradas e envia para a classe estoque criar e salvar o produto"""
                 self.unbind_all("<Escape>")
                 try:
                     codigo = int(self.codigo.get())
@@ -263,6 +288,7 @@ class ProdutoMenu(ttk.Frame):
                 self.frame_conteudo.after(2000, self.limpar_campos)
 
         def editar(self):
+            """Recebe o valor e altera o atributo do produto"""
             self.unbind_all("<Escape>")
             try:
                 codigo_produto = int(self.codigo.get())
@@ -285,12 +311,14 @@ class ProdutoMenu(ttk.Frame):
                 (5, "quantidade")
             ]
 
+            #label escolha
             ttk.Label(self.frame_conteudo, text="""Escolha o que deseja alterar""").grid(column=0, row=0, sticky="ew")
             
+            #botões de escolha
             for i, (opcao, texto) in enumerate(mapa, start=2):
                 ttk.Button(self.frame_conteudo, text=texto, width=30, padding=30, command=lambda: self.processar_escolha(opcao)).grid(column=0, row=i, pady=20)
          
-
+            #botao cancelar
             ttk.Button(self.frame_conteudo,
                        text="Cancelar",
                        width=30,
@@ -317,14 +345,17 @@ class ProdutoMenu(ttk.Frame):
             self.limpar_tela()
             self.limpar_campos()
 
+            #label novo valor
             ttk.Label(self.frame_conteudo, 
                       text="Digite o novo valor"
                       ).grid(column=0, row=0, pady=20)
             
+            #label status
             ttk.Label(self.frame_conteudo, 
                       textvariable=self.status
                       ).grid(column=0, row=4, pady=20)
             
+            #entry novo valor
             entry_foco = ttk.Entry(self.frame_conteudo, 
                       textvariable=self.novo_valor
                       )
@@ -333,7 +364,7 @@ class ProdutoMenu(ttk.Frame):
             entry_foco.bind("<Escape>", lambda e: self.menu())
             entry_foco.bind("<Return>", lambda e: self.salvar_alteracao())
             
-            
+            #botao salvar
             ttk.Button(self.frame_conteudo,
                     text="Salvar", 
                     command=self.salvar_alteracao,
@@ -341,6 +372,7 @@ class ProdutoMenu(ttk.Frame):
                     padding=30
                     ).grid(column=0, row=2, pady=20)
             
+            #botao cancelar
             ttk.Button(self.frame_conteudo, 
                        text="Cancelar", 
                        command=self.menu,
@@ -375,12 +407,12 @@ class ProdutoMenu(ttk.Frame):
             
 
         
-        #telas e campos
+        #métodos tela e campo
 
         def limpar_tela(self):
             for widget in self.frame_conteudo.winfo_children():
                 widget.destroy()
-            self.limpar_campos() #sempre que eu quiser limpar a tela eu vou querer limpar os campos
+            self.limpar_campos()
 
         def limpar_campos(self):
             campos = [self.status,
@@ -396,6 +428,7 @@ class ProdutoMenu(ttk.Frame):
                 var.set("")
 
         def proximo_campo(self, indice):
+                """Muda o foco do entry pro proximo"""
                 if indice + 1 < len(self.entries):
                     self.entries[indice + 1].focus_set()
                 else:
@@ -403,6 +436,7 @@ class ProdutoMenu(ttk.Frame):
                     self.entries[0].focus_set()
 
         def campo_anterior(self, indice):
+            "Muda o foco do entry pro anterior"
             if indice - 1 >= 0:
                 self.entries[indice - 1].focus_set()
 

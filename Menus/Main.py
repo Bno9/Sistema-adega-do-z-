@@ -4,6 +4,7 @@ sys.path.append(os.path.dirname(os.path.dirname(__file__)))
 
 from tkinter import ttk
 from tkinter import *
+import customtkinter as ctk
 
 from Utils.Caixa import Caixa
 from Utils.Estoque import Estoque
@@ -49,12 +50,13 @@ class Main:
             4:None
         }
 
+        #inicia o frame menu principal
         self.trocar_frame(MenuPrincipal(self.root, self))
 
     def tecla_apertada(self, tecla):
+        """Detecta a tecla apertada e chama a função teclas menu do frame atual"""
         if hasattr(self.frame_atual, "teclas_menu"):
             self.frame_atual.teclas_menu(tecla)
-
 
     def trocar_frame(self, novo_frame):
         if self.frame_atual:
@@ -66,8 +68,8 @@ class Main:
     def voltar_menu_principal(self):
         self.trocar_frame(MenuPrincipal(self.root, self))
 
-class MenuPrincipal(ttk.Frame):
-    """Classe principal que controla toda interface e herda da classe ttk.Frame"""
+class MenuPrincipal(ctk.CTkFrame):
+    """Classe principal que controla toda interface e herda da classe ctk.Frame"""
 
     def __init__(self, root, main):
         """
@@ -78,56 +80,75 @@ class MenuPrincipal(ttk.Frame):
             main (Main): Controlador principal da aplicação.
         """
 
-        super().__init__(root, padding=(3, 3, 12, 12)) #instancia o root usando o init da classe pai
+        super().__init__(master=root, fg_color="#1e1e1e") #instancia o root usando o init da classe pai
         self.main = main
 
+        #texto
         self.status = StringVar()
         
         #ajustando coluna para centralizar interface
         self.columnconfigure(0, weight=1)
-
-        self.focus_set()
-        self.bind("<Escape>", lambda main: self.escolher(4))
            
-        ttk.Label(
+        #label menu   
+        ctk.CTkLabel(
             self, 
             text="Adega do zé",
             font=("Arial", 16, "bold"),
+            fg_color="#1e1e1e",
             anchor="center",
-            padding=20
             ).grid(column=0, row=0, sticky="ew", pady=20)
 
-        ttk.Label(
+        #label status
+        ctk.CTkLabel(
             self,
-            textvariable=self.status
+            textvariable=self.status,
+            font=("Arial", 24, "bold"),
+            text_color="red"
             ).grid(column=0, row=5, sticky=(S,N), pady=20)
      
-        ttk.Button(
+        #botao caixa
+        ctk.CTkButton(
             self, 
-            text="Abrir caixa", 
-            width=50, 
-            padding=30,  
+            text="Abrir caixa",
+            text_color="black", 
+            width=500,  
+            height=200,
+            font=("Arial", 30, "bold"),
+            fg_color="orange",
             command=lambda: self.escolher(1)
             ).grid(column=0, row=1, sticky=(S,N), pady=20)
 
-        ttk.Button(self, 
-            text="Estoque", 
-            width=50, 
-            padding=30, 
+        #botao estoque
+        ctk.CTkButton(self, 
+            text="Estoque",
+            text_color="black", 
+            width=500,  
+            height=200,
+            fg_color="orange",
+            font=("Arial", 30, "bold"),
             command=lambda: self.escolher(2)
             ).grid(column=0, row=2, sticky=(S,N), pady=20)
 
-        ttk.Button(self, 
+        #botao cadastro
+        ctk.CTkButton(self, 
             text="Cadastrar / Editar produto", 
-            width=50, 
-            padding=30, 
+            text_color="black", 
+            width=500,  
+            height=200,
+            fg_color="orange",
+            font=("Arial", 30, "bold"),
             command=lambda: self.escolher(3)
             ).grid(column=0, row=3, sticky=(S,N), pady=20)
 
-        ttk.Button(self, 
+
+        #botao sair
+        ctk.CTkButton(self, 
             text="Sair", 
-            width=50, 
-            padding=30, 
+            text_color="black", 
+            width=500,  
+            height=200,
+            fg_color="orange",
+            font=("Arial", 30, "bold"),
             command=lambda: self.escolher(4)
             ).grid(column=0, row=4, sticky=(S,N), pady=20)
 

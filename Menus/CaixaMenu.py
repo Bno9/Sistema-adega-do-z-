@@ -56,6 +56,7 @@ class CaixaMenu(ttk.Frame):
         self.entry_quantidade.bind("<Return>", self.enviar_codigo)
         self.entry_quantidade.bind("<Left>", lambda e: self.entry_codigo.focus())
 
+        #label quantidade
         ttk.Label(
         self.frame_conteudo,
         text="Quantidade"
@@ -63,7 +64,7 @@ class CaixaMenu(ttk.Frame):
 
         self.entry_quantidade.grid(row=1, column=10, sticky="w", padx=10)
 
-        #status
+        #label status
         ttk.Label(
             self.frame_conteudo,
             textvariable=self.status,
@@ -71,7 +72,7 @@ class CaixaMenu(ttk.Frame):
             font=("arial",20)
         ).grid(row=1, column=1, sticky="n", padx=10)
         
-        # TABELA
+        #tabela
         self.scroll = ttk.Scrollbar(self.frame_conteudo)
         self.scroll.grid(row=2, column=1, sticky="ns")
 
@@ -95,14 +96,14 @@ class CaixaMenu(ttk.Frame):
         self.tabela.column("preco", width=140, minwidth=120, stretch=True, anchor="e")
         self.tabela.column("quantidade", width=120, minwidth=100, stretch=True, anchor="center")
 
-        # TOTAL
+        #label total
         ttk.Label(
             self.frame_conteudo,
             textvariable=self.total_var,
             font=("Arial", 32, "bold")
         ).grid(row=3, column=0, sticky="e", padx=10, pady=10)
 
-        # BOTÕES
+        #botoes finalizar compra
         frame_botoes = ttk.Frame(self.frame_conteudo)
         frame_botoes.grid(row=4, column=0, pady=10)
 
@@ -122,13 +123,18 @@ class CaixaMenu(ttk.Frame):
             command=self.voltar
         ).grid(row=0, column=1, padx=10)
         
-        #bind
+        #binds
         self.bind_all("<Escape>", self.voltar)
         self.tabela.bind("<Delete>", lambda e: self.excluir_item())
 
+        #carregar layout
         self.atualizar_tabela()
         self.atualizar_total()
 
+    
+    
+    #Telas
+    
     def layout_caixa(self):
         for item in self.tabela.get_children(): #retorna o id de cada linha
             self.tabela.delete(item)
@@ -159,19 +165,21 @@ class CaixaMenu(ttk.Frame):
         self.status_modal.set("")
         self.unbind_all("<Escape>")
         
-
+        #criação botão ok
         self.botao_ok = ttk.Button(
             self.modal,
             text="OK",
             command=self.fechar_modal
             )
 
+        #label valor pago
         ttk.Label(
             self.modal,
             text="Valor pago",
             font=("Arial", 20)
         ).grid(row=0, column=0, pady=5)
 
+        #label status modal
         ttk.Label(
             self.modal,
             textvariable=self.status_modal,
@@ -179,6 +187,7 @@ class CaixaMenu(ttk.Frame):
             font=("arial",20)
         ).grid(row=4, column=0, pady=5)
 
+        #entry valor pago
         self.entry_valor_pago = ttk.Entry(
             self.modal,
             textvariable=self.valor_pago,
@@ -189,6 +198,8 @@ class CaixaMenu(ttk.Frame):
         self.entry_valor_pago.bind("<Return>", lambda e: self.finalizar_compra())
         self.entry_valor_pago.bind("<Escape>", lambda e: self.fechar_modal())
 
+
+        #botao finalizar compra
         self.botao_finalizar = ttk.Button(
             self.modal,
             text="Finalizar",
@@ -196,6 +207,7 @@ class CaixaMenu(ttk.Frame):
         )
         self.botao_finalizar.grid(row=2, column=0, pady=10)
 
+        #botao fechar modal
         self.botao_cancelar = ttk.Button(
             self.modal,
             text="Cancelar",
@@ -203,13 +215,13 @@ class CaixaMenu(ttk.Frame):
         )
         self.botao_cancelar.grid(row=3, column=0)
 
-    def fechar_modal(self):
-        self.limpar_campos()
-        self.modal.destroy()
-        self.entry_codigo.focus_set()
-        self.bind_all("<Escape>", self.voltar)
+    
+
+    #Métodos
 
     def enviar_codigo(self, event=None):
+        """Envia o codigo para a classe caixa e valida se existe no estoque"""
+
         code = self.codigo.get()
 
         if code == "":
@@ -234,6 +246,7 @@ class CaixaMenu(ttk.Frame):
         self.atualizar_total()
 
     def finalizar_compra(self):
+        """chama o metodo da classe caixa que finaliza a compra"""
         resultado = self.referencia_main.caixa.finalizar_compra(self.valor_pago.get())
 
         if not resultado["sucesso"]:
@@ -257,6 +270,8 @@ Troco: R$ {resultado['troco']:.2f}"""
         self.quantidade.set(1)
 
     def excluir_item(self):
+        """Recebe a linha clicada pelo usuario e exclui do caixa"""
+
         #seleção de linha
         selecionado = self.tabela.selection()
 
@@ -300,6 +315,12 @@ Troco: R$ {resultado['troco']:.2f}"""
         
         self.unbind_all("<Escape>")
         self.referencia_main.voltar_menu_principal()
+
+    def fechar_modal(self):
+        self.limpar_campos()
+        self.modal.destroy()
+        self.entry_codigo.focus_set()
+        self.bind_all("<Escape>", self.voltar)
 
 
     def limpar_campos(self):
