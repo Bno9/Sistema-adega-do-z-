@@ -1,10 +1,11 @@
 from tkinter import ttk
 from tkinter import *
+import customtkinter as ctk
 
-class CaixaMenu(ttk.Frame):
+class CaixaMenu(ctk.CTkFrame):
 
     def __init__(self, root, referencia_main):
-        super().__init__(root, padding=10)
+        super().__init__(master=root, fg_color="#1e1e1e")
         self.referencia_main = referencia_main
         
         #textos
@@ -21,7 +22,7 @@ class CaixaMenu(ttk.Frame):
         self.columnconfigure(0, weight=1)
         self.rowconfigure(0, weight=1)
 
-        self.frame_conteudo = ttk.Frame(self)
+        self.frame_conteudo = ctk.CTkFrame(self, fg_color="#1e1e1e")
         self.frame_conteudo.grid(row=0, column=0, sticky="nsew")
         self.frame_conteudo.columnconfigure(0,weight=1)
         self.frame_conteudo.columnconfigure(1, weight=0)
@@ -29,48 +30,83 @@ class CaixaMenu(ttk.Frame):
         self.frame_conteudo.rowconfigure(2,weight=1)
 
         #entry/label codigo
-        self.entry_codigo = ttk.Entry(
+        self.entry_codigo = ctk.CTkEntry(
             self.frame_conteudo,
             textvariable=self.codigo,
-            width=30
+            width=300,
+            font=("Arial", 20, "bold")
         )
         self.entry_codigo.grid(row=0, column=0, sticky="w", padx=10, pady=10)
         self.entry_codigo.focus_set()
         self.entry_codigo.bind("<Return>", self.enviar_codigo)
         self.entry_codigo.bind("<Right>", lambda e: self.entry_quantidade.focus())
 
-        ttk.Label(
+        ctk.CTkLabel(
         self.frame_conteudo,
-        text="Código do produto"
+        text="Código do produto",
+        text_color="white",
+        fg_color="#1e1e1e",
+        font=("arial", 24, "bold")
         ).grid(row=0, column=0, sticky="w", padx=10)
 
         self.entry_codigo.grid(row=1, column=0, sticky="w", padx=10)
 
         #entry/label quantidade
-        self.entry_quantidade = ttk.Entry(
+        self.entry_quantidade = ctk.CTkEntry(
             self.frame_conteudo,
             textvariable=self.quantidade,
-            width=30
+            width=300,
+            font=("Arial", 20, "bold")
         )
         self.entry_quantidade.grid(row=0, column=10, sticky="w", padx=10, pady=10)
         self.entry_quantidade.bind("<Return>", self.enviar_codigo)
         self.entry_quantidade.bind("<Left>", lambda e: self.entry_codigo.focus())
 
         #label quantidade
-        ttk.Label(
+        ctk.CTkLabel(
         self.frame_conteudo,
-        text="Quantidade"
+        text="Quantidade",
+        text_color="white",
+        fg_color="#1e1e1e",
+        font=("arial", 24, "bold")
         ).grid(row=0, column=10, sticky="w", padx=10)
 
         self.entry_quantidade.grid(row=1, column=10, sticky="w", padx=10)
 
         #label status
-        ttk.Label(
+        ctk.CTkLabel(
             self.frame_conteudo,
             textvariable=self.status,
-            padding=30,
-            font=("arial",20)
-        ).grid(row=1, column=1, sticky="n", padx=10)
+            text_color="red",
+            fg_color="#1e1e1e",
+            font=("arial", 32, "bold")
+        ).grid(row=1, column=1, padx=10)
+
+
+        #Estilo para tabela
+        style = ttk.Style()
+
+        style.configure(
+            "Custom.Treeview",
+            background="#1e1e1e",      
+            foreground="white",        
+            fieldbackground="#1e1e1e",
+            rowheight=30,
+            font=("Arial", 16, "bold")
+        )
+
+        style.map(
+            "Custom.Treeview",
+            background=[("selected", "#ff9800")],
+            foreground=[("selected", "black")]
+        )
+                
+        style.configure(
+            "Custom.Treeview.Heading",
+            background="#333333",
+            foreground="white",
+            font=("Arial", 14, "bold")
+        )
         
         #tabela
         self.scroll = ttk.Scrollbar(self.frame_conteudo)
@@ -81,6 +117,7 @@ class CaixaMenu(ttk.Frame):
             columns=("codigo", "nome", "preco", "quantidade"),
             show="headings",
             selectmode="browse",
+            style="Custom.Treeview",
             yscrollcommand=self.scroll.set
         )
         self.tabela.grid(row=2, column=0,columnspan=11, sticky="nsew", padx=10)
@@ -97,29 +134,45 @@ class CaixaMenu(ttk.Frame):
         self.tabela.column("quantidade", width=120, minwidth=100, stretch=True, anchor="center")
 
         #label total
-        ttk.Label(
+        ctk.CTkLabel(
             self.frame_conteudo,
             textvariable=self.total_var,
+            text_color="white",
+            fg_color="#1e1e1e",
             font=("Arial", 32, "bold")
-        ).grid(row=3, column=0, sticky="e", padx=10, pady=10)
+        ).grid(row=3, column=0, padx=10, pady=10)
 
         #botoes finalizar compra
-        frame_botoes = ttk.Frame(self.frame_conteudo)
+        frame_botoes = ctk.CTkFrame(self.frame_conteudo, fg_color="#1e1e1e")
         frame_botoes.grid(row=4, column=0, pady=10)
 
-        ttk.Button(
+        ctk.CTkButton(
             frame_botoes,
             text="Finalizar Compra",
-            width=30,
-            padding=20,
+            text_color="black", 
+            corner_radius=20,
+            border_color="black",
+            border_width=5,
+            hover_color="white",
+            width=300,  
+            height=100,
+            font=("Arial", 16, "bold"),
+            fg_color="orange",
             command=self.abrir_modal_finalizar
         ).grid(row=0, column=0, padx=10)
 
-        ttk.Button(
+        ctk.CTkButton(
             frame_botoes,
             text="Sair",
-            width=30,
-            padding=20,
+           text_color="black", 
+            corner_radius=20,
+            border_color="black",
+            border_width=5,
+            hover_color="white",
+            width=300,  
+            height=100,
+            font=("Arial", 16, "bold"),
+            fg_color="orange",
             command=self.voltar
         ).grid(row=0, column=1, padx=10)
         
@@ -159,39 +212,52 @@ class CaixaMenu(ttk.Frame):
     def abrir_modal_finalizar(self):
         """Tela de finalização da compra
             Exibe valor pago e troco"""
-        self.modal = ttk.Frame(self.frame_conteudo, padding=20, relief="raised")
+        
+        self.modal = ctk.CTkFrame(self.frame_conteudo, fg_color="#1e1e1e")
         self.modal.place(relx=0.5, rely=0.5, anchor="center")
 
         self.status_modal.set("")
         self.master.unbind_all("<Escape>")
         
         #criação botão ok
-        self.botao_ok = ttk.Button(
+        self.botao_ok = ctk.CTkButton(
             self.modal,
             text="OK",
+            text_color="black", 
+            corner_radius=20,
+            border_color="black",
+            hover_color="white",
+            width=70,  
+            height=100,
+            font=("Arial", 16, "bold"),
+            fg_color="orange",
             command=self.fechar_modal
             )
 
         #label valor pago
-        ttk.Label(
+        ctk.CTkLabel(
             self.modal,
             text="Valor pago",
-            font=("Arial", 20)
+            text_color="white",
+            fg_color="#1e1e1e",
+            font=("Arial", 20, "bold")
         ).grid(row=0, column=0, pady=5)
 
         #label status modal
-        ttk.Label(
+        ctk.CTkLabel(
             self.modal,
             textvariable=self.status_modal,
-            padding=30,
-            font=("arial",20)
+            text_color="white",
+            fg_color="#1e1e1e",
+            font=("arial", 20, "bold")
         ).grid(row=4, column=0, pady=5)
 
         #entry valor pago
-        self.entry_valor_pago = ttk.Entry(
+        self.entry_valor_pago = ctk.CTkEntry(
             self.modal,
             textvariable=self.valor_pago,
-            width=30
+            width=300,
+            font=("Arial", 20, "bold")
         )
         self.entry_valor_pago.grid(row=1, column=0, pady=5)
         self.entry_valor_pago.focus_set()
@@ -200,17 +266,35 @@ class CaixaMenu(ttk.Frame):
 
 
         #botao finalizar compra
-        self.botao_finalizar = ttk.Button(
+        self.botao_finalizar = ctk.CTkButton(
             self.modal,
             text="Finalizar",
+            text_color="black", 
+            corner_radius=20,
+            border_color="black",
+            border_width=5,
+            hover_color="white",
+            width=300,  
+            height=100,
+            font=("Arial", 16, "bold"),
+            fg_color="orange",
             command=self.finalizar_compra
         )
         self.botao_finalizar.grid(row=2, column=0, pady=10)
 
         #botao fechar modal
-        self.botao_cancelar = ttk.Button(
+        self.botao_cancelar = ctk.CTkButton(
             self.modal,
             text="Cancelar",
+            text_color="black", 
+            corner_radius=20,
+            border_color="black",
+            border_width=5,
+            hover_color="white",
+            width=300,  
+            height=100,
+            font=("Arial", 16, "bold"),
+            fg_color="orange",
             command=self.fechar_modal
         )
         self.botao_cancelar.grid(row=3, column=0)
@@ -260,6 +344,8 @@ Troco: R$ {resultado['troco']:.2f}"""
 )
 
         self.botao_ok.grid(row=5, column=0, pady=10)
+
+        self.master.bind_all("<Return>", lambda e: self.fechar_modal())
 
         self.entry_valor_pago.destroy()
         self.botao_finalizar.destroy()
@@ -318,10 +404,10 @@ Troco: R$ {resultado['troco']:.2f}"""
 
     def fechar_modal(self):
         self.limpar_campos()
-        self.modal.destroy()
         self.entry_codigo.focus_set()
         self.master.bind_all("<Escape>", self.voltar)
-
+        self.master.unbind_all("<Return>")
+        self.modal.destroy()
 
     def limpar_campos(self):
         campos = [

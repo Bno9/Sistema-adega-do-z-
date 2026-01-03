@@ -83,6 +83,7 @@ class EstoqueMenu(ctk.CTkFrame):
 
         self.carregar_estoque()
 
+        #botao voltar
         ctk.CTkButton(self, 
                     text="Voltar", 
                     text_color="black", 
