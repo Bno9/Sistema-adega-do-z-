@@ -1,10 +1,11 @@
 from tkinter import ttk
 from tkinter import *
+import customtkinter as ctk
 
-class EstoqueMenu(ttk.Frame):
+class EstoqueMenu(ctk.CTkFrame):
 
     def __init__(self, root, referencia_main):
-        super().__init__(root, padding=10)
+        super().__init__(master=root, fg_color="#1e1e1e")
         self.referencia_main = referencia_main
 
         #frame
@@ -18,11 +19,33 @@ class EstoqueMenu(ttk.Frame):
         self.ordem = {"nome": False,
         "codigo": False}
 
-        self.bind_all(
-            "<Escape>", 
-            self.voltar
-            )
-        
+        self.master.bind("<Escape>", self.voltar)
+
+        #Estilo para tabela
+        style = ttk.Style()
+
+        style.configure(
+            "Custom.Treeview",
+            background="#1e1e1e",      
+            foreground="white",        
+            fieldbackground="#1e1e1e",
+            rowheight=30,
+            font=("Arial", 16, "bold")
+        )
+
+        style.map(
+            "Custom.Treeview",
+            background=[("selected", "#ff9800")],
+            foreground=[("selected", "black")]
+        )
+                
+        style.configure(
+            "Custom.Treeview.Heading",
+            background="#333333",
+            foreground="white",
+            font=("Arial", 14, "bold")
+        )
+
         #scroll
         self.scroll = ttk.Scrollbar(self.frame_conteudo)
         self.scroll.grid(row=0, column=1, sticky="ns")
@@ -32,6 +55,7 @@ class EstoqueMenu(ttk.Frame):
             self.frame_conteudo,
             columns=("codigo", "nome", "preco", "preco_venda", "quantidade", "margem lucro"),
             show="headings",
+            style="Custom.Treeview",
             yscrollcommand=self.scroll.set
         )
 
@@ -59,10 +83,17 @@ class EstoqueMenu(ttk.Frame):
 
         self.carregar_estoque()
 
-        ttk.Button(self, 
-                   text="Voltar", 
-                   width=30, 
-                   padding=30, 
+        #botao voltar
+        ctk.CTkButton(self, 
+                    text="Voltar", 
+                    text_color="black", 
+                    corner_radius=20,
+                    border_color="black",
+                    hover_color="white",
+                    width=300,  
+                    height=100,
+                    font=("Arial", 16, "bold"),
+                    fg_color="orange",
                    command=self.referencia_main.voltar_menu_principal
                    ).grid(row=1, column=0, sticky=W)
 
@@ -70,27 +101,29 @@ class EstoqueMenu(ttk.Frame):
         for item in self.tabela.get_children(): #retorna o id de cada linha
             self.tabela.delete(item)
 
-        estoque = self.referencia_main.estoque.itens
+        estoque = self.referencia_main.estoque.get_banco()
 
         if not estoque:
             return
 
-        for produto in estoque.values(): #pega o objeto no estoque e insere na tabela
+        for produto in estoque: #pega o objeto no estoque e insere na tabela
+            _, codigo, nome, preco_custo, preco_venda, quantidade = produto
+            #primeiro valor é o id
+
             self.tabela.insert(
                 "",
                 "end",
                 values=(
-                    produto.codigo,
-                    produto.nome,
-                    f"{produto.preco_custo:.2f}",
-                    f"{produto.preco_venda:.2f}",
-                    produto.quantidade,
-                    f"{((produto.preco_venda - produto.preco_custo) / produto.preco_venda) * 100:.2f}%"
+                    codigo,
+                    nome,
+                    f"R$: {preco_custo:.2f}",
+                    f"R$: {preco_venda:.2f}",
+                    quantidade,
+                    f"{((preco_venda - preco_custo) / preco_venda) * 100:.2f}%"
                 )
             )
 
     def ordenar_estoque(self, coluna):
-
         reverso = self.ordem.get(coluna, False)
 
         dados = [(self.tabela.set(id_linha, coluna), id_linha)
@@ -108,5 +141,5 @@ class EstoqueMenu(ttk.Frame):
 
 
     def voltar(self, event):
-        self.unbind_all("<Escape>")
+        self.master.unbind("<Escape>")
         self.referencia_main.voltar_menu_principal()
