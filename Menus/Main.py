@@ -5,6 +5,8 @@ sys.path.append(os.path.dirname(os.path.dirname(__file__)))
 from tkinter import ttk
 from tkinter import *
 import customtkinter as ctk
+from PIL import Image, UnidentifiedImageError
+
 
 from Utils.Caixa import Caixa
 from Utils.Estoque import Estoque
@@ -40,6 +42,8 @@ class Main:
         self.estoque.criar_produto(34,"Red label",50,80,2)
         self.estoque.criar_produto(913495182,"Cigarro",10,30,10)
         self.estoque.criar_produto(2,"Agua sem gas",1,3,100)
+        for i in range(2000):
+             self.estoque.criar_produto(i,"Teste",20,150,10)
 
 
         #mapa das classes
@@ -87,16 +91,36 @@ class MenuPrincipal(ctk.CTkFrame):
         self.status = StringVar()
         
         #ajustando coluna para centralizar interface
-        self.columnconfigure(0, weight=1)
-           
-        #label menu   
-        ctk.CTkLabel(
+        self.columnconfigure((0,1), weight=1)
+        self.rowconfigure((0,1,2), weight=1)
+
+        self.master.bind_all("<Escape>", lambda e: self.escolher(4))
+
+        #Imagem para usar no label principal
+        try:
+            img = ctk.CTkImage(
+                light_image=Image.open("/home/usuario/Projetos/Adega_do_ze/images/Adega_do_ze.png"),
+                size=(400, 400)
+            )
+
+            #label menu imagem
+            ctk.CTkLabel(
+            self, 
+            text="",
+            image=img
+            ).grid(column=0, row=0, columnspan=2, sticky="ew", pady=20)
+
+        except (FileNotFoundError, UnidentifiedImageError, OSError) as e:
+            print(f"Erro ao carregar logo: {e}")
+
+            #label menu texto
+            ctk.CTkLabel(
             self, 
             text="Adega do zé",
-            font=("Arial", 16, "bold"),
+            text_color="white",
             fg_color="#1e1e1e",
-            anchor="center",
-            ).grid(column=0, row=0, sticky="ew", pady=20)
+            font=("arial", 32, "bold")
+            ).grid(column=0, row=0, columnspan=2, sticky="ew", pady=20)
 
         #label status
         ctk.CTkLabel(
@@ -104,7 +128,7 @@ class MenuPrincipal(ctk.CTkFrame):
             textvariable=self.status,
             font=("Arial", 24, "bold"),
             text_color="red"
-            ).grid(column=0, row=5, sticky=(S,N), pady=20)
+            ).grid(column=0, row=5, columnspan=2, sticky="ew", padx=20, pady=20)
      
         #botao caixa
         ctk.CTkButton(
@@ -115,12 +139,12 @@ class MenuPrincipal(ctk.CTkFrame):
             border_color="black",
             hover_color="white",
             border_width=5,
-            width=500,  
-            height=200,
+            width=600,  
+            height=300,
             font=("Arial", 30, "bold"),
             fg_color="orange",
             command=lambda: self.escolher(1)
-            ).grid(column=0, row=1, sticky=(S,N), pady=20)
+            ).grid(column=0, row=1, padx=20, pady=20)
 
         #botao estoque
         ctk.CTkButton(self, 
@@ -130,12 +154,12 @@ class MenuPrincipal(ctk.CTkFrame):
             border_color="black",
             hover_color="white",
             border_width=5,
-            width=500,  
-            height=200,
+            width=600,  
+            height=300,
             fg_color="orange",
             font=("Arial", 30, "bold"),
             command=lambda: self.escolher(2)
-            ).grid(column=0, row=2, sticky=(S,N), pady=20)
+            ).grid(column=0, row=2, padx=20, pady=20)
 
         #botao cadastro
         ctk.CTkButton(self, 
@@ -145,12 +169,12 @@ class MenuPrincipal(ctk.CTkFrame):
             border_color="black",
             hover_color="white",
             border_width=5,
-            width=500,  
-            height=200,
+            width=600,  
+            height=300,
             fg_color="orange",
             font=("Arial", 30, "bold"),
             command=lambda: self.escolher(3)
-            ).grid(column=0, row=3, sticky=(S,N), pady=20)
+            ).grid(column=1, row=1, padx=20, pady=20)
 
 
         #botao sair
@@ -159,14 +183,14 @@ class MenuPrincipal(ctk.CTkFrame):
             text_color="black", 
             corner_radius=40,
             border_color="black",
-            hover_color="white",
+            hover_color="red",
             border_width=5,
-            width=500,  
-            height=200,
+            width=600,  
+            height=300,
             fg_color="orange",
             font=("Arial", 30, "bold"),
             command=lambda: self.escolher(4)
-            ).grid(column=0, row=4, sticky=(S,N), pady=20)
+            ).grid(column=1, row=2, padx=20, pady=20)
 
     def escolher(self, opcao):
         """Recebe a opção escolhida,
@@ -194,6 +218,8 @@ class MenuPrincipal(ctk.CTkFrame):
 
 root = Tk()
 root.title("Adega do zé")
+
+
 
 root.columnconfigure(0, weight=1)
 root.rowconfigure(0, weight=1)

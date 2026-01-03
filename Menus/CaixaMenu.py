@@ -124,7 +124,7 @@ class CaixaMenu(ttk.Frame):
         ).grid(row=0, column=1, padx=10)
         
         #binds
-        self.bind_all("<Escape>", self.voltar)
+        self.master.bind_all("<Escape>", self.voltar)
         self.tabela.bind("<Delete>", lambda e: self.excluir_item())
 
         #carregar layout
@@ -163,7 +163,7 @@ class CaixaMenu(ttk.Frame):
         self.modal.place(relx=0.5, rely=0.5, anchor="center")
 
         self.status_modal.set("")
-        self.unbind_all("<Escape>")
+        self.master.unbind_all("<Escape>")
         
         #criação botão ok
         self.botao_ok = ttk.Button(
@@ -313,14 +313,14 @@ Troco: R$ {resultado['troco']:.2f}"""
             self.status.set(resultado["mensagem"])
             return
         
-        self.unbind_all("<Escape>")
+        self.master.unbind_all("<Escape>")
         self.referencia_main.voltar_menu_principal()
 
     def fechar_modal(self):
         self.limpar_campos()
         self.modal.destroy()
         self.entry_codigo.focus_set()
-        self.bind_all("<Escape>", self.voltar)
+        self.master.bind_all("<Escape>", self.voltar)
 
 
     def limpar_campos(self):

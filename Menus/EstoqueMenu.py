@@ -19,11 +19,33 @@ class EstoqueMenu(ctk.CTkFrame):
         self.ordem = {"nome": False,
         "codigo": False}
 
-        self.bind_all(
-            "<Escape>", 
-            self.voltar
-            )
-        
+        self.master.bind_all("<Escape>", self.voltar)
+
+        #Estilo para tabela
+        style = ttk.Style()
+
+        style.configure(
+            "Custom.Treeview",
+            background="#1e1e1e",      
+            foreground="white",        
+            fieldbackground="#1e1e1e",
+            rowheight=30,
+            font=("Arial", 16, "bold")
+        )
+
+        style.map(
+            "Custom.Treeview",
+            background=[("selected", "#ff9800")],
+            foreground=[("selected", "black")]
+        )
+                
+        style.configure(
+            "Custom.Treeview.Heading",
+            background="#333333",
+            foreground="white",
+            font=("Arial", 14, "bold")
+        )
+
         #scroll
         self.scroll = ttk.Scrollbar(self.frame_conteudo)
         self.scroll.grid(row=0, column=1, sticky="ns")
@@ -33,6 +55,7 @@ class EstoqueMenu(ctk.CTkFrame):
             self.frame_conteudo,
             columns=("codigo", "nome", "preco", "preco_venda", "quantidade", "margem lucro"),
             show="headings",
+            style="Custom.Treeview",
             yscrollcommand=self.scroll.set
         )
 
@@ -60,10 +83,16 @@ class EstoqueMenu(ctk.CTkFrame):
 
         self.carregar_estoque()
 
-        ttk.Button(self, 
-                   text="Voltar", 
-                   width=30, 
-                   padding=30, 
+        ctk.CTkButton(self, 
+                    text="Voltar", 
+                    text_color="black", 
+                    corner_radius=20,
+                    border_color="black",
+                    hover_color="white",
+                    width=300,  
+                    height=100,
+                    font=("Arial", 16, "bold"),
+                    fg_color="orange",
                    command=self.referencia_main.voltar_menu_principal
                    ).grid(row=1, column=0, sticky=W)
 
@@ -83,8 +112,8 @@ class EstoqueMenu(ctk.CTkFrame):
                 values=(
                     produto.codigo,
                     produto.nome,
-                    f"{produto.preco_custo:.2f}",
-                    f"{produto.preco_venda:.2f}",
+                    f"R$: {produto.preco_custo:.2f}",
+                    f"R$: {produto.preco_venda:.2f}",
                     produto.quantidade,
                     f"{((produto.preco_venda - produto.preco_custo) / produto.preco_venda) * 100:.2f}%"
                 )
@@ -108,5 +137,5 @@ class EstoqueMenu(ctk.CTkFrame):
 
 
     def voltar(self, event):
-        self.unbind_all("<Escape>")
+        self.master.unbind_all("<Escape>")
         self.referencia_main.voltar_menu_principal()
