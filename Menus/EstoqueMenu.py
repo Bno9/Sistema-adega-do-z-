@@ -1,10 +1,11 @@
 from tkinter import ttk
 from tkinter import *
+import customtkinter as ctk
 
-class EstoqueMenu(ttk.Frame):
+class EstoqueMenu(ctk.CTkFrame):
 
     def __init__(self, root, referencia_main):
-        super().__init__(root, padding=10)
+        super().__init__(master=root, fg_color="#1e1e1e")
         self.referencia_main = referencia_main
 
         #frame
