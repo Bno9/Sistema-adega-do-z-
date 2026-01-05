@@ -35,10 +35,10 @@ class Caixa:
                 "mensagem": "Erro de processamento"
             }
 
-        if valor_pago < total:
+        if valor_pago < total or valor_pago > 100000:
             return{
                 "sucesso": False,
-                "mensagem": "Valor recebido menor que total"
+                "mensagem": "Valor recebido inválido"
             }
 
         troco = valor_pago - total

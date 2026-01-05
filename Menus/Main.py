@@ -11,8 +11,10 @@ import sqlite3
 
 from Utils.Caixa import Caixa
 from Utils.Estoque import Estoque
+from Utils.Despesa import Despesas
 
 from Menus.CaixaMenu import CaixaMenu
+from Menus.DespesasMenu import DespesasMenu
 from Menus.EstoqueMenu import EstoqueMenu
 from Menus.ProdutoMenu import ProdutoMenu
 
@@ -33,10 +35,11 @@ class Main:
         e mantém o controle do frame atual
         """
         self.root = root
-        self.con = sqlite3.connect("estoque.db")
+        self.con = sqlite3.connect("adega.db")
         self.frame_atual = None
         self.estoque = Estoque(self.con)
         self.caixa = Caixa(self.estoque, self.con)
+        self.despesa = Despesas(self.con)
         self.root.bind_all("<Key>", self.tecla_apertada)
 
         #produtos criados para teste
@@ -47,13 +50,21 @@ class Main:
         for i in range(2000):
              self.estoque.criar_produto(i,"Teste",20,150,10)
 
+        #despesas criadas para teste
+        self.despesa.adicionar_despesa("contador", 100)
+        self.despesa.adicionar_despesa("aluguel", 1700, "10/12/2026", "Aluguel do imóvel")
+        self.despesa.adicionar_despesa("mercadoria", 10000, "15/8/2025")
+        self.despesa.adicionar_despesa("funcionario", 5000, "5/2/2026", "Salário e décimo terceiro")
+
 
         #mapa das classes
         self.mapa = {
             1:CaixaMenu,
             2:EstoqueMenu,
             3:ProdutoMenu,
-            4:None
+            4:DespesasMenu,
+            5:None,
+            6:None
         }
 
         #inicia o frame menu principal
@@ -96,7 +107,7 @@ class MenuPrincipal(ctk.CTkFrame):
         self.columnconfigure((0,1), weight=1)
         self.rowconfigure((0,1,2), weight=1)
 
-        self.master.bind("<Escape>", lambda e: self.escolher(4))
+        self.master.bind("<Escape>", lambda e: self.escolher(6))
 
         #Imagem para usar no label principal
         try:
@@ -115,7 +126,7 @@ class MenuPrincipal(ctk.CTkFrame):
         except (FileNotFoundError, UnidentifiedImageError, OSError) as e:
             print(f"Erro ao carregar logo: {e}")
 
-            #label menu texto
+            #label menu texto caso imagem nao seja carregada
             ctk.CTkLabel(
             self, 
             text="Adega do zé",
@@ -141,8 +152,8 @@ class MenuPrincipal(ctk.CTkFrame):
             border_color="black",
             hover_color="white",
             border_width=5,
-            width=600,  
-            height=300,
+            width=500,  
+            height=200,
             font=("Arial", 30, "bold"),
             fg_color="orange",
             command=lambda: self.escolher(1)
@@ -156,8 +167,8 @@ class MenuPrincipal(ctk.CTkFrame):
             border_color="black",
             hover_color="white",
             border_width=5,
-            width=600,  
-            height=300,
+            width=500,  
+            height=200,
             fg_color="orange",
             font=("Arial", 30, "bold"),
             command=lambda: self.escolher(2)
@@ -171,13 +182,41 @@ class MenuPrincipal(ctk.CTkFrame):
             border_color="black",
             hover_color="white",
             border_width=5,
-            width=600,  
-            height=300,
+            width=500,  
+            height=200,
             fg_color="orange",
             font=("Arial", 30, "bold"),
             command=lambda: self.escolher(3)
             ).grid(column=1, row=1, padx=20, pady=20)
-
+        
+        #botao despesas
+        ctk.CTkButton(self, 
+            text="Despesas", 
+            text_color="black", 
+            corner_radius=40,
+            border_color="black",
+            hover_color="white",
+            border_width=5,
+            width=500,  
+            height=200,
+            fg_color="orange",
+            font=("Arial", 30, "bold"),
+            command=lambda: self.escolher(4)
+            ).grid(column=1, row=2, padx=20, pady=20)
+        
+        ctk.CTkButton(self, 
+            text="Relatórios", 
+            text_color="black", 
+            corner_radius=40,
+            border_color="black",
+            hover_color="white",
+            border_width=5,
+            width=500,  
+            height=200,
+            fg_color="orange",
+            font=("Arial", 30, "bold"),
+            command=lambda: self.escolher(5)
+            ).grid(column=0, row=3, padx=20, pady=20)
 
         #botao sair
         ctk.CTkButton(self, 
@@ -187,12 +226,12 @@ class MenuPrincipal(ctk.CTkFrame):
             border_color="black",
             hover_color="red",
             border_width=5,
-            width=600,  
-            height=300,
+            width=500,  
+            height=200,
             fg_color="orange",
             font=("Arial", 30, "bold"),
-            command=lambda: self.escolher(4)
-            ).grid(column=1, row=2, padx=20, pady=20)
+            command=lambda: self.escolher(6)
+            ).grid(column=1, row=3, padx=20, pady=20)
 
     def escolher(self, opcao):
         """Recebe a opção escolhida,
@@ -208,6 +247,11 @@ class MenuPrincipal(ctk.CTkFrame):
         escolhido = self.main.mapa.get(opcao)
 
         if escolhido is None:
+            #Apagando os testes para nao acumular
+            for i in range(1000):
+                self.main.despesa.excluir_despesa(i)
+
+
             self.main.con.close()
             self.status.set("Finalizando programa...")
             self.master.after(2000, self.master.quit)
@@ -222,6 +266,7 @@ class MenuPrincipal(ctk.CTkFrame):
 root = ctk.CTk()
 root.title("Adega do zé")
 root.configure(bg="#1e1e1e")
+root.attributes("-zoomed", True)
 
 root.columnconfigure(0, weight=1)
 root.rowconfigure(0, weight=1)
