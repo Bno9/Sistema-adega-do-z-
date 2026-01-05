@@ -23,6 +23,11 @@ class Despesas():
                 data_formatada = datetime.strptime(data, "%d/%m/%Y").date().isoformat()
         except ValueError:
             raise ValueError("Data inválida. Use DD/MM/AAAA")
+        
+        #talvez mudar toda essa validação para o controller 
+
+        if not observacao:
+            observacao = ""
 
         self.cur.execute(
                         "INSERT INTO despesas (nome, valor, data, observacao) VALUES (?, ?, ?, ?)",
@@ -43,7 +48,7 @@ class Despesas():
             res = self.cur.fetchone()
 
             if res is None:
-                raise ValueError("Despesa não encontrada")
+                raise ValueError("Data não encontrada")
 
             data = res[0]
         
@@ -57,17 +62,19 @@ class Despesas():
             )
         
         self.con.commit()
+        print("Editado com sucesso")
 
     def excluir_despesa(self, id_despesa):
         self.cur.execute("DELETE FROM despesas WHERE id=?",
                         (id_despesa,))
         
         if self.cur.rowcount == 0:
-            raise ValueError("Despesa não encontrada")
+            return #return temporario pra nao impedir o loop de apagar os testes
+            #raise ValueError("Despesa não encontrada")
 
         self.con.commit()
-        return "Despesa excluida"
-
+        print("excluido")
+        
     def listar_despesas(self):
         self.cur.execute("SELECT * FROM despesas")
         return self.cur.fetchall()
@@ -76,3 +83,11 @@ class Despesas():
         self.cur.execute("SELECT SUM(valor) FROM despesas")
         total = self.cur.fetchone()[0]
         return total or 0
+    
+    def nome_despesas(self):
+        self.cur.execute("SELECT nome FROM despesas")
+        return self.cur.fetchall()
+    
+    def pesquisar_por_nome(self, nome_despesa):
+        self.cur.execute("SELECT * FROM despesas WHERE nome=?", (nome_despesa,))
+        return self.cur.fetchall()

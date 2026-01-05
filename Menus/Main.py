@@ -11,6 +11,7 @@ import sqlite3
 
 from Utils.Caixa import Caixa
 from Utils.Estoque import Estoque
+from Utils.Despesa import Despesas
 
 from Menus.CaixaMenu import CaixaMenu
 from Menus.DespesasMenu import DespesasMenu
@@ -38,6 +39,7 @@ class Main:
         self.frame_atual = None
         self.estoque = Estoque(self.con)
         self.caixa = Caixa(self.estoque, self.con)
+        self.despesa = Despesas(self.con)
         self.root.bind_all("<Key>", self.tecla_apertada)
 
         #produtos criados para teste
@@ -47,6 +49,12 @@ class Main:
         self.estoque.criar_produto(2,"Agua sem gas",1,3,100)
         for i in range(2000):
              self.estoque.criar_produto(i,"Teste",20,150,10)
+
+        #despesas criadas para teste
+        self.despesa.adicionar_despesa("contador", 100)
+        self.despesa.adicionar_despesa("aluguel", 1700, "10/12/2026", "Aluguel do imóvel")
+        self.despesa.adicionar_despesa("mercadoria", 10000, "15/8/2025")
+        self.despesa.adicionar_despesa("funcionario", 5000, "5/2/2026", "Salário e décimo terceiro")
 
 
         #mapa das classes
@@ -239,6 +247,11 @@ class MenuPrincipal(ctk.CTkFrame):
         escolhido = self.main.mapa.get(opcao)
 
         if escolhido is None:
+            #Apagando os testes para nao acumular
+            for i in range(1000):
+                self.main.despesa.excluir_despesa(i)
+
+
             self.main.con.close()
             self.status.set("Finalizando programa...")
             self.master.after(2000, self.master.quit)
@@ -253,6 +266,7 @@ class MenuPrincipal(ctk.CTkFrame):
 root = ctk.CTk()
 root.title("Adega do zé")
 root.configure(bg="#1e1e1e")
+root.attributes("-zoomed", True)
 
 root.columnconfigure(0, weight=1)
 root.rowconfigure(0, weight=1)
