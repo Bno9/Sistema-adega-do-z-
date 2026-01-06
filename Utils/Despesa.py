@@ -84,6 +84,11 @@ class Despesas():
         total = self.cur.fetchone()[0]
         return total or 0
     
+    def total_filtrado(self, nome_despesa):
+        self.cur.execute("SELECT SUM(valor) FROM despesas WHERE nome=?", (nome_despesa,))
+        total = self.cur.fetchone()[0]
+        return total or 0
+    
     def nome_despesas(self):
         self.cur.execute("SELECT nome FROM despesas")
         return self.cur.fetchall()

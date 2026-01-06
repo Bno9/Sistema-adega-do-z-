@@ -35,7 +35,7 @@ class Main:
         e mantém o controle do frame atual
         """
         self.root = root
-        self.con = sqlite3.connect("adega.db")
+        self.con = sqlite3.connect("adega.db") #vou precisar arrumar essa conexão
         self.frame_atual = None
         self.estoque = Estoque(self.con)
         self.caixa = Caixa(self.estoque, self.con)
@@ -54,6 +54,8 @@ class Main:
         self.despesa.adicionar_despesa("contador", 100)
         self.despesa.adicionar_despesa("aluguel", 1700, "10/12/2026", "Aluguel do imóvel")
         self.despesa.adicionar_despesa("mercadoria", 10000, "15/8/2025")
+        self.despesa.adicionar_despesa("mercadoria", 1206, "15/8/2025", "Red label, Black label, Ballena")
+        self.despesa.adicionar_despesa("mercadoria", 600, "15/8/2025", "Fardos energetico")
         self.despesa.adicionar_despesa("funcionario", 5000, "5/2/2026", "Salário e décimo terceiro")
 
 
@@ -248,7 +250,7 @@ class MenuPrincipal(ctk.CTkFrame):
 
         if escolhido is None:
             #Apagando os testes para nao acumular
-            for i in range(1000):
+            for i in range(10000):
                 self.main.despesa.excluir_despesa(i)
 
 
@@ -264,7 +266,7 @@ class MenuPrincipal(ctk.CTkFrame):
             self.escolher(int(tecla.char))
 
 root = ctk.CTk()
-root.title("Adega do zé")
+root.title("Adega do zé 2.0")
 root.configure(bg="#1e1e1e")
 root.attributes("-zoomed", True)
 
