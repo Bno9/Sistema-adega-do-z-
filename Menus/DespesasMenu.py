@@ -124,20 +124,6 @@ class DespesasMenu(ctk.CTkFrame):
                     font=("Arial", 44, "bold"),
                     text_color="white"
                      ).grid(row=0, column=0, sticky="e")
-
-        #botao voltar
-        ctk.CTkButton(frame_botoes, 
-                    text="Voltar", 
-                    text_color="black", 
-                    corner_radius=20,
-                    border_color="black",
-                    hover_color="white",
-                    width=300,  
-                    height=100,
-                    font=("Arial", 16, "bold"),
-                    fg_color="orange",
-                   command=self.referencia_main.voltar_menu_principal
-                   ).grid(row=0, column=3)
         
         #botao adicionar
         ctk.CTkButton(frame_botoes, 
@@ -180,6 +166,20 @@ class DespesasMenu(ctk.CTkFrame):
                     fg_color="orange",
                    command=self.tela_deletar
                    ).grid(column=2, row=0)
+
+        #botao voltar
+        ctk.CTkButton(frame_botoes, 
+                    text="Voltar", 
+                    text_color="black", 
+                    corner_radius=20,
+                    border_color="black",
+                    hover_color="white",
+                    width=300,  
+                    height=100,
+                    font=("Arial", 16, "bold"),
+                    fg_color="orange",
+                   command=self.referencia_main.voltar_menu_principal
+                   ).grid(row=0, column=3)
         
     def tela_deletar(self):
         try:
@@ -350,6 +350,17 @@ class DespesasMenu(ctk.CTkFrame):
                          textvariable=variavel,
                          font=("Arial", 20, "bold"),
                          width=200).grid(row=i, column=0, padx=10, pady=20)
+
+        #botao editar
+        ctk.CTkButton(botoes, 
+                      text="Editar",
+                      width=300,
+                      height=150, 
+                      text_color="black",
+                      fg_color="green",
+                      font=("arial", 30, "bold"),
+                      command=lambda: self.controller.editar(modal_editar, id_despesa, self.nome.get(), self.valor.get(), self.data.get(), self.observacao.get())
+                      ).grid(row=0, column=1, padx=70)
         
         #botao cancelar
         ctk.CTkButton(botoes, 
@@ -360,17 +371,6 @@ class DespesasMenu(ctk.CTkFrame):
                       fg_color="red",
                       font=("arial", 30, "bold"),
                       command=modal_editar.destroy
-                      ).grid(row=0, column=1, padx=70)
-        
-        #botao editar
-        ctk.CTkButton(botoes, 
-                      text="Editar",
-                      width=300,
-                      height=150, 
-                      text_color="black",
-                      fg_color="green",
-                      font=("arial", 30, "bold"),
-                      command=lambda: self.controller.editar(modal_editar, id_despesa, self.nome.get(), self.valor.get(), self.data.get(), self.observacao.get())
                       ).grid(row=0, column=2, padx=70)
 
     def carregar_tabela(self, despesas=None):
@@ -449,11 +449,9 @@ class DespesaController:
 
         
 
-    def editar(self, modal_editar, id_despesa, nome, valor, data=None, observacao=None):
+    def editar(self, modal_editar, id_despesa, nome, valor, data="", observacao=None):
         if not nome.strip():
             raise ValueError("Nome da despesa é obrigatório")
-        
-        print(data)
         
         try:
             valor = float(valor)

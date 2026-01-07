@@ -36,14 +36,15 @@ class Despesas():
         
         self.con.commit()
     
-    def editar_despesa(self, id_despesa, nome, valor, data=None, observacao=None):
+    def editar_despesa(self, id_despesa, nome, valor, data="", observacao=""):
         try:
             if data:
+                print(f"entrou no primeiro if com valor {data}")
                 data = datetime.strptime(data, "%d/%m/%Y").date().isoformat()
         except ValueError:
             raise ValueError("Data inválida. Use DD/MM/AAAA")
         
-        if data == None:
+        if data == "":
             self.cur.execute("""SELECT data FROM despesas WHERE id=?""", (id_despesa,))
             res = self.cur.fetchone()
 
@@ -51,6 +52,15 @@ class Despesas():
                 raise ValueError("Data não encontrada")
 
             data = res[0]
+
+        if observacao == "":
+            self.cur.execute("""SELECT observacao FROM despesas WHERE id=?""", (id_despesa,))
+            res = self.cur.fetchone()
+
+            if res is None:
+                raise ValueError("Observação não encontrada")
+
+            observacao = res[0]
         
         self.cur.execute(
                 """
