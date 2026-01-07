@@ -90,7 +90,7 @@ class Despesas():
         return total or 0
     
     def nome_despesas(self):
-        self.cur.execute("SELECT nome FROM despesas")
+        self.cur.execute("SELECT DISTINCT nome FROM despesas")
         return self.cur.fetchall()
     
     def pesquisar_por_nome(self, nome_despesa):

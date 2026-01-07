@@ -407,6 +407,7 @@ class DespesasMenu(ctk.CTkFrame):
             id_despesa = self.pegar_id_selecionado()
             self.controller.deletar(id_despesa)
             self.carregar_tabela()
+
         except ValueError as e:
             print(e)
 
@@ -474,7 +475,7 @@ class DespesaController:
         except ValueError as e:
             print(e)
         finally:
-            self.atualizar_combobox(self.tela.combobox)
+            self.atualizar_combobox(self.tela.combobox) 
             modal_editar.grab_release()
             modal_editar.destroy()
 
@@ -486,7 +487,7 @@ class DespesaController:
         except ValueError as e:
             print(e)
         finally:
-            self.atualizar_combobox(self.tela.combobox)
+            self.atualizar_combobox(self.tela.combobox) #isso aqui nao adianta, porque o nome continua existindo no self.values até que ele seja recriado
             modal_deletar.grab_release()
             modal_deletar.destroy()
 
@@ -499,11 +500,10 @@ class DespesaController:
     def atualizar_combobox(self, combobox):
         nomes = self.despesa.nome_despesas()
 
-        for i in nomes:
-            if i[0] not in self.tela.values:
-                self.tela.values.append(i[0])
+        self.tela.values = ["Tudo"] + [nome[0] for nome in nomes] #o banco de dados ja ta filtrando nomes repetidos
 
         combobox.configure(values=self.tela.values)
+        combobox.set("Tudo")
     
     def atualizar_total(self, nome_despesa):
         valor = self.despesa.total_filtrado(nome_despesa)
