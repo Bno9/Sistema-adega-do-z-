@@ -12,6 +12,7 @@ class CaixaMenu(ctk.CTkFrame):
         self.status = StringVar()
         self.status_modal = StringVar()
         self.total_var = StringVar()
+        self.troco_modal = StringVar()
 
         #entradas
         self.codigo = StringVar()
@@ -226,20 +227,34 @@ class CaixaMenu(ctk.CTkFrame):
         self.modal.transient(self.frame_conteudo)
         self.modal.grab_set()
         self.modal.focus_force()
+        self.modal.rowconfigure((0,1,2), weight=1)
+        self.modal.columnconfigure(0, weight=1)
+
+        header = ctk.CTkFrame(self.modal, fg_color="#1e1e1e")
+        entry = ctk.CTkFrame(self.modal, fg_color="#1e1e1e")
+        botoes = ctk.CTkFrame(self.modal, fg_color="#1e1e1e")
+
+        botoes.columnconfigure((0,1,2), weight=1)
+        header.rowconfigure((0,1), weight=1)
+
+        header.grid(column=0, row=0)
+        entry.grid(column=0, row=1)
+        botoes.grid(column=0, row=2)
+
 
         self.status_modal.set("")
         self.master.unbind("<Escape>")
         
         #criação botão ok
         self.botao_ok = ctk.CTkButton(
-            self.modal,
+            botoes,
             text="OK",
             text_color="black", 
             corner_radius=20,
             border_color="black",
             hover_color="white",
             width=70,  
-            height=100,
+            height=70,
             font=("Arial", 16, "bold"),
             fg_color="orange",
             command=self.fechar_modal
@@ -247,30 +262,32 @@ class CaixaMenu(ctk.CTkFrame):
 
         #label status modal
         ctk.CTkLabel(
-            self.modal,
+            header,
             textvariable=self.status_modal,
-            text_color="white",
+            text_color="red",
             fg_color="#1e1e1e",
             font=("arial", 20, "bold")
-        ).grid(row=4, column=0, pady=5)
+        ).grid(row=0, column=0, pady=5)
 
         #label valor pago
         ctk.CTkLabel(
-            self.modal,
+            header,
             text="Valor pago",
+            textvariable=self.troco_modal,
             text_color="white",
             fg_color="#1e1e1e",
-            font=("Arial", 20, "bold")
-        ).grid(row=0, column=0, pady=5)
+            font=("Arial", 32, "bold")
+        ).grid(row=1, column=0, pady=5)
+        self.troco_modal.set("Valor pago")
 
         #entry valor pago
         self.entry_valor_pago = ctk.CTkEntry(
-            self.modal,
+            entry,
             textvariable=self.valor_pago,
             width=300,
             font=("Arial", 20, "bold")
         )
-        self.entry_valor_pago.grid(row=1, column=0, pady=5)
+        self.entry_valor_pago.grid(row=0, column=0, pady=5)
         self.entry_valor_pago.focus_set()
         self.entry_valor_pago.bind("<Return>", lambda e: self.finalizar_compra())
         self.entry_valor_pago.bind("<Escape>", lambda e: self.fechar_modal())
@@ -278,7 +295,7 @@ class CaixaMenu(ctk.CTkFrame):
 
         #botao finalizar compra
         self.botao_finalizar = ctk.CTkButton(
-            self.modal,
+            botoes,
             text="Finalizar",
             text_color="black", 
             corner_radius=20,
@@ -291,11 +308,11 @@ class CaixaMenu(ctk.CTkFrame):
             fg_color="orange",
             command=self.finalizar_compra
         )
-        self.botao_finalizar.grid(row=2, column=0, pady=10)
+        self.botao_finalizar.grid(row=0, column=0, pady=10)
 
         #botao fechar modal
         self.botao_cancelar = ctk.CTkButton(
-            self.modal,
+            botoes,
             text="Cancelar",
             text_color="black", 
             corner_radius=20,
@@ -308,7 +325,7 @@ class CaixaMenu(ctk.CTkFrame):
             fg_color="orange",
             command=self.fechar_modal
         )
-        self.botao_cancelar.grid(row=3, column=0)
+        self.botao_cancelar.grid(row=0, column=2)
 
     
     #Métodos
@@ -347,13 +364,14 @@ class CaixaMenu(ctk.CTkFrame):
             self.status_modal.set(resultado["mensagem"])
             return
 
-        self.status_modal.set(
-            f"""    R${int(self.valor_pago.get()):.2f} 
+        self.troco_modal.set(
+            f"""Valor pago
+R${int(self.valor_pago.get()):.2f}
 
-Troco: R$ {resultado['troco']:.2f}"""
-)
 
-        self.botao_ok.grid(row=5, column=0, pady=10)
+Troco: R$ {resultado['troco']:.2f}""")
+
+        self.botao_ok.grid(row=0, column=1, pady=10)
 
         self.master.bind("<Return>", lambda e: self.fechar_modal())
 
@@ -415,7 +433,7 @@ Troco: R$ {resultado['troco']:.2f}"""
     def fechar_modal(self): #essa função ta dando um erro no ctk que eu não faço ideia do que é, mas pelo menos o programa continua. Vou precisar pesquisar pra arrumar, m
         self.modal.grab_release()
         self.modal.destroy()
-        
+
         self.limpar_campos()
         self.entry_codigo.focus_set()
         self.master.bind("<Escape>", self.voltar)
