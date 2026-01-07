@@ -24,64 +24,74 @@ class CaixaMenu(ctk.CTkFrame):
 
         self.frame_conteudo = ctk.CTkFrame(self, fg_color="#1e1e1e")
         self.frame_conteudo.grid(row=0, column=0, sticky="nsew")
-        self.frame_conteudo.columnconfigure(0,weight=1)
-        self.frame_conteudo.columnconfigure(1, weight=0)
-        self.frame_conteudo.columnconfigure(10, weight=0)
-        self.frame_conteudo.rowconfigure(2,weight=1)
+        self.frame_conteudo.columnconfigure(0, weight=1)
+        self.frame_conteudo.rowconfigure((0,2), weight=1)
+        self.frame_conteudo.rowconfigure(1, weight=4)
+
+        self.header = ctk.CTkFrame(self.frame_conteudo, fg_color="#1e1e1e")
+        self.botoes = ctk.CTkFrame(self.frame_conteudo, fg_color="#1e1e1e")
+        self.body = ctk.CTkFrame(self.frame_conteudo, fg_color="#1e1e1e")
+
+        self.body.grid(row=1, column=0, sticky="nsew")
+        self.header.grid(row=0,column=0, sticky="nsew")
+        self.botoes.grid(row=2, column=0, sticky="nsew")
+
+        self.body.columnconfigure(0, weight=1)
+        self.body.columnconfigure(1, weight=0)
+        self.body.rowconfigure(0, weight=1)
+        self.header.columnconfigure((0,1,2), weight=1)
+        self.header.rowconfigure((0,1), weight=0)
+        self.botoes.columnconfigure((0,1,2), weight=1)
+        self.botoes.rowconfigure((0,1), weight=1)
 
         #entry/label codigo
         self.entry_codigo = ctk.CTkEntry(
-            self.frame_conteudo,
+            self.header,
             textvariable=self.codigo,
             width=300,
             font=("Arial", 20, "bold")
         )
-        self.entry_codigo.grid(row=0, column=0, sticky="w", padx=10, pady=10)
+        self.entry_codigo.grid(row=1, column=0, sticky="w", padx=10, pady=10)
         self.entry_codigo.focus_set()
         self.entry_codigo.bind("<Return>", self.enviar_codigo)
         self.entry_codigo.bind("<Right>", lambda e: self.entry_quantidade.focus())
 
         ctk.CTkLabel(
-        self.frame_conteudo,
+        self.header,
         text="Código do produto",
         text_color="white",
         fg_color="#1e1e1e",
         font=("arial", 24, "bold")
-        ).grid(row=0, column=0, sticky="w", padx=10)
-
-        self.entry_codigo.grid(row=1, column=0, sticky="w", padx=10)
+        ).grid(row=0, column=0, sticky="w", padx=10, pady=10)
 
         #entry/label quantidade
         self.entry_quantidade = ctk.CTkEntry(
-            self.frame_conteudo,
+            self.header,
             textvariable=self.quantidade,
             width=300,
             font=("Arial", 20, "bold")
         )
-        self.entry_quantidade.grid(row=0, column=10, sticky="w", padx=10, pady=10)
+        self.entry_quantidade.grid(row=1, column=2, sticky="e", padx=10, pady=10)
         self.entry_quantidade.bind("<Return>", self.enviar_codigo)
         self.entry_quantidade.bind("<Left>", lambda e: self.entry_codigo.focus())
 
         #label quantidade
         ctk.CTkLabel(
-        self.frame_conteudo,
+        self.header,
         text="Quantidade",
         text_color="white",
         fg_color="#1e1e1e",
         font=("arial", 24, "bold")
-        ).grid(row=0, column=10, sticky="w", padx=10)
-
-        self.entry_quantidade.grid(row=1, column=10, sticky="w", padx=10)
+        ).grid(row=0, column=2, sticky="e", padx=10, pady=10)
 
         #label status
         ctk.CTkLabel(
-            self.frame_conteudo,
+            self.header,
             textvariable=self.status,
             text_color="white",
             fg_color="#1e1e1e",
             font=("arial", 32, "bold")
         ).grid(row=1, column=1, padx=10)
-
 
         #Estilo para tabela
         style = ttk.Style()
@@ -109,18 +119,18 @@ class CaixaMenu(ctk.CTkFrame):
         )
         
         #tabela
-        self.scroll = ttk.Scrollbar(self.frame_conteudo)
-        self.scroll.grid(row=2, column=1, sticky="ns")
+        self.scroll = ttk.Scrollbar(self.body)
+        self.scroll.grid(row=0, column=1, sticky="ns")
 
         self.tabela = ttk.Treeview(
-            self.frame_conteudo,
+            self.body,
             columns=("codigo", "nome", "preco", "quantidade"),
             show="headings",
             selectmode="browse",
             style="Custom.Treeview",
             yscrollcommand=self.scroll.set
         )
-        self.tabela.grid(row=2, column=0,columnspan=11, sticky="nsew", padx=10)
+        self.tabela.grid(row=0, column=0, sticky="nsew", padx=10)
         self.scroll.config(command=self.tabela.yview)
 
         self.tabela.heading("codigo", text="Código")
@@ -135,19 +145,15 @@ class CaixaMenu(ctk.CTkFrame):
 
         #label total
         ctk.CTkLabel(
-            self.frame_conteudo,
+            self.botoes,
             textvariable=self.total_var,
             text_color="white",
             fg_color="#1e1e1e",
             font=("Arial", 32, "bold")
-        ).grid(row=3, column=0, padx=10, pady=10)
-
-        #botoes finalizar compra
-        frame_botoes = ctk.CTkFrame(self.frame_conteudo, fg_color="#1e1e1e")
-        frame_botoes.grid(row=4, column=0, pady=10)
+        ).grid(row=0, column=1, padx=10)
 
         ctk.CTkButton(
-            frame_botoes,
+            self.botoes,
             text="Finalizar Compra",
             text_color="black", 
             corner_radius=20,
@@ -162,7 +168,7 @@ class CaixaMenu(ctk.CTkFrame):
         ).grid(row=0, column=0, padx=10)
 
         ctk.CTkButton(
-            frame_botoes,
+            self.botoes,
             text="Sair",
            text_color="black", 
             corner_radius=20,
@@ -174,7 +180,7 @@ class CaixaMenu(ctk.CTkFrame):
             font=("Arial", 16, "bold"),
             fg_color="orange",
             command=self.voltar
-        ).grid(row=0, column=1, padx=10)
+        ).grid(row=0, column=2, padx=10)
         
         #binds
         self.master.bind("<Escape>", self.voltar)
@@ -184,7 +190,6 @@ class CaixaMenu(ctk.CTkFrame):
         self.atualizar_tabela()
         self.atualizar_total()
 
-    
     
     #Telas
     
@@ -213,12 +218,12 @@ class CaixaMenu(ctk.CTkFrame):
         """Tela de finalização da compra
             Exibe valor pago e troco"""
         
-        self.modal = ctk.CTkToplevel(self.master, fg_color="#1e1e1e")
+        self.modal = ctk.CTkToplevel(self.frame_conteudo, fg_color="#1e1e1e")
         self.modal.title("Finalizar compra")
         self.modal.geometry("300x330")
         self.modal.resizable(False, False)
 
-        self.modal.transient(self.master)
+        self.modal.transient(self.frame_conteudo)
         self.modal.grab_set()
         self.modal.focus_force()
 
@@ -240,15 +245,6 @@ class CaixaMenu(ctk.CTkFrame):
             command=self.fechar_modal
             )
 
-        #label valor pago
-        ctk.CTkLabel(
-            self.modal,
-            text="Valor pago",
-            text_color="white",
-            fg_color="#1e1e1e",
-            font=("Arial", 20, "bold")
-        ).grid(row=0, column=0, pady=5)
-
         #label status modal
         ctk.CTkLabel(
             self.modal,
@@ -257,6 +253,15 @@ class CaixaMenu(ctk.CTkFrame):
             fg_color="#1e1e1e",
             font=("arial", 20, "bold")
         ).grid(row=4, column=0, pady=5)
+
+        #label valor pago
+        ctk.CTkLabel(
+            self.modal,
+            text="Valor pago",
+            text_color="white",
+            fg_color="#1e1e1e",
+            font=("Arial", 20, "bold")
+        ).grid(row=0, column=0, pady=5)
 
         #entry valor pago
         self.entry_valor_pago = ctk.CTkEntry(
@@ -306,7 +311,6 @@ class CaixaMenu(ctk.CTkFrame):
         self.botao_cancelar.grid(row=3, column=0)
 
     
-
     #Métodos
 
     def enviar_codigo(self, event=None):
@@ -409,6 +413,9 @@ Troco: R$ {resultado['troco']:.2f}"""
         self.referencia_main.voltar_menu_principal()
 
     def fechar_modal(self): #essa função ta dando um erro no ctk que eu não faço ideia do que é, mas pelo menos o programa continua. Vou precisar pesquisar pra arrumar, m
+        self.modal.grab_release()
+        self.modal.destroy()
+        
         self.limpar_campos()
         self.entry_codigo.focus_set()
         self.master.bind("<Escape>", self.voltar)
