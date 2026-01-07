@@ -140,8 +140,8 @@ class CaixaMenu(ctk.CTkFrame):
         self.tabela.heading("quantidade", text="Qtd")
                 
         self.tabela.column("codigo", width=80, minwidth=70, stretch=True, anchor="center")
-        self.tabela.column("nome", width=160, minwidth=120, stretch=True)
-        self.tabela.column("preco", width=140, minwidth=120, stretch=True, anchor="e")
+        self.tabela.column("nome", width=160, minwidth=120, stretch=True, anchor="center")
+        self.tabela.column("preco", width=140, minwidth=120, stretch=True, anchor="center")
         self.tabela.column("quantidade", width=120, minwidth=100, stretch=True, anchor="center")
 
         #label total
@@ -414,7 +414,7 @@ Troco: R$ {resultado['troco']:.2f}""")
                 values=(
                     produto.codigo,
                     produto.nome,
-                    f"{produto.preco_venda:.2f}",
+                    f"R$ {produto.preco_venda:.2f}",
                     quantidade
                 )
             )

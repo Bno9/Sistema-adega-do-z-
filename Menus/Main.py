@@ -206,6 +206,7 @@ class MenuPrincipal(ctk.CTkFrame):
             command=lambda: self.escolher(4)
             ).grid(column=1, row=2, padx=20, pady=20)
         
+        #botao relatorio
         ctk.CTkButton(self, 
             text="Relatórios", 
             text_color="black", 

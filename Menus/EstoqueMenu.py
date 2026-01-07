@@ -19,6 +19,8 @@ class EstoqueMenu(ctk.CTkFrame):
         self.ordem = {"nome": False,
         "codigo": False}
 
+        self.filtro = StringVar()
+
         self.master.bind("<Escape>", self.voltar)
 
         #Estilo para tabela
@@ -95,7 +97,18 @@ class EstoqueMenu(ctk.CTkFrame):
                     font=("Arial", 16, "bold"),
                     fg_color="orange",
                    command=self.referencia_main.voltar_menu_principal
-                   ).grid(row=1, column=0, sticky=W)
+                   ).grid(row=1, column=0, sticky="w")
+        
+        #entry de pesquisa
+        entry_pesquisa = ctk.CTkEntry(self,
+                     textvariable=self.filtro,
+                     width=200,
+                     font=("arial", 32, "bold"),
+                     )
+        entry_pesquisa.grid(row=1, column=0, sticky="e") #a ideia desse entry aqui é que quando ele estiver no foco, tenha uma bind de todas as teclas, que chama a função pra procurar no estoque tudo que comece com as letras, ou que seja o exato nome
+        entry_pesquisa.focus_set()
+        entry_pesquisa.bind("<Key>", self.pesquisar)
+
 
     def carregar_estoque(self):
         for item in self.tabela.get_children(): #retorna o id de cada linha
@@ -138,6 +151,9 @@ class EstoqueMenu(ctk.CTkFrame):
             self.tabela.move(item_id, '', indice)   
 
         self.ordem[coluna] = not reverso
+
+    def pesquisar(self, event):
+        pass
 
 
     def voltar(self, event):
