@@ -449,7 +449,7 @@ class DespesaController:
 
         
 
-    def editar(self, modal_editar, id_despesa, nome, valor, data="", observacao=None):
+    def editar(self, modal_editar, id_despesa, nome, valor, data="", observacao=""):
         if not nome.strip():
             raise ValueError("Nome da despesa é obrigatório")
         

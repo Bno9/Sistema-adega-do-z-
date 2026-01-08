@@ -71,7 +71,11 @@ class Estoque:
         """Retorna uma linha do banco de dados"""
         self.cur.execute("SELECT * FROM produtos WHERE codigo=?", (codigo_produto,))
         return self.cur.fetchone()
-
+    
+    def filtrar_produto(self, nome):
+        nome = f"{nome}%"
+        self.cur.execute("SELECT * FROM produtos WHERE nome LIKE ?", (nome,))
+        return self.cur.fetchall()
 
     def get_banco(self):
         """Retorna todo o banco de dados"""
