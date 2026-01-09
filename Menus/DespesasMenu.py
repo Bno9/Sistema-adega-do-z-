@@ -12,6 +12,7 @@ class DespesasMenu(ctk.CTkFrame):
 
         #texto
         self.status = ctk.StringVar()
+        self.total = ctk.StringVar()
 
         #atributos
         self.despesa_selecionada = ctk.IntVar() #id da despesa
@@ -25,16 +26,27 @@ class DespesasMenu(ctk.CTkFrame):
                        ("Data", self.data),
                        ("Observação", self.observacao)]
         
-        self.values = []
+        self.values = ["Tudo"]
 
         #frame
+
+        #botao combobox
         self.columnconfigure(0, weight=1)
         self.rowconfigure(0, weight=1)
 
         self.frame_conteudo = ctk.CTkFrame(self, fg_color="#1e1e1e")
         self.frame_conteudo.grid(row=0, column=0, sticky="nsew")
-        self.frame_conteudo.columnconfigure(0, weight=1)
-        self.frame_conteudo.rowconfigure((0,1,2,3,4,5,6), weight=1)
+        self.frame_conteudo.columnconfigure(0, weight=1) #uma unica coluna que ocupa a tela toda
+        self.frame_conteudo.rowconfigure(1, weight=1)
+        self.frame_conteudo.rowconfigure((0,2), weight=0) #divide a tela em 3 partes, com a linha do meio tendo uma proporção maior
+
+        #combobox
+        self.combobox = ctk.CTkComboBox(self.frame_conteudo,
+                      values=["Selecione um filtro"],
+                      command=self.controller.get_escolha,
+                      width=200,
+                      height=50
+                      )
 
         style = ttk.Style()
 
@@ -62,7 +74,7 @@ class DespesasMenu(ctk.CTkFrame):
 
         #scroll
         self.scroll = ttk.Scrollbar(self.frame_conteudo)
-        self.scroll.grid(row=0, column=1, sticky="ns")
+        self.scroll.grid(row=1, column=1, sticky="ns")
 
         #tabela
         self.tabela = ttk.Treeview(
@@ -74,7 +86,7 @@ class DespesasMenu(ctk.CTkFrame):
         )
 
         #inserção da tabela
-        self.tabela.grid(row=0, column=0, sticky="nsew")
+        self.tabela.grid(row=1, column=0, sticky="nsew") #tabela inserida na linha do meio, pois ela ocupa mais espaço que as outras linhas
 
         #inserção do scroll
         self.scroll.config(command=self.tabela.yview)
@@ -96,33 +108,25 @@ class DespesasMenu(ctk.CTkFrame):
         self.widgets()
 
     def widgets(self):
-        #botao combobox
-        combobox = ctk.CTkComboBox(self.frame_conteudo,
-                      values=["Selecione um filtro"],
-                      command=self.controller.get_escolha,
-                      width=200,
-                      height=50
-                      )
-        combobox.place(x=50, y=450)
+        self.combobox.grid(row=0, column=0, sticky="w")
 
-        self.controller.atualizar_combobox(combobox)
+        self.controller.atualizar_combobox(self.combobox)
+        self.controller.atualizar_total("Tudo")
 
-        #botao voltar
-        ctk.CTkButton(self, 
-                    text="Voltar", 
-                    text_color="black", 
-                    corner_radius=20,
-                    border_color="black",
-                    hover_color="white",
-                    width=300,  
-                    height=100,
-                    font=("Arial", 16, "bold"),
-                    fg_color="orange",
-                   command=self.referencia_main.voltar_menu_principal
-                   ).place(x=1600, y=450)
+        frame_botoes = ctk.CTkFrame(self.frame_conteudo, fg_color="#1e1e1e")
+        frame_botoes.grid(row=2, column=0, sticky="ew", pady=20) #cria o frame na terceira linha do frame_conteudo (linha 2 é a tabela e linha 1 a combobox. a coluna 0 com peso 1 ocupa todo espaço da tela, entao precisa desse fram pra separar o rodapé em 3 colunas porque se separar no frame conteudo vai quebrar a tabela)
+
+        frame_botoes.columnconfigure((0,1,2,3), weight=1) #divide em 3 colunas iguais
+
+        #Label total
+        ctk.CTkLabel(self.frame_conteudo,
+                     textvariable=self.total,
+                    font=("Arial", 44, "bold"),
+                    text_color="white"
+                     ).grid(row=0, column=0, sticky="e")
         
         #botao adicionar
-        ctk.CTkButton(self, 
+        ctk.CTkButton(frame_botoes, 
                     text="Adicionar despesa", 
                     text_color="black", 
                     corner_radius=20,
@@ -133,10 +137,10 @@ class DespesasMenu(ctk.CTkFrame):
                     font=("Arial", 16, "bold"),
                     fg_color="orange",
                    command=self.tela_cadastrar
-                   ).place(x=400, y=1000)
+                   ).grid(column=0, row=0)
         
         #botao editar
-        ctk.CTkButton(self, 
+        ctk.CTkButton(frame_botoes, 
                     text="Editar despesa", 
                     text_color="black", 
                     corner_radius=20,
@@ -147,10 +151,10 @@ class DespesasMenu(ctk.CTkFrame):
                     font=("Arial", 16, "bold"),
                     fg_color="orange",
                    command=self.tela_editar
-                   ).place(x=800, y=1000)
+                   ).grid(column=1, row=0)
         
         #botao excluir
-        ctk.CTkButton(self, 
+        ctk.CTkButton(frame_botoes, 
                     text="Excluir despesa", 
                     text_color="black", 
                     corner_radius=20,
@@ -161,7 +165,21 @@ class DespesasMenu(ctk.CTkFrame):
                     font=("Arial", 16, "bold"),
                     fg_color="orange",
                    command=self.tela_deletar
-                   ).place(x=1200, y=1000)
+                   ).grid(column=2, row=0)
+
+        #botao voltar
+        ctk.CTkButton(frame_botoes, 
+                    text="Voltar", 
+                    text_color="black", 
+                    corner_radius=20,
+                    border_color="black",
+                    hover_color="white",
+                    width=300,  
+                    height=100,
+                    font=("Arial", 16, "bold"),
+                    fg_color="orange",
+                   command=self.referencia_main.voltar_menu_principal
+                   ).grid(row=0, column=3)
         
     def tela_deletar(self):
         try:
@@ -170,23 +188,32 @@ class DespesasMenu(ctk.CTkFrame):
             print(e)
             return
         
-        modal_deletar = ctk.CTkToplevel(self.frame_conteudo)
+        modal_deletar = ctk.CTkToplevel(self.frame_conteudo, fg_color="#1e1e1e")
 
         modal_deletar.title("Confirmação")
-        modal_deletar.geometry("300x300")
+        modal_deletar.geometry("500x300")
 
         modal_deletar.transient(self.frame_conteudo)   #fica sobre a janela principal
         modal_deletar.update_idletasks()
         modal_deletar.grab_set()        #trava interação com a janela principal
+        modal_deletar.rowconfigure((0,1), weight=1)
+        modal_deletar.columnconfigure(0, weight=1)
+
+        header = ctk.CTkFrame(modal_deletar, fg_color="#1e1e1e")
+        botoes = ctk.CTkFrame(modal_deletar, fg_color="#1e1e1e")
+        botoes.columnconfigure((0,1,2), weight=1)
+
+        header.grid(column=0, row=0)
+        botoes.grid(column=0, row=1)
 
         #label confirmação
-        ctk.CTkLabel(modal_deletar, 
+        ctk.CTkLabel(header, 
                      text="Deseja realmente excluir?",
-                     font=("arial", 16, "bold")
-                     ).place(x=55, y=20)
+                     font=("arial", 32, "bold")
+                     ).grid(row=0, column=0)
         
         #botao nao
-        ctk.CTkButton(modal_deletar, 
+        ctk.CTkButton(botoes, 
                       text="Não", 
                       width=100,
                       height=80,
@@ -194,10 +221,10 @@ class DespesasMenu(ctk.CTkFrame):
                       fg_color="red",
                       font=("arial", 30, "bold"),
                       command=modal_deletar.destroy
-                      ).place(x=160, y=150)
+                      ).grid(row=0, column=2, padx=30)
         
         #botao sim
-        ctk.CTkButton(modal_deletar, 
+        ctk.CTkButton(botoes, 
                       text="Sim",
                       width=100,
                       height=80, 
@@ -205,10 +232,10 @@ class DespesasMenu(ctk.CTkFrame):
                       fg_color="green",
                       font=("arial", 30, "bold"),
                       command=lambda: self.controller.deletar(modal_deletar, id_despesa)
-                      ).place(x=40, y=150)
+                      ).grid(row=0, column=0, padx=30)
         
     def tela_cadastrar(self):
-        modal_cadastrar = ctk.CTkToplevel(self.frame_conteudo)
+        modal_cadastrar = ctk.CTkToplevel(self.frame_conteudo, fg_color="#1e1e1e")
 
         modal_cadastrar.title("Cadastro")
         modal_cadastrar.geometry("1000x800")
@@ -217,25 +244,43 @@ class DespesasMenu(ctk.CTkFrame):
         modal_cadastrar.update_idletasks()
         modal_cadastrar.grab_set()        #trava interação com a janela principal
 
+
+        modal_cadastrar.columnconfigure(0, weight=1)
+        modal_cadastrar.rowconfigure((0,2), weight=1)
+        modal_cadastrar.rowconfigure(1, weight=2)
+        header =  ctk.CTkFrame(modal_cadastrar, fg_color="#1e1e1e")
+        entrys =  ctk.CTkFrame(modal_cadastrar)
+        botoes = ctk.CTkFrame(modal_cadastrar, fg_color="#1e1e1e")
+
+        header.grid(row=0, column=0)
+
+        entrys.rowconfigure(0, weight=1)
+        entrys.columnconfigure((0,1), weight=1)
+        entrys.grid(row=1, column=0)
+
+        botoes.rowconfigure(0, weight=1)
+        botoes.columnconfigure((0,1), weight=1)
+        botoes.grid(row=2, column=0)
+
         #label confirmação
-        ctk.CTkLabel(modal_cadastrar, 
+        ctk.CTkLabel(header, 
                      text="Digite as informações",
-                     font=("arial", 32, "bold")
-                     ).place(x=300, y=20)
+                     font=("arial", 36, "bold")
+                     ).grid(column=0, row=0)
         
         for i, (texto, variavel) in enumerate(self.campos):
-            ctk.CTkLabel(modal_cadastrar,
+            ctk.CTkLabel(entrys,
                          text=texto,
                          font=("arial", 32, "bold")
-                        ).place(x=600,y=200 + (100*i))
+                        ).grid(column=1, row=i, sticky="w", padx=10, pady=20)
             
-            ctk.CTkEntry(modal_cadastrar,
+            ctk.CTkEntry(entrys,
                          textvariable=variavel,
                          font=("Arial", 20, "bold"),
-                         width=300).place(x=300,y=200 + (100*i))
+                         width=200).grid(column=0, row=i, padx=10, pady=20)
         
         #botao cancelar
-        ctk.CTkButton(modal_cadastrar, 
+        ctk.CTkButton(botoes, 
                       text="Cancelar", 
                       width=300,
                       height=150,
@@ -243,10 +288,10 @@ class DespesasMenu(ctk.CTkFrame):
                       fg_color="red",
                       font=("arial", 30, "bold"),
                       command=modal_cadastrar.destroy
-                      ).place(x=600, y=600)
+                      ).grid(row=0, column=1, padx=70)
         
         #botao cadastrar
-        ctk.CTkButton(modal_cadastrar, 
+        ctk.CTkButton(botoes, 
                       text="Cadastrar",
                       width=300,
                       height=150, 
@@ -254,7 +299,7 @@ class DespesasMenu(ctk.CTkFrame):
                       fg_color="green",
                       font=("arial", 30, "bold"),
                       command=lambda: self.controller.adicionar(modal_cadastrar, self.nome.get(), self.valor.get(), self.data.get(), self.observacao.get())
-                      ).place(x=150, y=600)
+                      ).grid(row=0, column=0, padx=70)
         
     def tela_editar(self):
         try:
@@ -263,7 +308,7 @@ class DespesasMenu(ctk.CTkFrame):
             print(e)
             return
         
-        modal_editar = ctk.CTkToplevel(self.frame_conteudo)
+        modal_editar = ctk.CTkToplevel(self.frame_conteudo, fg_color="#1e1e1e")
 
         modal_editar.title("Edição")
         modal_editar.geometry("1000x800")
@@ -272,36 +317,42 @@ class DespesasMenu(ctk.CTkFrame):
         modal_editar.update_idletasks()
         modal_editar.grab_set()        #trava interação com a janela principal
 
+        modal_editar.columnconfigure(0, weight=1)
+        modal_editar.rowconfigure((0,2), weight=1)
+        modal_editar.rowconfigure(1, weight=2)
+        header =  ctk.CTkFrame(modal_editar, fg_color="#1e1e1e")
+        entrys =  ctk.CTkFrame(modal_editar)
+        botoes = ctk.CTkFrame(modal_editar, fg_color="#1e1e1e")
+
+        header.grid(row=0, column=0)
+
+        entrys.rowconfigure(0, weight=1)
+        entrys.columnconfigure((0,1), weight=1)
+        entrys.grid(row=1, column=0)
+
+        botoes.rowconfigure(0, weight=1)
+        botoes.columnconfigure((0,1), weight=1)
+        botoes.grid(row=2, column=0)
+
         #label confirmação
-        ctk.CTkLabel(modal_editar, 
+        ctk.CTkLabel(header, 
                      text="Digite as novas informações",
                      font=("arial", 32, "bold")
-                     ).place(x=300, y=20)
+                     ).grid(row=0, column=0)
         
         for i, (texto, variavel) in enumerate(self.campos):
-            ctk.CTkLabel(modal_editar,
+            ctk.CTkLabel(entrys,
                          text=texto,
                          font=("arial", 32, "bold")
-                        ).place(x=600,y=200 + (100*i))
+                        ).grid(row=i, column=1,  padx=10, pady=20)
             
-            ctk.CTkEntry(modal_editar,
+            ctk.CTkEntry(entrys,
                          textvariable=variavel,
                          font=("Arial", 20, "bold"),
-                         width=300).place(x=300,y=200 + (100*i))
-        
-        #botao cancelar
-        ctk.CTkButton(modal_editar, 
-                      text="Cancelar", 
-                      width=300,
-                      height=150,
-                      text_color="black",
-                      fg_color="red",
-                      font=("arial", 30, "bold"),
-                      command=modal_editar.destroy
-                      ).place(x=600, y=600)
-        
+                         width=200).grid(row=i, column=0, padx=10, pady=20)
+
         #botao editar
-        ctk.CTkButton(modal_editar, 
+        ctk.CTkButton(botoes, 
                       text="Editar",
                       width=300,
                       height=150, 
@@ -309,8 +360,18 @@ class DespesasMenu(ctk.CTkFrame):
                       fg_color="green",
                       font=("arial", 30, "bold"),
                       command=lambda: self.controller.editar(modal_editar, id_despesa, self.nome.get(), self.valor.get(), self.data.get(), self.observacao.get())
-                      ).place(x=150, y=600)
-
+                      ).grid(row=0, column=1, padx=70)
+        
+        #botao cancelar
+        ctk.CTkButton(botoes, 
+                      text="Cancelar", 
+                      width=300,
+                      height=150,
+                      text_color="black",
+                      fg_color="red",
+                      font=("arial", 30, "bold"),
+                      command=modal_editar.destroy
+                      ).grid(row=0, column=2, padx=70)
 
     def carregar_tabela(self, despesas=None):
         for item in self.tabela.get_children():
@@ -346,6 +407,7 @@ class DespesasMenu(ctk.CTkFrame):
             id_despesa = self.pegar_id_selecionado()
             self.controller.deletar(id_despesa)
             self.carregar_tabela()
+
         except ValueError as e:
             print(e)
 
@@ -381,17 +443,15 @@ class DespesaController:
         except ValueError as e:
             print(e)
         finally:
-            self.atualizar_combobox()
+            self.atualizar_combobox(self.tela.combobox)
             modal_cadastrar.grab_release()
             modal_cadastrar.destroy()
 
         
 
-    def editar(self, modal_editar, id_despesa, nome, valor, data=None, observacao=None):
+    def editar(self, modal_editar, id_despesa, nome, valor, data="", observacao=""):
         if not nome.strip():
             raise ValueError("Nome da despesa é obrigatório")
-        
-        print(data)
         
         try:
             valor = float(valor)
@@ -413,6 +473,7 @@ class DespesaController:
         except ValueError as e:
             print(e)
         finally:
+            self.atualizar_combobox(self.tela.combobox) 
             modal_editar.grab_release()
             modal_editar.destroy()
 
@@ -424,6 +485,7 @@ class DespesaController:
         except ValueError as e:
             print(e)
         finally:
+            self.atualizar_combobox(self.tela.combobox) #isso aqui nao adianta, porque o nome continua existindo no self.values até que ele seja recriado
             modal_deletar.grab_release()
             modal_deletar.destroy()
 
@@ -436,13 +498,26 @@ class DespesaController:
     def atualizar_combobox(self, combobox):
         nomes = self.despesa.nome_despesas()
 
-        for i in nomes:
-            if i[0] not in self.tela.values:
-                self.tela.values.append(i[0])
+        self.tela.values = ["Tudo"] + [nome[0] for nome in nomes] #o banco de dados ja ta filtrando nomes repetidos
 
         combobox.configure(values=self.tela.values)
+        combobox.set("Tudo")
+    
+    def atualizar_total(self, nome_despesa):
+        valor = self.despesa.total_filtrado(nome_despesa)
+
+        if nome_despesa == "Tudo":
+            valor = self.despesa.total_despesas()
+
+        self.tela.total.set(f"Total: R$ {valor:.2f}")
 
     def get_escolha(self, escolha):
+       self.atualizar_total(escolha)
        filtro = self.despesa.pesquisar_por_nome(escolha)
 
+       if escolha == "Tudo":
+           filtro = None
+
+        
+       print(filtro)
        self.tela.carregar_tabela(filtro)

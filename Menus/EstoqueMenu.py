@@ -19,6 +19,9 @@ class EstoqueMenu(ctk.CTkFrame):
         self.ordem = {"nome": False,
         "codigo": False}
 
+        self.filtro = StringVar()
+        self.filtro.trace("w", self.filtrar)
+
         self.master.bind("<Escape>", self.voltar)
 
         #Estilo para tabela
@@ -95,16 +98,24 @@ class EstoqueMenu(ctk.CTkFrame):
                     font=("Arial", 16, "bold"),
                     fg_color="orange",
                    command=self.referencia_main.voltar_menu_principal
-                   ).grid(row=1, column=0, sticky=W)
+                   ).grid(row=1, column=0, sticky="w")
+        
+        #entry de pesquisa
+        entry_pesquisa = ctk.CTkEntry(self,
+                     textvariable=self.filtro,
+                     width=200,
+                     font=("arial", 32, "bold"),
+                     )
+        entry_pesquisa.grid(row=1, column=0, sticky="e") 
+        entry_pesquisa.focus_set()
 
-    def carregar_estoque(self):
+
+    def carregar_estoque(self, estoque=None):
         for item in self.tabela.get_children(): #retorna o id de cada linha
             self.tabela.delete(item)
 
-        estoque = self.referencia_main.estoque.get_banco()
-
         if not estoque:
-            return
+            estoque = self.referencia_main.estoque.get_banco()
 
         for produto in estoque: #pega o objeto no estoque e insere na tabela
             _, codigo, nome, preco_custo, preco_venda, quantidade = produto
@@ -138,6 +149,11 @@ class EstoqueMenu(ctk.CTkFrame):
             self.tabela.move(item_id, '', indice)   
 
         self.ordem[coluna] = not reverso
+
+    def filtrar(self, *args):
+        digitado = self.filtro.get()
+        filtro = self.referencia_main.estoque.filtrar_produto(digitado)
+        self.carregar_estoque(filtro)
 
 
     def voltar(self, event):
