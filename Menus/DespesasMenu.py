@@ -288,7 +288,7 @@ class DespesasMenu(ctk.CTkFrame):
                       fg_color="red",
                       font=("arial", 30, "bold"),
                       command=modal_cadastrar.destroy
-                      ).grid(row=0, column=0, padx=70)
+                      ).grid(row=0, column=1, padx=70)
         
         #botao cadastrar
         ctk.CTkButton(botoes, 
@@ -299,7 +299,7 @@ class DespesasMenu(ctk.CTkFrame):
                       fg_color="green",
                       font=("arial", 30, "bold"),
                       command=lambda: self.controller.adicionar(modal_cadastrar, self.nome.get(), self.valor.get(), self.data.get(), self.observacao.get())
-                      ).grid(row=0, column=1, padx=70)
+                      ).grid(row=0, column=0, padx=70)
         
     def tela_editar(self):
         try:

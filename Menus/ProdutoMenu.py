@@ -8,6 +8,7 @@ class ProdutoMenu(ctk.CTkFrame):
         def __init__(self, root, referencia_main):
             super().__init__(master=root, fg_color="#1e1e1e")
             self.referencia_main = referencia_main
+            self.controller = ProdutoController(self, self.referencia_main.estoque)
 
             #textos
             self.status = StringVar()
@@ -457,7 +458,6 @@ class ProdutoMenu(ctk.CTkFrame):
             self.atributo = mapa[escolha]
 
             self.limpar_tela()
-            self.limpar_campos()
 
 
             frame = ctk.CTkFrame(self.frame_conteudo, fg_color="#1e1e1e")
@@ -541,9 +541,9 @@ class ProdutoMenu(ctk.CTkFrame):
         #métodos tela e campo
 
         def limpar_tela(self):
+            self.limpar_campos()
             for widget in self.frame_conteudo.winfo_children():
                 widget.destroy()
-            self.limpar_campos()
 
         def limpar_campos(self):
             campos = [self.status,
@@ -575,3 +575,9 @@ class ProdutoMenu(ctk.CTkFrame):
         def teclas_menu(self, tecla):
             if tecla.char in ["1", "2", "3", "4"] and self.pode_usar_atalho:
                 self.escolha_tela(int(tecla.char))
+
+class ProdutoController:
+    def __init__(self, tela, estoque_ref):
+        self.tela = tela
+        self.estoque = estoque_ref
+        

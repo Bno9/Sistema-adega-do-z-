@@ -35,7 +35,7 @@ class Main:
         e mantém o controle do frame atual
         """
         self.root = root
-        self.con = sqlite3.connect("adega.db") #vou precisar arrumar essa conexão
+        self.con = sqlite3.connect("adega.db", timeout=10, check_same_thread=False) #vou precisar arrumar essa conexão
         self.frame_atual = None
         self.estoque = Estoque(self.con)
         self.caixa = Caixa(self.estoque, self.con)

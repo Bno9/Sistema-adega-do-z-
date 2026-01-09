@@ -10,13 +10,10 @@ class CaixaMenu(ctk.CTkFrame):
         
         #textos
         self.status = StringVar()
-        self.status_modal = StringVar()
         self.total_var = StringVar()
-        self.troco_modal = StringVar()
 
         #entradas
         self.codigo = StringVar()
-        self.valor_pago = StringVar()
         self.quantidade = IntVar(value=1)
 
         #frame
@@ -218,6 +215,10 @@ class CaixaMenu(ctk.CTkFrame):
     def abrir_modal_finalizar(self):
         """Tela de finalização da compra
             Exibe valor pago e troco"""
+
+        self.valor_pago = StringVar()
+        self.status_modal = StringVar()
+        self.troco_modal = StringVar()
         
         self.modal = ctk.CTkToplevel(self.frame_conteudo, fg_color="#1e1e1e")
         self.modal.title("Finalizar compra")
@@ -225,8 +226,9 @@ class CaixaMenu(ctk.CTkFrame):
         self.modal.resizable(False, False)
 
         self.modal.transient(self.frame_conteudo)
-        self.modal.grab_set()
         self.modal.focus_force()
+        self.modal.update_idletasks() 
+        self.modal.grab_set()
         self.modal.rowconfigure((0,1,2), weight=1)
         self.modal.columnconfigure(0, weight=1)
 
@@ -375,6 +377,8 @@ Troco: R$ {resultado['troco']:.2f}""")
 
         self.master.bind("<Return>", lambda e: self.fechar_modal())
 
+        self.valor_pago.set("")
+
         self.entry_valor_pago.destroy()
         self.botao_finalizar.destroy()
         self.botao_cancelar.destroy()
@@ -445,8 +449,7 @@ Troco: R$ {resultado['troco']:.2f}""")
 
     def limpar_campos(self):
         campos = [
-            self.codigo,
-            self.valor_pago
+            self.codigo
             ]
 
         for var in campos:
