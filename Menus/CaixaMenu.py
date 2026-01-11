@@ -182,6 +182,7 @@ class CaixaMenu(ctk.CTkFrame):
         ).grid(row=0, column=2, padx=10)
         
         #binds
+        self.master.bind("<F10>", self.consultar_produto)
         self.master.bind("<Escape>", self.voltar)
         self.tabela.bind("<Delete>", lambda e: self.excluir_item())
 
@@ -246,7 +247,7 @@ class CaixaMenu(ctk.CTkFrame):
 
 
         self.status_modal.set("")
-        self.modal.bind("<Escape>", lambda e: self.fechar_modal())
+        self.modal.bind("<Escape>", lambda e: self.fechar_modal(self.modal))
         
         #criação botão ok
         self.botao_ok = ctk.CTkButton(
@@ -293,7 +294,7 @@ class CaixaMenu(ctk.CTkFrame):
         self.entry_valor_pago.grid(row=0, column=0, pady=5)
         self.entry_valor_pago.focus_set()
         self.entry_valor_pago.bind("<Return>", lambda e: self.finalizar_compra())
-        self.entry_valor_pago.bind("<Escape>", lambda e: self.fechar_modal())
+        self.entry_valor_pago.bind("<Escape>", lambda e: self.fechar_modal(self.modal))
 
 
         #botao finalizar compra
@@ -326,7 +327,7 @@ class CaixaMenu(ctk.CTkFrame):
             height=100,
             font=("Arial", 16, "bold"),
             fg_color="orange",
-            command=self.fechar_modal
+            command=lambda: self.fechar_modal(self.modal)
         )
         self.botao_cancelar.grid(row=0, column=2)
 
@@ -348,7 +349,7 @@ Troco: R$ {self.resultado['troco']:.2f}""")
         
         self.botao_ok.grid(column=0, row=0)
 
-        self.master.bind("<Escape>", lambda e: self.fechar_modal())
+        self.master.bind("<Escape>", lambda e: self.fechar_modal(self.modal))
         self.modal.bind("<Return>", lambda e: self.pedir_cpf())
 
         self.valor_pago.set("")
@@ -412,12 +413,12 @@ Troco: R$ {self.resultado['troco']:.2f}""")
             height=50,
             font=("Arial", 16, "bold"),
             fg_color="orange",
-            command=self.fechar_modal)
+            command=lambda: self.fechar_modal(self.modal))
         self.botao_cancelar.grid(column=0, row=3, pady=20)
 
-    def fechar_modal(self):
-        self.modal.grab_release()
-        self.modal.destroy()
+    def fechar_modal(self, modal):
+        modal.grab_release()
+        modal.destroy()
 
         self.limpar_campos()
         self.entry_codigo.focus_set()
@@ -425,8 +426,8 @@ Troco: R$ {self.resultado['troco']:.2f}""")
         self.master.unbind("<Return>")
         
 
-        self.modal.grab_release()
-        self.modal.destroy()
+        modal.grab_release()
+        modal.destroy()
 
     def atualizar_total(self):
         total = self.referencia_main.caixa.total()
@@ -446,6 +447,86 @@ Troco: R$ {self.resultado['troco']:.2f}""")
                     f"R$ {produto.preco_venda:.2f}",
                     quantidade
                 ))
+            
+    def consultar_produto(self, event=None):
+        codigo_consulta = StringVar()
+
+        consulta = ctk.CTkToplevel(self.frame_conteudo, fg_color="#1e1e1e")
+
+        consulta.bind("<Escape>", lambda e: self.fechar_modal(consulta))
+
+        consulta.title("Consultar produto")
+        consulta.geometry("700x700")
+
+        consulta.transient(self.frame_conteudo)
+        consulta.update_idletasks()
+        consulta.grab_set()   
+
+        consulta.columnconfigure(0, weight=1)
+        consulta.rowconfigure((0,1,2), weight=1)
+        header =  ctk.CTkFrame(consulta, fg_color="#1e1e1e")
+        entrys =  ctk.CTkFrame(consulta, fg_color="#1e1e1e")
+        informacoes = ctk.CTkFrame(consulta, fg_color="#1e1e1e")
+
+        header.grid(row=0, column=0)
+
+        entrys.rowconfigure(0, weight=1)
+        entrys.columnconfigure(0, weight=1)
+        entrys.grid(row=1, column=0)
+
+        informacoes.rowconfigure((0,1), weight=1)
+        informacoes.columnconfigure((0,1,2), weight=1)
+        informacoes.grid(row=2, column=0, sticky="nsew")   
+
+        ctk.CTkLabel(header, 
+                     text="Digite o código do produto",
+                     font=("arial", 32, "bold")
+                     ).grid(row=0, column=0, columnspan=2)
+        
+        entry = ctk.CTkEntry(entrys,
+                         textvariable=codigo_consulta,
+                         font=("Arial", 20, "bold"),
+                         width=400,
+                         height=50)
+        entry.grid(row=0, column=0)
+        entry.focus_set()
+
+        ctk.CTkLabel(informacoes,
+                     text="Produto",
+                     font=("arial", 32, "bold")
+                     ).grid(row=0, column=0)
+        
+        ctk.CTkLabel(informacoes,
+                     text="Valor",
+                     font=("arial", 32, "bold")
+                     ).grid(row=0, column=1)
+        
+        ctk.CTkLabel(informacoes,
+                     text="Quantidade",
+                     font=("arial", 32, "bold")
+                     ).grid(row=0, column=2)
+
+        nome = ctk.CTkLabel(informacoes,
+                    text="",
+                    font=("arial", 32, "bold")
+                    )
+        nome.grid(row=1, column=0,  padx=10, pady=20)
+
+        preco = ctk.CTkLabel(informacoes,
+                    text="",
+                    font=("arial", 32, "bold")
+                    )
+        preco.grid(row=1, column=1,  padx=10, pady=20)
+
+        quantidade = ctk.CTkLabel(informacoes,
+                    text="",
+                    font=("arial", 32, "bold")
+                    )
+        quantidade.grid(row=1, column=2,  padx=10, pady=20)
+
+        entry.bind("<Return>", lambda e: self.controller.consultar_produto(codigo_consulta.get(), nome, quantidade, preco))
+
+
 
     def voltar(self, event=None):
         resultado = self.referencia_main.caixa.validar_compra_existente()
@@ -519,4 +600,18 @@ class CaixaController:
     def enviar_recibo(self, linhas):
         cpf = self.tela.cpf.get()
         self.ref_caixa.imprimir_recibo(linhas, cpf)
-        self.tela.fechar_modal()
+        self.tela.fechar_modal(self.tela.modal)
+
+    def consultar_produto(self, codigo, label_nome, label_quantidade, label_preco):
+        try:
+            codigo = int(codigo)
+        except ValueError:
+            raise "Erro na conversão"
+        
+        produto = self.tela.referencia_main.estoque.get_produto(codigo)
+
+        _, _, nome, preco, _, quantidade = produto
+
+        label_nome.configure(text=nome)
+        label_preco.configure(text=f"R$ {preco:.2f}")
+        label_quantidade.configure(text=quantidade)

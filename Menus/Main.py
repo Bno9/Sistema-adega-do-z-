@@ -117,7 +117,7 @@ class MenuPrincipal(ctk.CTkFrame):
         #Imagem para usar no label principal
         try:
             img = ctk.CTkImage(
-                light_image=Image.open("/home/usuario/Projetos/Adega_do_ze/images/Adega_do_ze.png"),
+                light_image=Image.open("/home/usuario/Projetos/Adega_do_ze/images/Adega_fundo_cinza.png"),
                 size=(400, 400)
             )
 
@@ -125,7 +125,8 @@ class MenuPrincipal(ctk.CTkFrame):
             ctk.CTkLabel(
             self, 
             text="",
-            image=img
+            image=img,
+            fg_color="#1e1e1e"
             ).grid(column=0, row=0, columnspan=2, sticky="ew", pady=20)
 
         except (FileNotFoundError, UnidentifiedImageError, OSError) as e:
@@ -266,7 +267,7 @@ class MenuPrincipal(ctk.CTkFrame):
         self.main.trocar_frame(escolhido(self.master, self.main))
 
     def teclas_menu(self, tecla):
-        if tecla.char in ["1", "2", "3", "4"]:
+        if tecla.char in ["1", "2", "3", "4", "5", "6"]:
             self.escolher(int(tecla.char))
 
 root = ctk.CTk()
