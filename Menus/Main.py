@@ -12,6 +12,8 @@ import sqlite3
 from Utils.Caixa import Caixa
 from Utils.Estoque import Estoque
 from Utils.Despesa import Despesas
+from Utils.Recibo import Recibo, ImpressoraBase, ImpressoraTxt
+from Utils.Produto import Produto
 
 from Menus.CaixaMenu import CaixaMenu
 from Menus.DespesasMenu import DespesasMenu
@@ -36,9 +38,10 @@ class Main:
         """
         self.root = root
         self.con = sqlite3.connect("adega.db", timeout=10, check_same_thread=False) #vou precisar arrumar essa conexão
+        self.impressora = ImpressoraTxt()
         self.frame_atual = None
         self.estoque = Estoque(self.con)
-        self.caixa = Caixa(self.estoque, self.con)
+        self.caixa = Caixa(self.estoque, self.impressora, self.con)
         self.despesa = Despesas(self.con)
         self.root.bind_all("<Key>", self.tecla_apertada)
 
@@ -273,6 +276,15 @@ root.attributes("-zoomed", True)
 
 root.columnconfigure(0, weight=1)
 root.rowconfigure(0, weight=1)
+
+#teste recibo
+teste = Produto(111111, "teste", 22, 44, 10)
+teste2 = Produto(312412, "leite", 2, 29, 10)
+r = Recibo()
+linhas = r.gerar_linhas([(teste, 10), (teste2, 2)], 100)
+i = ImpressoraTxt()
+i.imprimir(linhas)
+
 
 m = Main(root) #Instanciando a main
 

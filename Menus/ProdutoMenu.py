@@ -90,12 +90,12 @@ class ProdutoMenu(ctk.CTkFrame):
             escolhido()
 
         def tela_cadastro(self):
-            self.codigo_cadastro = StringVar()
-            self.nome_cadastro = StringVar()
-            self.preco_custo_cadastro = StringVar()
-            self.preco_venda_cadastro = StringVar()
-            self.quantidade_cadastro = StringVar()
-            self.status_cadastro = StringVar()
+            self.codigo_cadastro = ctk.StringVar()
+            self.nome_cadastro = ctk.StringVar()
+            self.preco_custo_cadastro = ctk.StringVar()
+            self.preco_venda_cadastro = ctk.StringVar()
+            self.quantidade_cadastro = ctk.StringVar()
+            self.status_cadastro = ctk.StringVar()
 
             #frame para tela de cadastro
             cadastro_tela = ctk.CTkFrame(self.frame_conteudo, fg_color="#1e1e1e")
@@ -208,13 +208,13 @@ class ProdutoMenu(ctk.CTkFrame):
             self.entries[0].focus_set()
 
         def tela_editar(self):
-            self.codigo_edit = StringVar()
-            self.nome_edit = StringVar()
-            self.preco_custo_edit = StringVar()
-            self.preco_venda_edit = StringVar()
-            self.quantidade_edit = StringVar()
-            self.novo_valor = StringVar()
-            self.status_edit = StringVar()
+            self.codigo_edit = ctk.StringVar()
+            self.nome_edit = ctk.StringVar()
+            self.preco_custo_edit = ctk.StringVar()
+            self.preco_venda_edit = ctk.StringVar()
+            self.quantidade_edit = ctk.StringVar()
+            self.novo_valor = ctk.StringVar()
+            self.status_edit = ctk.StringVar()
 
             #frame tela editar
             frame = ctk.CTkFrame(self.frame_conteudo, fg_color="#1e1e1e")
@@ -426,8 +426,8 @@ class ProdutoMenu(ctk.CTkFrame):
 
 
         def tela_excluir(self):
-            self.codigo_excluir = StringVar()
-            self.status_excluir = StringVar()
+            self.codigo_excluir = ctk.StringVar()
+            self.status_excluir = ctk.StringVar()
 
             #frame tela excluir
             frame = ctk.CTkFrame(self.frame_conteudo, fg_color="#1e1e1e")

@@ -1,6 +1,10 @@
+from Utils.Recibo import Recibo, ImpressoraBase, ImpressoraTxt, ImpressoraWindows
+
 class Caixa:
     
-    def __init__(self, estoque, con):
+    def __init__(self, estoque, impressora, con):
+        self.recibo = Recibo()
+        self.impressora = impressora
         self.estoque = estoque
         self.con = con
         self.vendas = [] #esse aqui vai ter que virar um banco de dados futuramente
@@ -52,6 +56,9 @@ class Caixa:
             "recebido": valor_pago,
             "troco": troco
         })
+
+        linhas = self.recibo.gerar_linhas(self.itens_no_carrinho, valor_pago)
+        self.impressora.imprimir(linhas)
 
         self.itens_no_carrinho.clear()
 

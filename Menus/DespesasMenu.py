@@ -485,7 +485,7 @@ class DespesaController:
         except ValueError as e:
             print(e)
         finally:
-            self.atualizar_combobox(self.tela.combobox) #isso aqui nao adianta, porque o nome continua existindo no self.values até que ele seja recriado
+            self.atualizar_combobox(self.tela.combobox)
             modal_deletar.grab_release()
             modal_deletar.destroy()
 

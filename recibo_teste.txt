@@ -1,0 +1,10 @@
+          Adega do zé           
+CPNJ:00000000-0  TEL:11988334998
+--------------------------------
+Produto     Cód     Qtd    Valor
+--------------------------------
+Whisky     1        1   R$  5.00
+
+Total                  R$  5.00
+Pago R$12.00       Troco R$7.00
+   Obrigado pela prefêrencia    
