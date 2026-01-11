@@ -85,7 +85,7 @@ class ProdutoMenu(ctk.CTkFrame):
             self.pode_usar_atalho = False
 
             self.limpar_tela()
-            self.unbind("<Escape>")
+            self.master.unbind("<Escape>")
 
             escolhido()
 
@@ -117,7 +117,6 @@ class ProdutoMenu(ctk.CTkFrame):
             botao_frame.grid(row=2, column=0, sticky="nsew")
             botao_frame.columnconfigure((0,1,2,3), weight=1)
             botao_frame.rowconfigure(0, weight=1)
-
 
             campos = [("Código", self.codigo_cadastro),
                 ("Nome", self.nome_cadastro),
@@ -173,7 +172,7 @@ class ProdutoMenu(ctk.CTkFrame):
                 entry.bind("<Return>", lambda e, idx=i: self.proximo_campo(idx)) #enter
                 entry.bind("<Down>", lambda e, idx=i: self.proximo_campo(idx)) #seta pra baixo
                 entry.bind("<Up>", lambda e, idx=i: self.campo_anterior(idx)) #seta pra cima
-                entry.bind("<Escape>", lambda e, idx=i: self.menu())
+                entry.bind("<Escape>", lambda e: self.menu())
 
             #botao cadastrar
             ctk.CTkButton(botao_frame,
@@ -317,7 +316,7 @@ class ProdutoMenu(ctk.CTkFrame):
             ).grid(column=0, row=0, sticky="ew")
             
             #botões de escolha
-            for i, (opcao, texto) in enumerate(mapa, start=2):
+            for i, (opcao, texto) in enumerate(mapa, start=1):
                 ctk.CTkButton(frame, 
                               text=texto, 
                               text_color="black", 
@@ -325,8 +324,8 @@ class ProdutoMenu(ctk.CTkFrame):
                                 border_color="black",
                                 hover_color="white",
                                 border_width=5,
-                                width=600,  
-                                height=300,
+                                width=400,  
+                                height=200,
                                 font=("Arial", 30, "bold"),
                                 fg_color="orange",
                               command=lambda c=opcao: self.processar_escolha(c, self.novo_valor)
@@ -338,13 +337,15 @@ class ProdutoMenu(ctk.CTkFrame):
                        text_color="black", 
                         corner_radius=40,
                         border_color="black",
-                        hover_color="white",
+                        hover_color="red",
                         border_width=5,
-                        width=600,  
-                        height=300,
+                        width=400,  
+                        height=200,
                         font=("Arial", 30, "bold"),
                         fg_color="orange",
                        command=self.menu).grid(column=0, row=6, pady=20)        
+
+            self.master.bind("<Key>", self.teclas_atributos)
             
         def processar_escolha(self, escolha, novo_valor):
             mapa = {
@@ -504,7 +505,7 @@ class ProdutoMenu(ctk.CTkFrame):
                 if indice + 1 < len(self.entries):
                     self.entries[indice + 1].focus_set()
                 else:
-                    self.criar()
+                    self.controller.criar()
                     self.entries[0].focus_set()
 
         def campo_anterior(self, indice):
@@ -516,6 +517,11 @@ class ProdutoMenu(ctk.CTkFrame):
         def teclas_menu(self, tecla):
             if tecla.char in ["1", "2", "3", "4"] and self.pode_usar_atalho:
                 self.escolha_tela(int(tecla.char))
+
+        def teclas_atributos(self, tecla):
+            if tecla.char in ["1", "2", "3", "4"]:
+                self.master.unbind("<Key>")
+                self.processar_escolha(int(tecla.char), self.novo_valor)
 
 class ProdutoController:
     def __init__(self, tela, ref_estoque):
