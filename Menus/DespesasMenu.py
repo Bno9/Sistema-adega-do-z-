@@ -10,6 +10,9 @@ class DespesasMenu(ctk.CTkFrame):
 
         self.controller = DespesaController(self, self.referencia_main.despesa)
 
+        self.pode_usar_atalho = True
+        self.entries = []
+
         #texto
         self.status = ctk.StringVar()
         self.total = ctk.StringVar()
@@ -29,8 +32,6 @@ class DespesasMenu(ctk.CTkFrame):
         self.values = ["Tudo"]
 
         #frame
-
-        #botao combobox
         self.columnconfigure(0, weight=1)
         self.rowconfigure(0, weight=1)
 
@@ -39,6 +40,8 @@ class DespesasMenu(ctk.CTkFrame):
         self.frame_conteudo.columnconfigure(0, weight=1) #uma unica coluna que ocupa a tela toda
         self.frame_conteudo.rowconfigure(1, weight=1)
         self.frame_conteudo.rowconfigure((0,2), weight=0) #divide a tela em 3 partes, com a linha do meio tendo uma proporção maior
+
+        self.master.bind("<Escape>", lambda e: self.referencia_main.voltar_menu_principal())
 
         #combobox
         self.combobox = ctk.CTkComboBox(self.frame_conteudo,
@@ -103,11 +106,14 @@ class DespesasMenu(ctk.CTkFrame):
         self.tabela.column("data", width=80)
         self.tabela.column("observacao", width=200)
 
+        self.master.bind("<Delete>", lambda e: self.tela_deletar())
+
         self.carregar_tabela()
 
         self.widgets()
 
     def widgets(self):
+        
         self.combobox.grid(row=0, column=0, sticky="w")
 
         self.controller.atualizar_combobox(self.combobox)
@@ -136,7 +142,7 @@ class DespesasMenu(ctk.CTkFrame):
                     height=100,
                     font=("Arial", 16, "bold"),
                     fg_color="orange",
-                   command=self.tela_cadastrar
+                   command=lambda: self.escolha_tela(1)
                    ).grid(column=0, row=0)
         
         #botao editar
@@ -150,7 +156,7 @@ class DespesasMenu(ctk.CTkFrame):
                     height=100,
                     font=("Arial", 16, "bold"),
                     fg_color="orange",
-                   command=self.tela_editar
+                   command=lambda: self.escolha_tela(2)
                    ).grid(column=1, row=0)
         
         #botao excluir
@@ -164,7 +170,7 @@ class DespesasMenu(ctk.CTkFrame):
                     height=100,
                     font=("Arial", 16, "bold"),
                     fg_color="orange",
-                   command=self.tela_deletar
+                   command=lambda: self.escolha_tela(3)
                    ).grid(column=2, row=0)
 
         #botao voltar
@@ -181,58 +187,23 @@ class DespesasMenu(ctk.CTkFrame):
                    command=self.referencia_main.voltar_menu_principal
                    ).grid(row=0, column=3)
         
-    def tela_deletar(self):
+
+    def escolha_tela(self, escolha):
+        mapa = {1: self.tela_cadastrar,
+                2: self.tela_editar,
+                3: self.tela_deletar,
+                4: self.referencia_main.voltar_menu_principal}
+        
         try:
-            id_despesa = self.pegar_id_selecionado()
-        except ValueError as e:
-            print(e)
-            return
+            escolha = int(escolha)
+        except ValueError:
+            raise ValueError("Valor recebido inválido")
         
-        modal_deletar = ctk.CTkToplevel(self.frame_conteudo, fg_color="#1e1e1e")
+       
+        escolhido = mapa[escolha]
+        self.pode_usar_atalho = False
 
-        modal_deletar.title("Confirmação")
-        modal_deletar.geometry("500x300")
-
-        modal_deletar.transient(self.frame_conteudo)   #fica sobre a janela principal
-        modal_deletar.update_idletasks()
-        modal_deletar.grab_set()        #trava interação com a janela principal
-        modal_deletar.rowconfigure((0,1), weight=1)
-        modal_deletar.columnconfigure(0, weight=1)
-
-        header = ctk.CTkFrame(modal_deletar, fg_color="#1e1e1e")
-        botoes = ctk.CTkFrame(modal_deletar, fg_color="#1e1e1e")
-        botoes.columnconfigure((0,1,2), weight=1)
-
-        header.grid(column=0, row=0)
-        botoes.grid(column=0, row=1)
-
-        #label confirmação
-        ctk.CTkLabel(header, 
-                     text="Deseja realmente excluir?",
-                     font=("arial", 32, "bold")
-                     ).grid(row=0, column=0)
-        
-        #botao nao
-        ctk.CTkButton(botoes, 
-                      text="Não", 
-                      width=100,
-                      height=80,
-                      text_color="black",
-                      fg_color="red",
-                      font=("arial", 30, "bold"),
-                      command=modal_deletar.destroy
-                      ).grid(row=0, column=2, padx=30)
-        
-        #botao sim
-        ctk.CTkButton(botoes, 
-                      text="Sim",
-                      width=100,
-                      height=80, 
-                      text_color="black",
-                      fg_color="green",
-                      font=("arial", 30, "bold"),
-                      command=lambda: self.controller.deletar(modal_deletar, id_despesa)
-                      ).grid(row=0, column=0, padx=30)
+        escolhido()
         
     def tela_cadastrar(self):
         modal_cadastrar = ctk.CTkToplevel(self.frame_conteudo, fg_color="#1e1e1e")
@@ -244,6 +215,7 @@ class DespesasMenu(ctk.CTkFrame):
         modal_cadastrar.update_idletasks()
         modal_cadastrar.grab_set()        #trava interação com a janela principal
 
+        modal_cadastrar.bind("<Escape>", lambda e: self.fechar_modal(modal_cadastrar))
 
         modal_cadastrar.columnconfigure(0, weight=1)
         modal_cadastrar.rowconfigure((0,2), weight=1)
@@ -274,10 +246,15 @@ class DespesasMenu(ctk.CTkFrame):
                          font=("arial", 32, "bold")
                         ).grid(column=1, row=i, sticky="w", padx=10, pady=20)
             
-            ctk.CTkEntry(entrys,
+            entry = ctk.CTkEntry(entrys,
                          textvariable=variavel,
                          font=("Arial", 20, "bold"),
-                         width=200).grid(column=0, row=i, padx=10, pady=20)
+                         width=200)
+            entry.grid(column=0, row=i, padx=10, pady=20)
+            self.entries.append(entry)
+        
+
+        self.entries[0].focus_set()
         
         #botao cancelar
         ctk.CTkButton(botoes, 
@@ -287,11 +264,11 @@ class DespesasMenu(ctk.CTkFrame):
                       text_color="black",
                       fg_color="red",
                       font=("arial", 30, "bold"),
-                      command=modal_cadastrar.destroy
+                      command=lambda: self.fechar_modal(modal_cadastrar)
                       ).grid(row=0, column=1, padx=70)
         
         #botao cadastrar
-        ctk.CTkButton(botoes, 
+        botao_cadastro = ctk.CTkButton(botoes, 
                       text="Cadastrar",
                       width=300,
                       height=150, 
@@ -299,7 +276,14 @@ class DespesasMenu(ctk.CTkFrame):
                       fg_color="green",
                       font=("arial", 30, "bold"),
                       command=lambda: self.controller.adicionar(modal_cadastrar, self.nome.get(), self.valor.get(), self.data.get(), self.observacao.get())
-                      ).grid(row=0, column=0, padx=70)
+                      )
+        botao_cadastro.grid(row=0, column=0, padx=70)
+        
+
+        for i, entry in enumerate(self.entries):
+                entry.bind("<Return>", lambda e, idx=i: self.proximo_campo(idx, botao_cadastro)) #enter
+                entry.bind("<Down>", lambda e, idx=i: self.proximo_campo(idx, botao_cadastro)) #seta pra baixo
+                entry.bind("<Up>", lambda e, idx=i: self.campo_anterior(idx)) #seta pra cima
         
     def tela_editar(self):
         try:
@@ -316,6 +300,8 @@ class DespesasMenu(ctk.CTkFrame):
         modal_editar.transient(self.frame_conteudo)   #fica sobre a janela principal
         modal_editar.update_idletasks()
         modal_editar.grab_set()        #trava interação com a janela principal
+
+        modal_editar.bind("<Escape>", lambda e: self.fechar_modal(modal_editar))
 
         modal_editar.columnconfigure(0, weight=1)
         modal_editar.rowconfigure((0,2), weight=1)
@@ -346,13 +332,18 @@ class DespesasMenu(ctk.CTkFrame):
                          font=("arial", 32, "bold")
                         ).grid(row=i, column=1,  padx=10, pady=20)
             
-            ctk.CTkEntry(entrys,
+            entry = ctk.CTkEntry(entrys,
                          textvariable=variavel,
                          font=("Arial", 20, "bold"),
-                         width=200).grid(row=i, column=0, padx=10, pady=20)
+                         width=200)
+            entry.grid(row=i, column=0, padx=10, pady=20)
+            self.entries.append(entry)
+
+        
+        self.entries[0].focus_set()
 
         #botao editar
-        ctk.CTkButton(botoes, 
+        botao_editar = ctk.CTkButton(botoes, 
                       text="Editar",
                       width=300,
                       height=150, 
@@ -360,7 +351,8 @@ class DespesasMenu(ctk.CTkFrame):
                       fg_color="green",
                       font=("arial", 30, "bold"),
                       command=lambda: self.controller.editar(modal_editar, id_despesa, self.nome.get(), self.valor.get(), self.data.get(), self.observacao.get())
-                      ).grid(row=0, column=1, padx=70)
+                      )
+        botao_editar.grid(row=0, column=1, padx=70)
         
         #botao cancelar
         ctk.CTkButton(botoes, 
@@ -370,8 +362,73 @@ class DespesasMenu(ctk.CTkFrame):
                       text_color="black",
                       fg_color="red",
                       font=("arial", 30, "bold"),
-                      command=modal_editar.destroy
+                      command=lambda: self.fechar_modal(modal_editar)
                       ).grid(row=0, column=2, padx=70)
+        
+
+        for i, entry in enumerate(self.entries):
+                entry.bind("<Return>", lambda e, idx=i: self.proximo_campo(idx, botao_editar)) #enter
+                entry.bind("<Down>", lambda e, idx=i: self.proximo_campo(idx, botao_editar)) #seta pra baixo
+                entry.bind("<Up>", lambda e, idx=i: self.campo_anterior(idx)) #seta pra cima
+
+        
+       
+    def tela_deletar(self):
+        try:
+            id_despesa = self.pegar_id_selecionado()
+        except ValueError as e:
+            print(e)
+            return
+        
+        modal_deletar = ctk.CTkToplevel(self.frame_conteudo, fg_color="#1e1e1e")
+
+        modal_deletar.title("Confirmação")
+        modal_deletar.geometry("500x300")
+
+        modal_deletar.transient(self.frame_conteudo)   #fica sobre a janela principal
+        modal_deletar.update_idletasks()
+        modal_deletar.grab_set()        #trava interação com a janela principal
+
+        modal_deletar.bind("<Escape>", lambda e: self.fechar_modal(modal_deletar))
+        modal_deletar.bind("<Return>", lambda e: self.controller.deletar(modal_deletar, id_despesa))
+        
+        modal_deletar.rowconfigure((0,1), weight=1)
+        modal_deletar.columnconfigure(0, weight=1)
+
+        header = ctk.CTkFrame(modal_deletar, fg_color="#1e1e1e")
+        botoes = ctk.CTkFrame(modal_deletar, fg_color="#1e1e1e")
+        botoes.columnconfigure((0,1,2), weight=1)
+
+        header.grid(column=0, row=0)
+        botoes.grid(column=0, row=1)
+
+        #label confirmação
+        ctk.CTkLabel(header, 
+                     text="Deseja realmente excluir?",
+                     font=("arial", 32, "bold")
+                     ).grid(row=0, column=0)
+        
+        #botao nao
+        ctk.CTkButton(botoes, 
+                      text="Não", 
+                      width=100,
+                      height=80,
+                      text_color="black",
+                      fg_color="red",
+                      font=("arial", 30, "bold"),
+                      command=lambda e: self.fechar_modal(modal_deletar)
+                      ).grid(row=0, column=2, padx=30)
+        
+        #botao sim
+        ctk.CTkButton(botoes, 
+                      text="Sim",
+                      width=100,
+                      height=80, 
+                      text_color="black",
+                      fg_color="green",
+                      font=("arial", 30, "bold"),
+                      command=lambda e: self.controller.deletar(modal_deletar, id_despesa)
+                      ).grid(row=0, column=0, padx=30)
 
     def carregar_tabela(self, despesas=None):
         for item in self.tabela.get_children():
@@ -399,6 +456,7 @@ class DespesasMenu(ctk.CTkFrame):
     def pegar_id_selecionado(self):
         selecionado = self.tabela.selection()
         if not selecionado:
+            self.pode_usar_atalho = True
             raise ValueError("Nenhuma despesa selecionada")
         return int(selecionado[0])
     
@@ -411,6 +469,27 @@ class DespesasMenu(ctk.CTkFrame):
         except ValueError as e:
             print(e)
 
+    def fechar_modal(self, modal):
+        modal.grab_release()
+        modal.destroy()
+        self.pode_usar_atalho = True
+        self.entries.clear()
+
+    def teclas_menu(self, tecla):
+        if tecla.char in ["1", "2", "3", "4"] and self.pode_usar_atalho:
+            self.escolha_tela(int(tecla.char))
+
+    def proximo_campo(self, indice, botao):
+            """Muda o foco do entry pro proximo"""
+            if indice + 1 < len(self.entries):
+                self.entries[indice + 1].focus_set()
+            else:
+                botao.invoke()
+
+    def campo_anterior(self, indice):
+        "Muda o foco do entry pro anterior"
+        if indice - 1 >= 0:
+            self.entries[indice - 1].focus_set()
 
 class DespesaController:
     from Utils.Despesa import Despesas
@@ -444,8 +523,8 @@ class DespesaController:
             print(e)
         finally:
             self.atualizar_combobox(self.tela.combobox)
-            modal_cadastrar.grab_release()
-            modal_cadastrar.destroy()
+            self.tela.entries.clear()
+            self.tela.fechar_modal(modal_cadastrar)
 
         
 
@@ -474,8 +553,8 @@ class DespesaController:
             print(e)
         finally:
             self.atualizar_combobox(self.tela.combobox) 
-            modal_editar.grab_release()
-            modal_editar.destroy()
+            self.tela.entries.clear()
+            self.tela.fechar_modal(modal_editar)
 
 
     def deletar(self, modal_deletar, id):
@@ -485,9 +564,9 @@ class DespesaController:
         except ValueError as e:
             print(e)
         finally:
-            self.atualizar_combobox(self.tela.combobox) #isso aqui nao adianta, porque o nome continua existindo no self.values até que ele seja recriado
-            modal_deletar.grab_release()
-            modal_deletar.destroy()
+            self.atualizar_combobox(self.tela.combobox)
+            self.tela.entries.clear()
+            self.tela.fechar_modal(modal_deletar)
 
     def listar(self):
         return self.despesa.listar_despesas()

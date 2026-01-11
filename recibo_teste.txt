@@ -1,0 +1,12 @@
+          Adega do zé           
+CPNJ:00000000-0  TEL:11988334998
+--------------------------------
+Produto     Cód     Qtd    Valor
+--------------------------------
+teste      111111   10  R$440.00
+leite      312412   2   R$ 58.00
+
+Total                  R$498.00
+Pago R$100.00       Troco R$-398.00
+   Obrigado pela prefêrencia    
+

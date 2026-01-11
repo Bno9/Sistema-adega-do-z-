@@ -16,9 +16,15 @@ class EstoqueMenu(ctk.CTkFrame):
         self.frame_conteudo.rowconfigure(0, weight=1)
         self.frame_conteudo.columnconfigure(0, weight=1)
 
+        rodape = ctk.CTkFrame(self, fg_color="#1e1e1e")
+        rodape.grid(row=1, column=0, sticky="nsew")
+        rodape.columnconfigure((0,1,2), weight=1)
+        rodape.rowconfigure(0, weight=1)
+
         self.ordem = {"nome": False,
         "codigo": False}
 
+        self.coluna_filtro = "nome"
         self.filtro = StringVar()
         self.filtro.trace("w", self.filtrar)
 
@@ -86,8 +92,12 @@ class EstoqueMenu(ctk.CTkFrame):
 
         self.carregar_estoque()
 
+        canto_filtro = ctk.CTkFrame(rodape, fg_color="#1e1e1e")
+        canto_filtro.grid(row=0, column=2, sticky="e")
+        canto_filtro.columnconfigure((0,1), weight=1)
+
         #botao voltar
-        ctk.CTkButton(self, 
+        ctk.CTkButton(rodape, 
                     text="Voltar", 
                     text_color="black", 
                     corner_radius=20,
@@ -98,17 +108,25 @@ class EstoqueMenu(ctk.CTkFrame):
                     font=("Arial", 16, "bold"),
                     fg_color="orange",
                    command=self.referencia_main.voltar_menu_principal
-                   ).grid(row=1, column=0, sticky="w")
+                   ).grid(row=0, column=0, sticky="w")
         
         #entry de pesquisa
-        entry_pesquisa = ctk.CTkEntry(self,
+        entry_pesquisa = ctk.CTkEntry(canto_filtro,
                      textvariable=self.filtro,
-                     width=200,
+                     width=300,
                      font=("arial", 32, "bold"),
                      )
-        entry_pesquisa.grid(row=1, column=0, sticky="e") 
+        entry_pesquisa.grid(row=0, column=1, sticky="e", padx=10) 
         entry_pesquisa.focus_set()
 
+        combobox = ctk.CTkComboBox(canto_filtro,
+                      values=["Nome", "Codigo"],
+                      command=self.mudar_coluna,
+                      width=200,
+                      height=50,
+                      font=("arial", 22, "bold")
+                      )
+        combobox.grid(row=0, column=0, sticky="e", padx=10)
 
     def carregar_estoque(self, estoque=None):
         for item in self.tabela.get_children(): #retorna o id de cada linha
@@ -152,9 +170,12 @@ class EstoqueMenu(ctk.CTkFrame):
 
     def filtrar(self, *args):
         digitado = self.filtro.get()
-        filtro = self.referencia_main.estoque.filtrar_produto(digitado)
+        filtro = self.referencia_main.estoque.filtrar_produto(self.coluna_filtro, digitado)
         self.carregar_estoque(filtro)
 
+    def mudar_coluna(self, valor):
+        self.coluna_filtro = valor
+        self.filtrar()
 
     def voltar(self, event):
         self.master.unbind("<Escape>")

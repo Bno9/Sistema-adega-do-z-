@@ -1,6 +1,10 @@
+from Utils.Recibo import Recibo, ImpressoraBase, ImpressoraTxt, ImpressoraWindows
+
 class Caixa:
     
-    def __init__(self, estoque, con):
+    def __init__(self, estoque, impressora, con):
+        self.recibo = Recibo()
+        self.impressora = impressora
         self.estoque = estoque
         self.con = con
         self.vendas = [] #esse aqui vai ter que virar um banco de dados futuramente
@@ -53,14 +57,23 @@ class Caixa:
             "troco": troco
         })
 
+        linhas = self.recibo.gerar_linhas(self.itens_no_carrinho, valor_pago) #acho que vou precisar mudar isso pra parte de imprimir recibo depois, porque vou ter que adicionar o cpf pro sat
+
         self.itens_no_carrinho.clear()
 
         return{
                     "sucesso": True,
                     "mensagem": "Compra finalizada com sucesso",
                     "total": total,
-                    "troco": troco
+                    "troco": troco,
+                    "linhas": linhas
                 }
+    
+    def imprimir_recibo(self, linhas, cpf=None):
+        if cpf == "":
+            return
+        
+        self.impressora.imprimir(linhas)
 
     def total(self):
         return sum(item.preco_venda * quantidade for item, quantidade in self.itens_no_carrinho)
