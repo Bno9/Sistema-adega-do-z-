@@ -246,7 +246,7 @@ class CaixaMenu(ctk.CTkFrame):
 
 
         self.status_modal.set("")
-        self.master.unbind("<Escape>")
+        self.modal.bind("<Escape>", lambda e: self.fechar_modal())
         
         #criação botão ok
         self.botao_ok = ctk.CTkButton(
@@ -348,7 +348,8 @@ Troco: R$ {self.resultado['troco']:.2f}""")
         
         self.botao_ok.grid(column=0, row=0)
 
-        self.master.bind("<Return>", lambda e: self.fechar_modal())
+        self.master.bind("<Escape>", lambda e: self.fechar_modal())
+        self.modal.bind("<Return>", lambda e: self.pedir_cpf())
 
         self.valor_pago.set("")
 
@@ -362,8 +363,9 @@ Troco: R$ {self.resultado['troco']:.2f}""")
 
     def pedir_cpf(self):
         self.botao_ok.destroy()
-
         self.cpf = ctk.IntVar()
+
+        self.modal.bind("<Return>", lambda e: self.controller.enviar_recibo(self.resultado["linhas"]))
 
         self.recibo_frame = ctk.CTkFrame(self.modal, fg_color="#1e1e1e")
         self.recibo_frame.grid(column=0, row=0, sticky="nsew")
@@ -383,6 +385,7 @@ Troco: R$ {self.resultado['troco']:.2f}""")
                                       textvariable=self.cpf,
                                       font=("Arial", 20, "bold"))
         self.entry_cpf.grid(column=0, row=1, sticky="ew")
+        self.entry_cpf.focus_set()
 
         self.botao_enviar = ctk.CTkButton(self.recibo_frame,
             text="Enviar",
@@ -412,7 +415,7 @@ Troco: R$ {self.resultado['troco']:.2f}""")
             command=self.fechar_modal)
         self.botao_cancelar.grid(column=0, row=3, pady=20)
 
-    def fechar_modal(self): #essa função ta dando um erro no ctk que eu não faço ideia do que é, mas pelo menos o programa continua. Vou precisar pesquisar pra arrumar, m
+    def fechar_modal(self):
         self.modal.grab_release()
         self.modal.destroy()
 
@@ -461,6 +464,9 @@ Troco: R$ {self.resultado['troco']:.2f}""")
 
         for var in campos:
             var.set("")
+
+
+            
 
 class CaixaController:
     def __init__(self, tela, ref_caixa):
@@ -513,3 +519,4 @@ class CaixaController:
     def enviar_recibo(self, linhas):
         cpf = self.tela.cpf.get()
         self.ref_caixa.imprimir_recibo(linhas, cpf)
+        self.tela.fechar_modal()

@@ -3,39 +3,10 @@ CPNJ:00000000-0  TEL:11988334998
 --------------------------------
 Produto     Cód     Qtd    Valor
 --------------------------------
-Teste      10       1   R$150.00
-
-Total                  R$150.00
-Pago R$155.00       Troco R$5.00
-   Obrigado pela prefêrencia    
-          Adega do zé           
-CPNJ:00000000-0  TEL:11988334998
---------------------------------
-Produto     Cód     Qtd    Valor
---------------------------------
 teste      111111   10  R$440.00
 leite      312412   2   R$ 58.00
 
 Total                  R$498.00
 Pago R$100.00       Troco R$-398.00
    Obrigado pela prefêrencia    
-          Adega do zé           
-CPNJ:00000000-0  TEL:11988334998
---------------------------------
-Produto     Cód     Qtd    Valor
---------------------------------
-Whisky     1        2   R$ 10.00
 
-Total                  R$ 10.00
-Pago R$11.00       Troco R$1.00
-   Obrigado pela prefêrencia    
-          Adega do zé           
-CPNJ:00000000-0  TEL:11988334998
---------------------------------
-Produto     Cód     Qtd    Valor
---------------------------------
-Teste      1412     1   R$150.00
-
-Total                  R$150.00
-Pago R$1445.00       Troco R$1295.00
-   Obrigado pela prefêrencia    
