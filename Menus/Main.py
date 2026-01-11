@@ -12,7 +12,7 @@ import sqlite3
 from Utils.Caixa import Caixa
 from Utils.Estoque import Estoque
 from Utils.Despesa import Despesas
-from Utils.Recibo import Recibo, ImpressoraBase, ImpressoraTxt
+from Utils.Recibo import Recibo, ImpressoraBase, ImpressoraTxt, ImpressoraWindows
 from Utils.Produto import Produto
 
 from Menus.CaixaMenu import CaixaMenu
@@ -38,7 +38,7 @@ class Main:
         """
         self.root = root
         self.con = sqlite3.connect("adega.db", timeout=10, check_same_thread=False) #vou precisar arrumar essa conexão
-        self.impressora = ImpressoraTxt()
+        self.impressora = ImpressoraTxt() #mudar para impressorawindows
         self.frame_atual = None
         self.estoque = Estoque(self.con)
         self.caixa = Caixa(self.estoque, self.impressora, self.con)

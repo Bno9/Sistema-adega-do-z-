@@ -7,6 +7,7 @@ class CaixaMenu(ctk.CTkFrame):
     def __init__(self, root, referencia_main):
         super().__init__(master=root, fg_color="#1e1e1e")
         self.referencia_main = referencia_main
+        self.controller = CaixaController(self, self.referencia_main.caixa)
         
         #textos
         self.status = StringVar()
@@ -51,7 +52,7 @@ class CaixaMenu(ctk.CTkFrame):
         )
         self.entry_codigo.grid(row=1, column=0, sticky="w", padx=10, pady=10)
         self.entry_codigo.focus_set()
-        self.entry_codigo.bind("<Return>", self.enviar_codigo)
+        self.entry_codigo.bind("<Return>", self.controller.enviar_codigo)
         self.entry_codigo.bind("<Right>", lambda e: self.entry_quantidade.focus())
 
         ctk.CTkLabel(
@@ -70,7 +71,7 @@ class CaixaMenu(ctk.CTkFrame):
             font=("Arial", 20, "bold")
         )
         self.entry_quantidade.grid(row=1, column=2, sticky="e", padx=10, pady=10)
-        self.entry_quantidade.bind("<Return>", self.enviar_codigo)
+        self.entry_quantidade.bind("<Return>", self.controller.enviar_codigo)
         self.entry_quantidade.bind("<Left>", lambda e: self.entry_codigo.focus())
 
         #label quantidade
@@ -259,7 +260,7 @@ class CaixaMenu(ctk.CTkFrame):
             height=70,
             font=("Arial", 16, "bold"),
             fg_color="orange",
-            command=self.fechar_modal
+            command=self.pedir_cpf
             )
 
         #label status modal
@@ -329,41 +330,13 @@ class CaixaMenu(ctk.CTkFrame):
         )
         self.botao_cancelar.grid(row=0, column=2)
 
-    
-    #Métodos
-
-    def enviar_codigo(self, event=None):
-        """Envia o codigo para a classe caixa e valida se existe no estoque"""
-
-        code = self.codigo.get()
-
-        if code == "":
-            self.abrir_modal_finalizar()
-
-        try:
-            code = int(self.codigo.get())
-
-        except ValueError:
-            self.status.set("")
-            return
-        
-        quantidade = self.quantidade.get()
-        
-        if not self.referencia_main.caixa.validar_codigo(code, quantidade):
-            self.status.set("Produto não encontrado")
-            return
-        
-        self.codigo.set("")
-        self.status.set("")
-        self.atualizar_tabela()
-        self.atualizar_total()
-
     def finalizar_compra(self):
         """chama o metodo da classe caixa que finaliza a compra"""
-        resultado = self.referencia_main.caixa.finalizar_compra(self.valor_pago.get())
 
-        if not resultado["sucesso"]:
-            self.status_modal.set(resultado["mensagem"])
+        self.resultado = self.referencia_main.caixa.finalizar_compra(self.valor_pago.get())
+
+        if not self.resultado["sucesso"]:
+            self.status_modal.set(self.resultado["mensagem"])
             return
 
         self.troco_modal.set(
@@ -371,9 +344,9 @@ class CaixaMenu(ctk.CTkFrame):
 R${int(self.valor_pago.get()):.2f}
 
 
-Troco: R$ {resultado['troco']:.2f}""")
-
-        self.botao_ok.grid(row=0, column=1, pady=10)
+Troco: R$ {self.resultado['troco']:.2f}""")
+        
+        self.botao_ok.grid(column=0, row=0)
 
         self.master.bind("<Return>", lambda e: self.fechar_modal())
 
@@ -387,21 +360,70 @@ Troco: R$ {resultado['troco']:.2f}""")
         self.atualizar_total()
         self.quantidade.set(1)
 
-    def excluir_item(self):
-        """Recebe a linha clicada pelo usuario e exclui do caixa"""
+    def pedir_cpf(self):
+        self.botao_ok.destroy()
 
-        #seleção de linha
-        selecionado = self.tabela.selection()
+        self.cpf = ctk.IntVar()
 
-        if not selecionado:
-            return
+        self.recibo_frame = ctk.CTkFrame(self.modal, fg_color="#1e1e1e")
+        self.recibo_frame.grid(column=0, row=0, sticky="nsew")
+        self.recibo_frame.rowconfigure((0,1,2,3), weight=1)
+        self.recibo_frame.columnconfigure(0, weight=1)
 
-        item_id = selecionado[0] #id do item
-        valores = self.tabela.item(item_id, "values") #valores do item
+        self.label_cpf = ctk.CTkLabel(
+            self.recibo_frame,
+            text="Digite o cpf",
+            text_color="white",
+            fg_color="#1e1e1e",
+            font=("arial", 24, "bold")
+            ).grid(column=0, row=0, sticky="ew")
 
-        self.referencia_main.caixa.excluir_do_carrinho(int(valores[0]))
-        self.atualizar_tabela()
-        self.atualizar_total()
+        self.entry_cpf = ctk.CTkEntry(self.recibo_frame, 
+                                      width=300, 
+                                      textvariable=self.cpf,
+                                      font=("Arial", 20, "bold"))
+        self.entry_cpf.grid(column=0, row=1, sticky="ew")
+
+        self.botao_enviar = ctk.CTkButton(self.recibo_frame,
+            text="Enviar",
+            text_color="black", 
+            corner_radius=20,
+            border_color="black",
+            border_width=5,
+            hover_color="white",
+            width=200,  
+            height=50,
+            font=("Arial", 16, "bold"),
+            fg_color="orange",
+            command=lambda: self.controller.enviar_recibo(self.resultado["linhas"]))
+        self.botao_enviar.grid(column=0, row=2, pady=20)
+
+        self.botao_cancelar = ctk.CTkButton(self.recibo_frame,
+            text="Cancelar",
+            text_color="black", 
+            corner_radius=20,
+            border_color="black",
+            border_width=5,
+            hover_color="white",
+            width=200,  
+            height=50,
+            font=("Arial", 16, "bold"),
+            fg_color="orange",
+            command=self.fechar_modal)
+        self.botao_cancelar.grid(column=0, row=3, pady=20)
+
+    def fechar_modal(self): #essa função ta dando um erro no ctk que eu não faço ideia do que é, mas pelo menos o programa continua. Vou precisar pesquisar pra arrumar, m
+        self.modal.grab_release()
+        self.modal.destroy()
+
+        self.limpar_campos()
+        self.entry_codigo.focus_set()
+        self.master.bind("<Escape>", self.voltar)
+        self.master.unbind("<Return>")
+        
+
+        self.modal.grab_release()
+        self.modal.destroy()
 
     def atualizar_total(self):
         total = self.referencia_main.caixa.total()
@@ -420,9 +442,7 @@ Troco: R$ {resultado['troco']:.2f}""")
                     produto.nome,
                     f"R$ {produto.preco_venda:.2f}",
                     quantidade
-                )
-            )
-
+                ))
 
     def voltar(self, event=None):
         resultado = self.referencia_main.caixa.validar_compra_existente()
@@ -430,22 +450,9 @@ Troco: R$ {resultado['troco']:.2f}""")
         if resultado["sucesso"]:
             self.status.set(resultado["mensagem"])
             return
-        
+            
         self.master.unbind("<Escape>")
         self.referencia_main.voltar_menu_principal()
-
-    def fechar_modal(self): #essa função ta dando um erro no ctk que eu não faço ideia do que é, mas pelo menos o programa continua. Vou precisar pesquisar pra arrumar, m
-        self.modal.grab_release()
-        self.modal.destroy()
-
-        self.limpar_campos()
-        self.entry_codigo.focus_set()
-        self.master.bind("<Escape>", self.voltar)
-        self.master.unbind("<Return>")
-        
-
-        self.modal.grab_release()
-        self.modal.destroy()
 
     def limpar_campos(self):
         campos = [
@@ -454,3 +461,55 @@ Troco: R$ {resultado['troco']:.2f}""")
 
         for var in campos:
             var.set("")
+
+class CaixaController:
+    def __init__(self, tela, ref_caixa):
+        self.tela = tela
+        self.ref_caixa = ref_caixa
+
+    
+    def excluir_item(self):
+        """Recebe a linha clicada pelo usuario e exclui do caixa"""
+
+        #seleção de linha
+        selecionado = self.tela.tabela.selection()
+
+        if not selecionado:
+            return
+
+        item_id = selecionado[0] #id do item
+        valores = self.tela.tabela.item(item_id, "values") #valores do item
+
+        self.ref_caixa.excluir_do_carrinho(int(valores[0]))
+        self.tela.atualizar_tabela()
+        self.tela.atualizar_total()
+
+    def enviar_codigo(self, event=None):
+        """Envia o codigo para a classe caixa e valida se existe no estoque"""
+
+        code = self.tela.codigo.get()
+
+        if code == "":
+            self.tela.abrir_modal_finalizar()
+
+        try:
+            code = int(self.tela.codigo.get())
+
+        except ValueError:
+            self.tela.status.set("")
+            return
+        
+        quantidade = self.tela.quantidade.get()
+        
+        if not self.ref_caixa.validar_codigo(code, quantidade):
+            self.tela.status.set("Produto não encontrado")
+            return
+        
+        self.tela.codigo.set("")
+        self.tela.status.set("")
+        self.tela.atualizar_tabela()
+        self.tela.atualizar_total()
+
+    def enviar_recibo(self, linhas):
+        cpf = self.tela.cpf.get()
+        self.ref_caixa.imprimir_recibo(linhas, cpf)

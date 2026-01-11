@@ -58,7 +58,6 @@ class Caixa:
         })
 
         linhas = self.recibo.gerar_linhas(self.itens_no_carrinho, valor_pago)
-        self.impressora.imprimir(linhas)
 
         self.itens_no_carrinho.clear()
 
@@ -66,8 +65,15 @@ class Caixa:
                     "sucesso": True,
                     "mensagem": "Compra finalizada com sucesso",
                     "total": total,
-                    "troco": troco
+                    "troco": troco,
+                    "linhas": linhas
                 }
+    
+    def imprimir_recibo(self, linhas, cpf=None):
+        if cpf == "":
+            return
+        
+        self.impressora.imprimir(linhas)
 
     def total(self):
         return sum(item.preco_venda * quantidade for item, quantidade in self.itens_no_carrinho)

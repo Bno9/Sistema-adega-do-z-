@@ -21,10 +21,11 @@ class Recibo:
         linhas.append(f"{'Total':<22} R${total:>6.2f}")
         linhas.append(f"Pago R${valor_pago:.2f}     {'Troco R$':>10}{valor_pago - total:.2f}")
         linhas.append("Obrigado pela prefêrencia".center(largura))
+        linhas.append("")
         return linhas
 
 
-class ImpressoraBase:
+class ImpressoraBase: #classe base para polimorfismo
     def imprimir(self, linhas: list[str]):
         raise NotImplementedError
 
