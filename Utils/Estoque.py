@@ -72,9 +72,9 @@ class Estoque:
         self.cur.execute("SELECT * FROM produtos WHERE codigo=?", (codigo_produto,))
         return self.cur.fetchone()
     
-    def filtrar_produto(self, nome):
-        nome = f"{nome}%"
-        self.cur.execute("SELECT * FROM produtos WHERE nome LIKE ?", (nome,))
+    def filtrar_produto(self, coluna, digitado):
+        digitado = f"{digitado}%"
+        self.cur.execute(f"SELECT * FROM produtos WHERE {coluna} LIKE ?", (digitado,))
         return self.cur.fetchall()
 
     def get_banco(self):

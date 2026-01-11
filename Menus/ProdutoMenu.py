@@ -118,7 +118,7 @@ class ProdutoMenu(ctk.CTkFrame):
             botao_frame.columnconfigure((0,1,2,3), weight=1)
             botao_frame.rowconfigure(0, weight=1)
 
-            campos = [("Código", self.codigo_cadastro),
+            self.campos = [("Código", self.codigo_cadastro),
                 ("Nome", self.nome_cadastro),
                 ("Preço custo", self.preco_custo_cadastro),
                 ("Preço venda", self.preco_venda_cadastro),
@@ -144,7 +144,7 @@ class ProdutoMenu(ctk.CTkFrame):
                       ).grid(column=0, row=1, pady=10)
 
             #labels/entrys
-            for i, (texto, variavel) in enumerate(campos):
+            for i, (texto, variavel) in enumerate(self.campos):
                 ctk.CTkLabel(form_frame, 
                             text=texto, 
                             text_color="white",
@@ -513,7 +513,6 @@ class ProdutoMenu(ctk.CTkFrame):
             if indice - 1 >= 0:
                 self.entries[indice - 1].focus_set()
 
-
         def teclas_menu(self, tecla):
             if tecla.char in ["1", "2", "3", "4"] and self.pode_usar_atalho:
                 self.escolha_tela(int(tecla.char))
@@ -546,11 +545,17 @@ class ProdutoController:
     
         self.tela.status_cadastro.set(resultado)
 
+        for _, var in self.tela.campos:
+            var.set("")
+
     def salvar_alteracao(self):
         valor = self.tela.novo_valor.get()
                                                                            #eu poderia desempacotar o valor pra ficar mais facil, mas preferi deixar o indice mesmo
         self.tela.status_edit.set(self.ref_estoque.atualizar_produto(self.tela.produto[1], self.tela.atributo, valor))
         
+        for _, var in self.tela.campos:
+            var.set("")
+
     def deletar(self):
         try:
             codigo = int(self.tela.codigo_excluir.get())

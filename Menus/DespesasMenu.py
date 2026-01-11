@@ -32,8 +32,6 @@ class DespesasMenu(ctk.CTkFrame):
         self.values = ["Tudo"]
 
         #frame
-
-        #botao combobox
         self.columnconfigure(0, weight=1)
         self.rowconfigure(0, weight=1)
 
