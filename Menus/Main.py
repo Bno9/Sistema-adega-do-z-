@@ -37,8 +37,8 @@ class Main:
         e mantém o controle do frame atual
         """
         self.root = root
-        self.con = sqlite3.connect("adega.db", timeout=10, check_same_thread=False) #vou precisar arrumar essa conexão
-        self.impressora = ImpressoraTxt() #mudar para impressorawindows
+        self.con = sqlite3.connect("adega.db", timeout=10, check_same_thread=False)
+        self.impressora = ImpressoraWindows("MP-4200 TH") 
         self.frame_atual = None
         self.pode_usar_atalho = False
         self.estoque = Estoque(self.con)
@@ -317,6 +317,9 @@ class MenuPrincipal(ctk.CTkFrame):
         if tecla.char in ["1", "2", "3", "4", "5", "6"]and self.main.pode_usar_atalho:
             self.escolher(int(tecla.char))
 
+
+
+ctk.set_appearance_mode("dark")
 root = ctk.CTk()
 root.title("Adega do zé 2.0")
 root.configure(bg="#1e1e1e")
@@ -324,14 +327,6 @@ root.attributes("-zoomed", True)
 
 root.columnconfigure(0, weight=1)
 root.rowconfigure(0, weight=1)
-
-#teste recibo
-teste = Produto(111111, "teste", 22, 44, 10)
-teste2 = Produto(312412, "leite", 2, 29, 10)
-r = Recibo()
-linhas = r.gerar_linhas([(teste, 10), (teste2, 2)], 100)
-i = ImpressoraTxt()
-i.imprimir(linhas)
 
 
 m = Main(root) #Instanciando a main
