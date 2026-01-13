@@ -37,8 +37,8 @@ class Main:
         e mantém o controle do frame atual
         """
         self.root = root
-        self.con = sqlite3.connect("adega.db", timeout=10, check_same_thread=False) #vou precisar arrumar essa conexão
-        self.impressora = ImpressoraTxt() #mudar para impressorawindows
+        self.con = sqlite3.connect("adega.db", timeout=10, check_same_thread=False)
+        self.impressora = ImpressoraWindows("MP-4200 TH") 
         self.frame_atual = None
         self.pode_usar_atalho = False
         self.estoque = Estoque(self.con)
@@ -246,50 +246,46 @@ class MenuPrincipal(ctk.CTkFrame):
             command=lambda: self.escolher(6)
             ).grid(column=1, row=3, padx=20, pady=20)
         
+        if self.main.pode_usar_atalho == False:
+            senha = StringVar()
 
-        senha = StringVar()
+            tela_senha = ctk.CTkToplevel(self, fg_color="#1e1e1e")
 
-        tela_senha = ctk.CTkToplevel(self, fg_color="#1e1e1e")
+            tela_senha.title("Consultar produto")
+            tela_senha.geometry("300x300")
 
-        tela_senha.title("Consultar produto")
-        tela_senha.geometry("300x300")
+            tela_senha.transient(self)
+            tela_senha.update_idletasks()
+            tela_senha.grab_set()   
 
-        tela_senha.transient(self)
-        tela_senha.update_idletasks()
-        tela_senha.grab_set()   
+            tela_senha.columnconfigure(0, weight=1)
+            tela_senha.rowconfigure((0,1), weight=1)
+            header =  ctk.CTkFrame(tela_senha, fg_color="#1e1e1e")
+            entrys =  ctk.CTkFrame(tela_senha, fg_color="#1e1e1e")
 
-        tela_senha.columnconfigure(0, weight=1)
-        tela_senha.rowconfigure((0,1), weight=1)
-        header =  ctk.CTkFrame(tela_senha, fg_color="#1e1e1e")
-        entrys =  ctk.CTkFrame(tela_senha, fg_color="#1e1e1e")
+            header.grid(row=0, column=0)
 
-        header.grid(row=0, column=0)
+            entrys.rowconfigure(0, weight=1)
+            entrys.columnconfigure(0, weight=1)
+            entrys.grid(row=1, column=0)
 
-        entrys.rowconfigure(0, weight=1)
-        entrys.columnconfigure(0, weight=1)
-        entrys.grid(row=1, column=0)
-
-        ctk.CTkLabel(header, 
-                     text="Digite a senha",
-                     font=("arial", 32, "bold")
-                     ).grid(row=0, column=0, columnspan=2)
-        
-        entry = ctk.CTkEntry(entrys,
-                         textvariable=senha,
-                         font=("Arial", 20, "bold"),
-                         width=400,
-                         height=50)
-        entry.grid(row=0, column=0)
-        entry.focus_set()
-
-
-        tela_senha.protocol("WM_DELETE_WINDOW", self.master.quit)
-
-        entry.bind("<Return>", lambda e: self.main.verificar_senha(senha, tela_senha))
+            ctk.CTkLabel(header, 
+                        text="Digite a senha",
+                        font=("arial", 32, "bold")
+                        ).grid(row=0, column=0, columnspan=2)
+            
+            entry = ctk.CTkEntry(entrys,
+                            textvariable=senha,
+                            font=("Arial", 20, "bold"),
+                            width=400,
+                            height=50)
+            entry.grid(row=0, column=0)
+            entry.focus_set()
 
 
+            tela_senha.protocol("WM_DELETE_WINDOW", self.master.quit)
 
-
+            entry.bind("<Return>", lambda e: self.main.verificar_senha(senha, tela_senha))
 
     def escolher(self, opcao):
         """Recebe a opção escolhida,
@@ -321,6 +317,9 @@ class MenuPrincipal(ctk.CTkFrame):
         if tecla.char in ["1", "2", "3", "4", "5", "6"]and self.main.pode_usar_atalho:
             self.escolher(int(tecla.char))
 
+
+
+ctk.set_appearance_mode("dark")
 root = ctk.CTk()
 root.title("Adega do zé 2.0")
 root.configure(bg="#1e1e1e")
@@ -328,14 +327,6 @@ root.attributes("-zoomed", True)
 
 root.columnconfigure(0, weight=1)
 root.rowconfigure(0, weight=1)
-
-#teste recibo
-teste = Produto(111111, "teste", 22, 44, 10)
-teste2 = Produto(312412, "leite", 2, 29, 10)
-r = Recibo()
-linhas = r.gerar_linhas([(teste, 10), (teste2, 2)], 100)
-i = ImpressoraTxt()
-i.imprimir(linhas)
 
 
 m = Main(root) #Instanciando a main
