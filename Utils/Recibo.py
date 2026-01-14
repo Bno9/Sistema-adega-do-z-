@@ -42,16 +42,37 @@ class ImpressoraWindows(ImpressoraBase): #classe para cliente
 
     def imprimir(self, linhas):
         import win32print
+        
+        if not hasattr(self, "nome") or not self.nome:
+            raise RuntimeError("Nome da impressora não definido")
 
-        handle = win32print.OpenPrinter(self.nome)
+        self.handle = None
+
         try:
-            win32print.StartDocPrinter(handle, 1, ("Recibo", None, "RAW"))
-            win32print.StartPagePrinter(handle)
+            self.handle = win32print.OpenPrinter(self.nome)
+        except Exception as e:
+            self.handle = None
+
+        if not self.handle:
+            raise RuntimeError("Impressora não disponível")
+
+        try:
+            win32print.StartDocPrinter(
+                self.handle,
+                1,
+                ("Recibo", None, "RAW")
+            )
+            win32print.StartPagePrinter(self.handle)
 
             for linha in linhas:
-                win32print.WritePrinter(handle, (linha + "\n").encode("utf-8"))
+                win32print.WritePrinter(
+                    self.handle,
+                    (linha + "\n").encode("utf-8")
+                )
 
-            win32print.EndPagePrinter(handle)
-            win32print.EndDocPrinter(handle)
+            win32print.EndPagePrinter(self.handle)
+            win32print.EndDocPrinter(self.handle)
+
         finally:
-            win32print.ClosePrinter(handle)
+            win32print.ClosePrinter(self.handle)
+            self.handle = None
