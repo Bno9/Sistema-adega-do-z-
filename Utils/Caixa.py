@@ -2,12 +2,12 @@ from Utils.Recibo import Recibo, ImpressoraBase, ImpressoraTxt, ImpressoraWindow
 
 class Caixa:
     
-    def __init__(self, estoque, impressora, con):
+    def __init__(self, estoque, iniciar_impressora, con):
         self.recibo = Recibo()
-        self.impressora = impressora
+        self.iniciar_impressora = iniciar_impressora
         self.estoque = estoque
         self.con = con
-        self.vendas = [] #esse aqui vai ter que virar um banco de dados futuramente
+        self.vendas = []
         self.itens_no_carrinho = [] #aqui eu mantive objetos produto porque ficou mais facil e nao precisei mexer muito no codigo
 
     def carrinho_caixa(self, produto, quantidade=1):
@@ -73,7 +73,8 @@ class Caixa:
         if cpf == "":
             return
         
-        self.impressora.imprimir(linhas)
+        impressora = self.iniciar_impressora()
+        impressora.imprimir(linhas)
 
     def total(self):
         return sum(item.preco_venda * quantidade for item, quantidade in self.itens_no_carrinho)

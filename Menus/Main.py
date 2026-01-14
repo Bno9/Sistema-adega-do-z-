@@ -38,11 +38,11 @@ class Main:
         """
         self.root = root
         self.con = sqlite3.connect("adega.db", timeout=10, check_same_thread=False)
-        self.impressora = ImpressoraWindows("MP-4200 TH") 
+        self.impressora = None
         self.frame_atual = None
         self.pode_usar_atalho = False
         self.estoque = Estoque(self.con)
-        self.caixa = Caixa(self.estoque, self.impressora, self.con)
+        self.caixa = Caixa(self.estoque, self.iniciar_impressora, self.con)
         self.despesa = Despesas(self.con)
         self.root.bind_all("<Key>", self.tecla_apertada)
 
@@ -75,6 +75,17 @@ class Main:
 
         #inicia o frame menu principal
         self.trocar_frame(MenuPrincipal(self.root, self))
+
+    def iniciar_impressora(self):
+        if self.impressora is None:
+            try:
+                self.impressora = ImpressoraWindows("MP-4200 TH")
+            except Exception as e:
+                print(f"Erro ao iniciar impressora: {e}")
+                self.impressora = ImpressoraTxt()
+            
+            return self.impressora
+
 
     def tecla_apertada(self, tecla):
         """Detecta a tecla apertada e chama a função teclas menu do frame atual"""
@@ -324,6 +335,7 @@ root = ctk.CTk()
 root.title("Adega do zé 2.0")
 root.configure(bg="#1e1e1e")
 root.attributes("-zoomed", True)
+#root.state("zoomed") para windows
 
 root.columnconfigure(0, weight=1)
 root.rowconfigure(0, weight=1)
