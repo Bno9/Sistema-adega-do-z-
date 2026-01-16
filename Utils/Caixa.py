@@ -9,6 +9,7 @@ class Caixa:
         self.con = con
         self.vendas = []
         self.itens_no_carrinho = [] #aqui eu mantive objetos produto porque ficou mais facil e nao precisei mexer muito no codigo
+        self.desconto = 0
 
     def carrinho_caixa(self, produto, quantidade=1):
         """Método que adiciona os produtos a tela de soma do caixa"""
@@ -69,6 +70,11 @@ class Caixa:
                     "linhas": linhas
                 }
     
+    def aplicar_desconto(self, valor):
+        self.desconto = valor
+        #aqui é pra atualizar a tela
+        return self.total()
+
     def imprimir_recibo(self, linhas, cpf=None):
         if cpf == "":
             return
@@ -77,6 +83,9 @@ class Caixa:
         impressora.imprimir(linhas)
 
     def total(self):
+        if self.desconto:
+            return sum(item.preco_venda * quantidade for item, quantidade in self.itens_no_carrinho) - self.desconto
+    
         return sum(item.preco_venda * quantidade for item, quantidade in self.itens_no_carrinho)
     
     def listar_vendas(self): 

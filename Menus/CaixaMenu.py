@@ -182,6 +182,7 @@ class CaixaMenu(ctk.CTkFrame):
         ).grid(row=0, column=2, padx=10)
         
         #binds
+        self.master.bind("<F5>", self.frame_desconto)
         self.master.bind("<F10>", self.consultar_produto)
         self.master.bind("<Escape>", self.voltar)
         self.tabela.bind("<Delete>", lambda e: self.excluir_item())
@@ -448,6 +449,34 @@ Troco: R$ {self.resultado['troco']:.2f}""")
                     quantidade
                 ))
             
+    def frame_desconto(self, event=None):
+        desconto = StringVar()
+        desconto.trace("w", lambda *args: self.controller.dar_desconto(desconto.get()))
+
+        #texto desconto
+        ctk.CTkLabel(
+            self.botoes,
+            text="Desconto",
+            text_color="green",
+            fg_color="#1e1e1e",
+            width=100,
+            font=("Arial", 32, "bold")
+        ).grid(row=2, column=1, padx=130)
+
+        #entrada de desconto
+        entry_desconto = ctk.CTkEntry(
+            self.botoes,
+            textvariable=desconto,
+            text_color="white",
+            fg_color="#1e1e1e",
+            width=100,
+            font=("Arial", 32, "bold")
+        )
+        entry_desconto.grid(row=1, column=1, padx=10)
+        entry_desconto.focus_set()
+
+       
+            
     def consultar_produto(self, event=None):
         codigo_consulta = StringVar()
 
@@ -615,3 +644,27 @@ class CaixaController:
         label_nome.configure(text=nome)
         label_preco.configure(text=f"R$ {preco:.2f}")
         label_quantidade.configure(text=quantidade)
+
+    def dar_desconto(self, valor):
+        self.tela.status.set("")
+        
+        if valor == "":
+            self.ref_caixa.aplicar_desconto(0) #aqui é pra voltar o total ao padrao
+            self.tela.atualizar_total()
+            return
+        
+        try:
+            valor = int(valor)
+        except ValueError:
+            return
+        
+        if valor < 0:
+            return
+
+        total = self.ref_caixa.aplicar_desconto(valor)
+        
+        if total < 0:
+            self.tela.status.set("Desconto maior que o valor dos produtos")
+            total = self.ref_caixa.aplicar_desconto(0)
+        
+        self.tela.total_var.set(f"Total: R$ {total:.2f}")
