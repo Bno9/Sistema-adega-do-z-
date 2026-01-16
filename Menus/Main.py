@@ -79,7 +79,8 @@ class Main:
     def iniciar_impressora(self):
         if self.impressora is None:
             try:
-                self.impressora = ImpressoraWindows("MP-4200 TH")
+                self.impressora = ImpressoraTxt()
+                #self.impressora = ImpressoraWindows("MP-4200 TH")
             except Exception as e:
                 print(f"Erro ao iniciar impressora: {e}")
                 self.impressora = ImpressoraTxt()
@@ -329,8 +330,8 @@ class MenuPrincipal(ctk.CTkFrame):
             self.escolher(int(tecla.char))
 
 
+ctk.set_default_color_theme("blue")
 
-ctk.set_appearance_mode("dark")
 root = ctk.CTk()
 root.title("Adega do zé 2.0")
 root.configure(bg="#1e1e1e")
