@@ -49,7 +49,12 @@ class ImpressoraWindows(ImpressoraBase): #classe para cliente
         import win32print
         
         if not hasattr(self, "nome") or not self.nome:
-            raise RuntimeError("Nome da impressora não definido")
+            print("Nome da impressora não definido. Tentando usar impressora padrão")
+            try:
+                self.nome = win32print.GetDefaultPrinter()
+            except Exception as e:
+                self.nome = None
+                raise RuntimeError("Impressora nao encontrada")
 
         self.handle = None
 
@@ -69,10 +74,14 @@ class ImpressoraWindows(ImpressoraBase): #classe para cliente
             )
             win32print.StartPagePrinter(self.handle)
 
+            texto = "\n".join(linhas)
+            texto += b"\n\n\n\n"
+            texto+= b"\x1d\x56\x01"
+
             for linha in linhas:
                 win32print.WritePrinter(
                     self.handle,
-                    (linha + "\n").encode("utf-8")
+                    (texto).encode("utf-8")
                 )
 
             win32print.EndPagePrinter(self.handle)

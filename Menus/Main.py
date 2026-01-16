@@ -79,8 +79,7 @@ class Main:
     def iniciar_impressora(self):
         if self.impressora is None:
             try:
-                self.impressora = ImpressoraTxt()
-                #self.impressora = ImpressoraWindows("MP-4200 TH")
+                self.impressora = ImpressoraWindows("MP-4200 TH")
             except Exception as e:
                 print(f"Erro ao iniciar impressora: {e}")
                 self.impressora = ImpressoraTxt()
