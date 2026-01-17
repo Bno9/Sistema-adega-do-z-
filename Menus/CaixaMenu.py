@@ -185,7 +185,7 @@ class CaixaMenu(ctk.CTkFrame):
         self.master.bind("<F5>", self.frame_desconto)
         self.master.bind("<F10>", self.consultar_produto)
         self.master.bind("<Escape>", self.voltar)
-        self.tabela.bind("<Delete>", lambda e: self.excluir_item())
+        self.tabela.bind("<Delete>", lambda e: self.controller.excluir_item())
 
         #carregar layout
         self.atualizar_tabela()

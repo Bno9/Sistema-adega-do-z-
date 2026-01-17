@@ -221,7 +221,7 @@ class ProdutoMenu(ctk.CTkFrame):
                         height=200,
                         font=("Arial", 30, "bold"),
                         fg_color="orange",
-                       command=self.controller.criar
+                       command=lambda: self.controller.criar(self.campos)
                        ).grid(column=1, row=0)
             
             #botao voltar
@@ -242,13 +242,20 @@ class ProdutoMenu(ctk.CTkFrame):
             self.entries[0].focus_set()
 
         def tela_editar(self):
+            #atributos
             self.codigo_edit = ctk.StringVar()
             self.nome_edit = ctk.StringVar()
             self.preco_custo_edit = ctk.StringVar()
             self.preco_venda_edit = ctk.StringVar()
             self.quantidade_edit = ctk.StringVar()
+
+            #valor pra alterar
             self.novo_valor = ctk.StringVar()
+
+            #label status
             self.status_edit = ctk.StringVar()
+
+
 
             #frame tela editar
             frame = ctk.CTkFrame(self.frame_conteudo, fg_color="#1e1e1e")
@@ -433,7 +440,7 @@ class ProdutoMenu(ctk.CTkFrame):
             #botao salvar
             ctk.CTkButton(frame,
                     text="Salvar", 
-                    command=self.controller.salvar_alteracao,
+                    command=lambda: self.controller.salvar_alteracao(),
                     text_color="black", 
                     corner_radius=40,
                     border_color="black",
@@ -563,7 +570,7 @@ class ProdutoController:
         self.ref_estoque = ref_estoque
 
     
-    def criar(self):
+    def criar(self, campos):
         """Recebe as entradas e envia para a classe estoque criar e salvar o produto"""
         try:
             codigo = int(self.tela.codigo_cadastro.get())
@@ -587,16 +594,13 @@ class ProdutoController:
     
         self.tela.status_cadastro.set(resultado)
 
-        for _, var in self.tela.campos:
+        for _, var in campos:
             var.set("")
 
     def salvar_alteracao(self):
         valor = self.tela.novo_valor.get()
                                                                            #eu poderia desempacotar o valor pra ficar mais facil, mas preferi deixar o indice mesmo
         self.tela.status_edit.set(self.ref_estoque.atualizar_produto(self.tela.produto[1], self.tela.atributo, valor))
-        
-        for _, var in self.tela.campos:
-            var.set("")
 
     def deletar(self):
         try:

@@ -49,6 +49,10 @@ class Estoque:
         if atributo not in colunas_validas:
             return "Atributo inválido!"
         
+        if atributo == "codigo":
+            if self.conferir_se_existe_no_estoque(valor_novo):
+                return"Já existe um item com o mesmo código"
+        
         try:
             if atributo in ["codigo", "quantidade"]:
                 valor_novo = int(valor_novo)
@@ -130,6 +134,9 @@ class Estoque:
 
         self.cur.execute("SELECT quantidade,quantidade_fardo FROM produtos WHERE id=?", (produto_pai_id,))
         produto_pai = self.cur.fetchone()
+        if produto_pai[0] <=0:
+            return
+        
         quantidade_pai_atualizada = produto_pai[0] - 1
         quantidade_fardo = produto_pai[1]
 

@@ -58,7 +58,7 @@ class Caixa:
             "troco": troco
         })
 
-        linhas = self.recibo.gerar_linhas(self.itens_no_carrinho, valor_pago) #acho que vou precisar mudar isso pra parte de imprimir recibo depois, porque vou ter que adicionar o cpf pro sat
+        linhas = self.recibo.gerar_linhas(self.itens_no_carrinho, valor_pago)
 
         self.itens_no_carrinho.clear()
 
