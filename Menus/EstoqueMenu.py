@@ -62,7 +62,7 @@ class EstoqueMenu(ctk.CTkFrame):
         #tabela
         self.tabela = ttk.Treeview(
             self.frame_conteudo,
-            columns=("codigo", "nome", "preco", "preco_venda", "quantidade", "margem lucro"),
+            columns=("codigo", "nome", "tipo", "preco", "preco_venda", "quantidade", "margem lucro"),
             show="headings",
             style="Custom.Treeview",
             yscrollcommand=self.scroll.set
@@ -77,6 +77,7 @@ class EstoqueMenu(ctk.CTkFrame):
         #Cabeçalhos da tabela
         self.tabela.heading("codigo", text="Código", command=lambda: self.ordenar_estoque("codigo"))
         self.tabela.heading("nome", text="Nome", command=lambda: self.ordenar_estoque("nome"))
+        self.tabela.heading("tipo", text="Tipo")
         self.tabela.heading("preco", text="Preço")
         self.tabela.heading("preco_venda", text="Preço de venda")
         self.tabela.heading("quantidade", text="Quantidade")
@@ -85,6 +86,7 @@ class EstoqueMenu(ctk.CTkFrame):
         #Coluna da tabela
         self.tabela.column("codigo", width=80)
         self.tabela.column("nome", width=150)
+        self.tabela.column("tipo", width=100)
         self.tabela.column("preco", width=100)
         self.tabela.column("preco_venda", width=100)
         self.tabela.column("quantidade", width=100)
@@ -136,7 +138,7 @@ class EstoqueMenu(ctk.CTkFrame):
             estoque = self.referencia_main.estoque.get_banco()
 
         for produto in estoque: #pega o objeto no estoque e insere na tabela
-            _, codigo, nome, preco_custo, preco_venda, quantidade = produto
+            _, codigo, nome, tipo, preco_custo, preco_venda, quantidade, _, _ = produto
             #primeiro valor é o id
 
             self.tabela.insert(
@@ -145,6 +147,7 @@ class EstoqueMenu(ctk.CTkFrame):
                 values=(
                     codigo,
                     nome,
+                    tipo,
                     f"R$: {preco_custo:.2f}",
                     f"R$: {preco_venda:.2f}",
                     quantidade,

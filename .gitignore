@@ -1,3 +1,5 @@
 readme
-estoque.db
 .gitignore
+adega.db
+recibo_teste.txt
+venv

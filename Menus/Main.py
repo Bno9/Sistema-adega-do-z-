@@ -47,12 +47,8 @@ class Main:
         self.root.bind_all("<Key>", self.tecla_apertada)
 
         #produtos criados para teste
-        self.estoque.criar_produto(1,"Whisky",2.20,5,10)
-        self.estoque.criar_produto(34,"Red label",50,80,2)
-        self.estoque.criar_produto(913495182,"Cigarro",10,30,10)
-        self.estoque.criar_produto(2,"Agua sem gas",1,3,100)
-        for i in range(2000):
-             self.estoque.criar_produto(i,"Teste",20,150,10)
+        self.estoque.criar_produto(1,"fardo cerveja", "fardo", 25,40,10,None,6)
+        self.estoque.criar_produto(2,"cerveja", "unidade", 3,6,1)
 
         #despesas criadas para teste
         self.despesa.adicionar_despesa("contador", 100)

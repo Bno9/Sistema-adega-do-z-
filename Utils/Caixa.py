@@ -105,7 +105,7 @@ class Caixa:
     def validar_codigo(self, codigo_produto, quantidade=1):
         if self.estoque.conferir_se_existe_no_estoque(codigo_produto):
             cursor_estoque = self.estoque.cur
-            cursor_estoque.execute("SELECT codigo, nome, preco_custo, preco_venda, quantidade FROM produtos WHERE codigo=?", (codigo_produto,))
+            cursor_estoque.execute("SELECT codigo, nome, tipo, preco_custo, preco_venda, quantidade FROM produtos WHERE codigo=?", (codigo_produto,))
             row = cursor_estoque.fetchone()
 
             from Utils.Produto import Produto

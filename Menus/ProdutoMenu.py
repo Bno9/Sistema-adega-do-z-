@@ -97,6 +97,10 @@ class ProdutoMenu(ctk.CTkFrame):
             self.quantidade_cadastro = ctk.StringVar()
             self.status_cadastro = ctk.StringVar()
 
+            self.tipo = "unidade"
+            self.qtd_fardo = ctk.StringVar()
+            self.referencia_codigo_fardo = ctk.StringVar()
+
             #frame para tela de cadastro
             cadastro_tela = ctk.CTkFrame(self.frame_conteudo, fg_color="#1e1e1e")
             cadastro_tela.grid(row=0, column=0, sticky="nsew")
@@ -111,7 +115,7 @@ class ProdutoMenu(ctk.CTkFrame):
             form_frame = ctk.CTkFrame(cadastro_tela, fg_color="#1e1e1e")
             form_frame.grid(row=1, column=0, sticky="nsew")
             form_frame.columnconfigure((0,1), weight=1)
-            form_frame.rowconfigure((0,1,2,3,4,5), weight=1)
+            form_frame.rowconfigure((0,1,2,3,4,5,6), weight=1)
 
             botao_frame = ctk.CTkFrame(cadastro_tela, fg_color="#1e1e1e")
             botao_frame.grid(row=2, column=0, sticky="nsew")
@@ -144,7 +148,7 @@ class ProdutoMenu(ctk.CTkFrame):
                       ).grid(column=0, row=1, pady=10)
 
             #labels/entrys
-            for i, (texto, variavel) in enumerate(self.campos):
+            for i, (texto, variavel) in enumerate(self.campos, start=1):
                 ctk.CTkLabel(form_frame, 
                             text=texto, 
                             text_color="white",
@@ -166,6 +170,37 @@ class ProdutoMenu(ctk.CTkFrame):
                            )
                     
                 self.entries.append(entry)
+
+            #checkbox tipo
+            combobox_tipo = ctk.CTkComboBox(form_frame,
+                                            values=["unidade", "fardo"],
+                                            width=310,
+                                            height=50,
+                                            font=("arial", 32, "bold"),
+                                            command=self.controller.mudar_conteudo
+                                            )
+            combobox_tipo.grid(row=0, column=0, sticky="e")
+
+            #label vazio pra alinhar a combobox
+            ctk.CTkLabel(form_frame,
+                         text="").grid(row=0, column=1, sticky="w")
+
+            #label dependendo do tipo
+            self.label_tipo = ctk.CTkLabel(form_frame, 
+                            text="Referencia fardo", 
+                            text_color="white",
+                            fg_color="#1e1e1e",
+                            font=("arial", 32, "bold")
+                          )
+            self.label_tipo.grid(column=1, row=6, pady=5, padx=10, sticky="w")
+
+            #entrada dependendo do tipo
+            self.entry_tipo = ctk.CTkEntry(form_frame, 
+                                  textvariable=self.referencia_codigo_fardo, 
+                                  width=300,
+                                  font=("Arial", 20, "bold"))
+            self.entry_tipo.grid(row=6, column=0, pady=5, padx=10, sticky="e")
+            self.entries.append(self.entry_tipo)
 
             #teclas para mudar campo
             for i, entry in enumerate(self.entries):
@@ -536,12 +571,19 @@ class ProdutoController:
             preco_custo = float(self.tela.preco_custo_cadastro.get())
             preco_venda = float(self.tela.preco_venda_cadastro.get())
             quantidade = int(self.tela.quantidade_cadastro.get())
+            tipo = self.tela.tipo
                 
+            ref_str = self.tela.referencia_codigo_fardo.get().strip()
+            referencia_produto = int(ref_str) if ref_str else None
+
+            qtd_str = self.tela.qtd_fardo.get().strip()
+            qtd_fardo = int(qtd_str) if qtd_str else None
+
         except ValueError:
             self.tela.status_cadastro.set("Digite apenas numeros")
             return
         
-        resultado = self.ref_estoque.criar_produto(codigo,nome,preco_custo,preco_venda,quantidade)
+        resultado = self.ref_estoque.criar_produto(codigo,nome,tipo,preco_custo,preco_venda,quantidade, referencia_produto, qtd_fardo)
     
         self.tela.status_cadastro.set(resultado)
 
@@ -563,3 +605,13 @@ class ProdutoController:
         except ValueError:
             self.tela.status_excluir.set("Digite apenas numeros")
             return
+        
+    def mudar_conteudo(self, valor):
+        self.tela.tipo = valor
+        if self.tela.tipo == "fardo":
+            self.tela.label_tipo.configure(text="Quantidade no fardo")
+            self.tela.entry_tipo.configure(textvariable=self.tela.qtd_fardo)
+            
+        else:
+            self.tela.label_tipo.configure(text="Referencia produto (opcional)")
+            self.tela.entry_tipo.configure(textvariable=self.tela.referencia_codigo_fardo)

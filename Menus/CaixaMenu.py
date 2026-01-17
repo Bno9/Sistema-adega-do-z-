@@ -474,9 +474,7 @@ Troco: R$ {self.resultado['troco']:.2f}""")
         )
         entry_desconto.grid(row=1, column=1, padx=10)
         entry_desconto.focus_set()
-
-       
-            
+        
     def consultar_produto(self, event=None):
         codigo_consulta = StringVar()
 
