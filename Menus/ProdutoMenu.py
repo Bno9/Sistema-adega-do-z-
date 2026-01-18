@@ -16,10 +16,6 @@ class ProdutoMenu(ctk.CTkFrame):
             #atributos
             self.produto = None
             self.atributo = None
-            self.mapa_telas = {1: self.tela_cadastro,
-                               2: self.tela_editar,
-                               3: self.tela_excluir,
-                               4: self.voltar}
             self.pode_usar_atalho = False
 
             #frame
@@ -38,64 +34,100 @@ class ProdutoMenu(ctk.CTkFrame):
         def menu(self):
             self.limpar_tela()
             self.pode_usar_atalho = True
+            self.codigo_entry = StringVar()
+            self.status_menu = StringVar()
 
             menu_tela = ctk.CTkFrame(self.frame_conteudo, fg_color="#1e1e1e")
             menu_tela.grid(row=0, column=0, sticky="nsew")
-            menu_tela.rowconfigure((0,1,2,3,4), weight=1)
+            menu_tela.rowconfigure((0,1,2,3,4,5,6,7,8), weight=1)
             menu_tela.columnconfigure(0, weight=1)
 
-            buttons = [("Cadastrar Produto", 1),
-                       ("Editar produto", 2),
-                       ("Excluir produto", 3),
-                       ("Voltar", 4)]
+            botoes = ctk.CTkFrame(menu_tela, fg_color="#1e1e1e")
+            botoes.grid(column=0, row=5)
+            botoes.columnconfigure((0,1,2), weight=1)
+
+            buttons = [("""Cadastrar
+Produto""", "green", lambda:self.tela_formulario(self.codigo_entry.get(), "cadastro")),
+                       ("Editar produto", "white", lambda:self.tela_formulario(self.codigo_entry.get(), "edicao")),
+                       ("Excluir produto", "red", lambda:self.controller.deletar(self.codigo_entry.get()))]
             
             #label principal
             ctk.CTkLabel(menu_tela, 
                       text="""Menu de cadastro de produtos""", 
                       text_color="white",
                       fg_color="#1e1e1e",
-                      font=("arial", 26, "bold")
+                      font=("arial", 32, "bold")
                       ).grid(column=0, row=0, pady=20)
             
+            #label codigo
+            ctk.CTkLabel(menu_tela, 
+                      text="""Digite o código do produto e escolha uma opção""", 
+                      text_color="white",
+                      fg_color="#1e1e1e",
+                      font=("arial", 22, "bold")
+                      ).grid(column=0, row=2, sticky="s")
+            
+            #label status
+            ctk.CTkLabel(menu_tela, 
+                      textvariable=self.status_menu,
+                      text_color="red",
+                      fg_color="#1e1e1e",
+                      font=("arial", 22, "bold")
+                      ).grid(column=0, row=4, sticky="n")
+            
+            #entry do codigo
+            ctk.CTkEntry(menu_tela,
+                         width=300,
+                         height=50,
+                         font=("arial", 26, "bold"),
+                         textvariable=self.codigo_entry).grid(row=3, column=0)
+            
             #botoes de escolha
-            for i, (texto, comando) in enumerate(buttons, start=1):
-                ctk.CTkButton(menu_tela, 
+            for i, (texto, cor, comando) in enumerate(buttons):
+                ctk.CTkButton(botoes, 
                         text=texto, 
                         text_color="black", 
                         corner_radius=40,
                         border_color="black",
-                        hover_color="white",
+                        hover_color=cor,
                         border_width=5,
                         width=300,  
                         height=200,
                         font=("Arial", 30, "bold"),
                         fg_color="orange",
-                        command=lambda c=comando: self.escolha_tela(c)
-                        ).grid(column=0, row=i, pady=20)
+                        command=comando
+                        ).grid(column=i, row=0, pady=20)
+
+            #botao voltar
+            ctk.CTkButton(menu_tela, 
+                        text="Voltar", 
+                        text_color="black", 
+                        corner_radius=40,
+                        border_color="black",
+                        hover_color="red",
+                        border_width=5,
+                        width=300,  
+                        height=200,
+                        font=("Arial", 30, "bold"),
+                        fg_color="orange",
+                        command=self.voltar
+                        ).grid(column=0, row=7)
                 
             self.master.bind("<Escape>", lambda e: self.voltar())
 
-        def escolha_tela(self, escolha):
-            try:
-                escolha = int(escolha)
-            except ValueError:
-                raise ValueError("Valor recebido inválido")
-            
-            escolhido = self.mapa_telas.get(escolha, self.referencia_main.voltar_menu_principal)
-            self.pode_usar_atalho = False
+        def tela_formulario(self, codigo, modo="cadastro"):
+            resultado = self.controller.conferir_codigo(codigo, modo)
+            if resultado.get("Status", "Erro") == "Erro":
+                self.status_menu.set(resultado.get("Mensagem", "Erro de processamento"))
+                return
 
-            self.limpar_tela()
-            self.master.unbind("<Escape>")
+            self.codigo = ctk.StringVar()
+            self.nome = ctk.StringVar()
+            self.preco_custo = ctk.StringVar()
+            self.preco_venda = ctk.StringVar()
+            self.quantidade = ctk.StringVar()
 
-            escolhido()
-
-        def tela_cadastro(self):
-            self.codigo_cadastro = ctk.StringVar()
-            self.nome_cadastro = ctk.StringVar()
-            self.preco_custo_cadastro = ctk.StringVar()
-            self.preco_venda_cadastro = ctk.StringVar()
-            self.quantidade_cadastro = ctk.StringVar()
-            self.status_cadastro = ctk.StringVar()
+            self.status_formulario = ctk.StringVar()
 
             self.tipo = "unidade"
             self.qtd_fardo = ctk.StringVar()
@@ -122,11 +154,14 @@ class ProdutoMenu(ctk.CTkFrame):
             botao_frame.columnconfigure((0,1,2,3), weight=1)
             botao_frame.rowconfigure(0, weight=1)
 
-            self.campos = [("Código", self.codigo_cadastro),
-                ("Nome", self.nome_cadastro),
-                ("Preço custo", self.preco_custo_cadastro),
-                ("Preço venda", self.preco_venda_cadastro),
-                ("Quantidade", self.quantidade_cadastro)]
+            self.campos = [("Código", self.codigo),
+                ("Nome", self.nome),
+                ("Preço custo", self.preco_custo),
+                ("Preço venda", self.preco_venda),
+                ("Quantidade", self.quantidade)]
+            
+            if modo == "cadastro":
+                del self.campos[0]
 
             self.entries.clear()
 
@@ -141,7 +176,7 @@ class ProdutoMenu(ctk.CTkFrame):
 
             #label status
             ctk.CTkLabel(header, 
-                      textvariable=self.status_cadastro, 
+                      textvariable=self.status_formulario, 
                       text_color="red",
                         fg_color="#1e1e1e",
                         font=("arial", 32, "bold")
@@ -187,7 +222,7 @@ class ProdutoMenu(ctk.CTkFrame):
 
             #label dependendo do tipo
             self.label_tipo = ctk.CTkLabel(form_frame, 
-                            text="Referencia fardo", 
+                            text="Referencia produto (opcional)", 
                             text_color="white",
                             fg_color="#1e1e1e",
                             font=("arial", 32, "bold")
@@ -209,20 +244,37 @@ class ProdutoMenu(ctk.CTkFrame):
                 entry.bind("<Up>", lambda e, idx=i: self.campo_anterior(idx)) #seta pra cima
                 entry.bind("<Escape>", lambda e: self.menu())
 
-            #botao cadastrar
-            ctk.CTkButton(botao_frame,
-                       text="Cadastrar", 
-                        text_color="black", 
-                        corner_radius=40,
-                        border_color="black",
-                        hover_color="white",
-                        border_width=5,
-                        width=300,  
-                        height=200,
-                        font=("Arial", 30, "bold"),
-                        fg_color="orange",
-                       command=lambda: self.controller.criar(self.campos)
-                       ).grid(column=1, row=0)
+            if modo == "cadastro":
+                #botao cadastrar
+                ctk.CTkButton(botao_frame,
+                        text="Cadastrar", 
+                            text_color="black", 
+                            corner_radius=40,
+                            border_color="black",
+                            hover_color="green",
+                            border_width=5,
+                            width=300,  
+                            height=200,
+                            font=("Arial", 30, "bold"),
+                            fg_color="orange",
+                        command=lambda: self.controller.criar(self.campos)
+                        ).grid(column=1, row=0)
+                
+            elif modo == "edicao":
+                #botao editar
+                ctk.CTkButton(botao_frame,
+                        text="Editar", 
+                            text_color="black", 
+                            corner_radius=40,
+                            border_color="black",
+                            hover_color="green",
+                            border_width=5,
+                            width=300,  
+                            height=200,
+                            font=("Arial", 30, "bold"),
+                            fg_color="orange",
+                        command=lambda: self.controller.editar(self.campos)
+                        ).grid(column=1, row=0)
             
             #botao voltar
             ctk.CTkButton(botao_frame,  
@@ -230,7 +282,7 @@ class ProdutoMenu(ctk.CTkFrame):
                         text_color="black", 
                         corner_radius=40,
                         border_color="black",
-                        hover_color="white",
+                        hover_color="red",
                         border_width=5,
                         width=300,  
                         height=200,
@@ -241,300 +293,23 @@ class ProdutoMenu(ctk.CTkFrame):
 
             self.entries[0].focus_set()
 
-        def tela_editar(self):
-            #atributos
-            self.codigo_edit = ctk.StringVar()
-            self.nome_edit = ctk.StringVar()
-            self.preco_custo_edit = ctk.StringVar()
-            self.preco_venda_edit = ctk.StringVar()
-            self.quantidade_edit = ctk.StringVar()
-
-            #valor pra alterar
-            self.novo_valor = ctk.StringVar()
-
-            #label status
-            self.status_edit = ctk.StringVar()
 
 
 
-            #frame tela editar
-            frame = ctk.CTkFrame(self.frame_conteudo, fg_color="#1e1e1e")
-            frame.grid(column=0, row=0)
-            frame.columnconfigure((0,1), weight=1)
-            frame.rowconfigure((0,1,2,3), weight=1)
+
+
+
+
+
+
+
+
+
+
+
+
+
             
-            #label principal
-            ctk.CTkLabel(frame,
-                    text="Digite o código do produto", 
-                     text_color="white",
-                    fg_color="#1e1e1e",
-                    font=("arial", 30, "bold")
-                    ).grid(column=0, row=0, columnspan=2, pady=20)
-
-            #label status
-            ctk.CTkLabel(frame, 
-                      width=30, 
-                      textvariable=self.status_edit,
-                      font=("Arial", 24, "bold"),
-                      text_color="red"
-                      ).grid(row=2, column=0, columnspan=2, pady=20)
-
-            #entry código
-            entry_codigo = ctk.CTkEntry(frame, 
-                      width=300,
-                      font=("Arial", 20, "bold"),
-                      textvariable=self.codigo_edit
-                      )
-            entry_codigo.grid(column=0, row=1, columnspan=2, pady=20)
-            entry_codigo.focus_set()
-            entry_codigo.bind("<Escape>", lambda e: self.menu())
-            entry_codigo.bind("<Return>", lambda e: self.editar())
-
-            #botao editar
-            ctk.CTkButton(frame,  
-                       text="Editar", 
-                        text_color="black", 
-                        corner_radius=40,
-                        border_color="black",
-                        hover_color="white",
-                        border_width=5,
-                        width=300,  
-                        height=200,
-                        font=("Arial", 30, "bold"),
-                        fg_color="orange",
-                       command=self.editar
-                       ).grid(column=0, row=3, pady=20)
-
-            #botao voltar
-            ctk.CTkButton(frame, 
-                       text="Voltar", 
-                        text_color="black", 
-                        corner_radius=40,
-                        border_color="black",
-                        hover_color="white",
-                        border_width=5,
-                        width=300,  
-                        height=200,
-                        font=("Arial", 30, "bold"),
-                        fg_color="orange",
-                       command=self.menu
-                       ).grid(column=1, row=3, pady=20)
-            
-        def editar(self):
-            """Recebe o valor e altera o atributo do produto"""
-
-            try:
-                codigo_produto = int(self.codigo_edit.get())
-            except ValueError:
-                self.status_edit.set("Digite apenas numeros")
-
-            if not self.referencia_main.estoque.conferir_se_existe_no_estoque(codigo_produto):
-                self.status_edit.set("Produto não encontrado")
-                return
-
-            self.produto = self.referencia_main.estoque.get_produto(codigo_produto)
- 
-            self.limpar_tela()
-
-            mapa = [
-                (1, "codigo"),
-                (2, "nome"),
-                (3, "preco_custo"),
-                (4, "preco_venda"),
-                (5, "quantidade")
-            ]
-
-            frame = ctk.CTkFrame(self.frame_conteudo, fg_color="#1e1e1e")
-            frame.rowconfigure((0,1,2,3,4,5,6,7), weight=1)
-            frame.columnconfigure(0, weight=1)
-            frame.grid(row=0, column=0, sticky="nsew")
-
-            #label escolha
-            ctk.CTkLabel(frame, 
-                         text="""Escolha o que deseja alterar""",
-                         text_color="white",
-                            fg_color="#1e1e1e",
-                            font=("arial", 24, "bold")
-            ).grid(column=0, row=0, sticky="ew")
-            
-            #botões de escolha
-            for i, (opcao, texto) in enumerate(mapa, start=1):
-                ctk.CTkButton(frame, 
-                              text=texto, 
-                              text_color="black", 
-                                corner_radius=40,
-                                border_color="black",
-                                hover_color="white",
-                                border_width=5,
-                                width=400,  
-                                height=200,
-                                font=("Arial", 30, "bold"),
-                                fg_color="orange",
-                              command=lambda c=opcao: self.processar_escolha(c, self.novo_valor)
-                              ).grid(column=0, row=i, pady=20)
-         
-            #botao cancelar
-            ctk.CTkButton(frame,
-                       text="Cancelar",
-                       text_color="black", 
-                        corner_radius=40,
-                        border_color="black",
-                        hover_color="red",
-                        border_width=5,
-                        width=400,  
-                        height=200,
-                        font=("Arial", 30, "bold"),
-                        fg_color="orange",
-                       command=self.menu).grid(column=0, row=6, pady=20)        
-
-            self.master.bind("<Key>", self.teclas_atributos)
-            
-        def processar_escolha(self, escolha, novo_valor):
-            mapa = {
-                1: "codigo",
-                2: "nome",
-                3: "preco_custo",
-                4: "preco_venda",
-                5: "quantidade"
-            }
-
-            if escolha not in mapa:
-                self.status_edit.set("Escolha inválida")
-                return
-
-            self.atributo = mapa[escolha]
-
-            self.limpar_tela()
-
-            frame = ctk.CTkFrame(self.frame_conteudo, fg_color="#1e1e1e")
-            frame.rowconfigure((0,1,2,3), weight=1)
-            frame.columnconfigure((0,1,2,3), weight=1)
-            frame.grid(row=0, column=0, sticky="nsew")
-
-            #label novo valor
-            ctk.CTkLabel(frame, 
-                      text="Digite o novo valor",
-                      text_color="white",
-                        fg_color="#1e1e1e",
-                        font=("arial", 36, "bold")
-                      ).grid(column=1, row=0, columnspan=2)
-            
-            #label status
-            ctk.CTkLabel(frame, 
-                      textvariable=self.status_edit,
-                      font=("Arial", 24, "bold"),
-                        text_color="red"
-                      ).grid(column=1, row=3, columnspan=2)
-            
-            #entry novo valor
-            entry_foco = ctk.CTkEntry(frame, 
-                      textvariable=novo_valor,
-                      width=300,
-                        font=("Arial", 20, "bold")
-                      )
-            entry_foco.grid(column=1, row=1, columnspan=2)
-            entry_foco.focus_set()
-            entry_foco.bind("<Escape>", lambda e: self.menu())
-            entry_foco.bind("<Return>", lambda e: self.controller.salvar_alteracao())
-            
-            #botao salvar
-            ctk.CTkButton(frame,
-                    text="Salvar", 
-                    command=lambda: self.controller.salvar_alteracao(),
-                    text_color="black", 
-                    corner_radius=40,
-                    border_color="black",
-                    hover_color="white",
-                    border_width=5,
-                    width=300,  
-                    height=200,
-                    font=("Arial", 30, "bold"),
-                    fg_color="orange",
-                    ).grid(column=1, row=2)
-            
-            #botao cancelar
-            ctk.CTkButton(frame, 
-                       text="Cancelar", 
-                       command=self.menu,
-                       text_color="black", 
-                        corner_radius=40,
-                        border_color="black",
-                        hover_color="white",
-                        border_width=5,
-                        width=300,  
-                        height=200,
-                        font=("Arial", 30, "bold"),
-                        fg_color="orange",
-                       ).grid(column=2, row=2)
-
-
-        def tela_excluir(self):
-            self.codigo_excluir = ctk.StringVar()
-            self.status_excluir = ctk.StringVar()
-
-            #frame tela excluir
-            frame = ctk.CTkFrame(self.frame_conteudo, fg_color="#1e1e1e")
-            frame.grid(column=0, row=0, pady=40)
-            frame.columnconfigure((0,1), weight=1)
-            frame.rowconfigure((0,1,2,3), weight=1)
-
-            #label principal
-            ctk.CTkLabel(frame, 
-                      text="Digite o código do produto que deseja remover",
-                      text_color="white",
-                        fg_color="#1e1e1e",
-                        font=("arial", 32, "bold")
-                        ).grid(column=0, row=0, columnspan=2, pady=20)
-            
-            #label status
-            ctk.CTkLabel(frame, 
-                      textvariable=self.status_excluir,
-                      font=("Arial", 24, "bold"),
-                      text_color="red"
-                      ).grid(column=0, row=3, columnspan=2, pady=20)
-
-            #entry codigo
-            entry_codigo = ctk.CTkEntry(frame,  
-                      textvariable=self.codigo_excluir,
-                      width=300,
-                      font=("Arial", 20, "bold")
-                      )
-            
-            entry_codigo.grid(column=0, row=1, columnspan=2, pady=20)
-            entry_codigo.focus_set()
-            entry_codigo.bind("<Escape>", lambda e: self.menu())
-            entry_codigo.bind("<Return>", lambda e: self.controller.deletar())
-            
-            #botao enviar
-            ctk.CTkButton(frame, 
-                       text="Enviar", 
-                       text_color="black", 
-                        corner_radius=40,
-                        border_color="black",
-                        hover_color="white",
-                        border_width=5,
-                        width=300,  
-                        height=200,
-                        font=("Arial", 30, "bold"),
-                        fg_color="orange",
-                       command=self.controller.deletar
-                       ).grid(column=0, row=2, pady=20)
-
-            #botao voltar
-            ctk.CTkButton(frame, 
-                       text="Voltar", 
-                      text_color="black", 
-                        corner_radius=40,
-                        border_color="black",
-                        hover_color="white",
-                        border_width=5,
-                        width=300,  
-                        height=200,
-                        font=("Arial", 30, "bold"),
-                        fg_color="orange",
-                       command=self.menu
-                       ).grid(column=1, row=2, pady=20)
-
         def voltar(self):
             self.referencia_main.voltar_menu_principal()
 
@@ -556,13 +331,8 @@ class ProdutoMenu(ctk.CTkFrame):
                 self.entries[indice - 1].focus_set()
 
         def teclas_menu(self, tecla):
-            if tecla.char in ["1", "2", "3", "4"] and self.pode_usar_atalho:
-                self.escolha_tela(int(tecla.char))
-
-        def teclas_atributos(self, tecla):
-            if tecla.char in ["1", "2", "3", "4"]:
-                self.master.unbind("<Key>")
-                self.processar_escolha(int(tecla.char), self.novo_valor)
+            if tecla.char.lower() in ["f1", "f2", "f3"] and self.pode_usar_atalho: #arrumar aqui ainda
+                self.escolha_tela(tecla.char)
 
 class ProdutoController:
     def __init__(self, tela, ref_estoque):
@@ -597,17 +367,17 @@ class ProdutoController:
         for _, var in campos:
             var.set("")
 
-    def salvar_alteracao(self):
+    def editar(self):
         valor = self.tela.novo_valor.get()
-                                                                           #eu poderia desempacotar o valor pra ficar mais facil, mas preferi deixar o indice mesmo
+                                                                        
         self.tela.status_edit.set(self.ref_estoque.atualizar_produto(self.tela.produto[1], self.tela.atributo, valor))
 
-    def deletar(self):
+    def deletar(self, codigo):
         try:
-            codigo = int(self.tela.codigo_excluir.get())
-            self.tela.status_excluir.set(self.ref_estoque.remover_produto(codigo))
+            codigo = int(codigo)
+            self.tela.status_menu.set(self.ref_estoque.remover_produto(codigo))
         except ValueError:
-            self.tela.status_excluir.set("Digite apenas numeros")
+            self.tela.status_menu.set("Digite apenas numeros")
             return
         
     def mudar_conteudo(self, valor):
@@ -619,3 +389,26 @@ class ProdutoController:
         else:
             self.tela.label_tipo.configure(text="Referencia produto (opcional)")
             self.tela.entry_tipo.configure(textvariable=self.tela.referencia_codigo_fardo)
+    
+    def conferir_codigo(self, codigo, modo):
+        if codigo == "":
+            return {"Status": "Erro",
+                    "Mensagem": "Digite um código"}
+        
+        try:
+            codigo = int(codigo)
+        except ValueError:
+            return {"Status": "Erro",
+                    "Mensagem": "Código precisa ser numero"}
+
+        ja_existe = self.ref_estoque.conferir_se_existe_no_estoque(codigo)
+
+        if ja_existe and modo == "cadastro":
+            return {"Status": "Erro",
+                    "Mensagem": "Não é possivel cadastrar esse código, pois já existe um produto com o mesmo código"}
+        
+        if modo == "edicao":
+            return {"Status": "Erro",
+        "Mensagem": "Não é possivel editar, pois não existe um produto com esse código"}
+
+        return {"Status": "Sucesso"}
