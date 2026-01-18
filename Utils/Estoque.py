@@ -24,7 +24,8 @@ class Estoque:
         obj_produto = Produto(*args) #Cria o objeto produto usando a classe Produto
 
         if self.conferir_se_existe_no_estoque(obj_produto.codigo):
-            return "Um item já está cadastrado com esse código"
+            return {"Status": "Erro",
+                    "Mensagem": "Um item já está cadastrado com esse código"}
         
         #busca o código do produto referenciado e pega o id dele
         self.cur.execute("SELECT id FROM produtos WHERE codigo=?", (obj_produto.id_produto_pai,))
@@ -37,14 +38,15 @@ class Estoque:
                          (obj_produto.codigo, obj_produto.nome, obj_produto.tipo, obj_produto.preco_custo, obj_produto.preco_venda, obj_produto.quantidade, obj_produto.id_produto_pai, obj_produto.qtd_fardo))
         self.con.commit()
 
-        return f"item {obj_produto.nome} criado"
+        return {"Status": "Sucesso",
+                "Mensagem": f"{obj_produto.nome} criado"}
       
     def remover_produto(self, codigo_produto):
         self.cur.execute("DELETE FROM produtos WHERE codigo=?", (codigo_produto,))
         self.con.commit()
         return "Produto removido com sucesso" if self.cur.rowcount>0 else "Produto não encontrado"
     
-    def atualizar_produto(self, codigo_produto, atributo, valor_novo):
+    def atualizar_produto(self, codigo_produto, atributos: list):
         colunas_validas = ["codigo", "nome", "preco_custo", "preco_venda", "quantidade"]
         if atributo not in colunas_validas:
             return "Atributo inválido!"

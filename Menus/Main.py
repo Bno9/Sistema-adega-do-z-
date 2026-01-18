@@ -48,7 +48,7 @@ class Main:
 
         #produtos criados para teste
         self.estoque.criar_produto(1,"fardo cerveja", "fardo", 25,40,10,None,6)
-        self.estoque.criar_produto(2,"cerveja", "unidade", 3,6,1)
+        self.estoque.criar_produto(2,"cerveja", "unidade", 3,6,1,1)
 
         #despesas criadas para teste
         self.despesa.adicionar_despesa("contador", 100)
