@@ -290,42 +290,21 @@ class ProdutoController:
     
     def criar(self):
         """Recebe as entradas e envia para a classe estoque criar e salvar o produto"""
-        try:
-            codigo = int(self.tela.codigo.get())
-            nome = self.tela.nome.get()
-            preco_custo = float(self.tela.preco_custo.get())
-            preco_venda = float(self.tela.preco_venda.get())
-            quantidade = int(self.tela.quantidade.get())
-            tipo = self.tela.tipo.get()
-                
-            ref_str = self.tela.referencia_codigo_fardo.get().strip()
-            referencia_produto = int(ref_str) if ref_str else None
-
-            qtd_str = self.tela.qtd_fardo.get().strip()
-            qtd_fardo = int(qtd_str) if qtd_str else None
-
-        except ValueError:
-            self.tela.status_menu.set("Digite apenas numeros")
+        dados = self.coletar_dados_produto()
+        if not dados:
             return
         
-        resultado = self.ref_estoque.criar_produto(codigo,nome,tipo,preco_custo,preco_venda,quantidade, referencia_produto, qtd_fardo)
+        resultado = self.ref_estoque.criar_produto(**dados)
 
         if resultado.get("Status", "Erro") == "Erro":
-            self.editar(codigo,nome,preco_custo,preco_venda,quantidade,tipo,referencia_produto,qtd_fardo)
+            self.editar(dados)
             return
     
         self.tela.status_menu.set(resultado.get("Mensagem", "Erro"))
-
         self.limpar_variaveis()
 
-    def editar(self):
-        codigo = self.tela.codigo.get()
-        atributos = []
-        for i, (texto, var) in enumerate(self.tela.entrys):
-                atributos.append(self.tela.entrys.get([i+1]))
-                print(atributos)
-                                                                        
-        self.tela.status_menu.set(self.ref_estoque.atualizar_produto(codigo, atributos))
+    def editar(self, dados):
+        self.tela.status_menu.set(self.ref_estoque.atualizar_produto(dados))
 
     def deletar(self, codigo):
         try:
@@ -362,6 +341,9 @@ class ProdutoController:
         if produto:
             print(produto)
             for i, (texto, var) in enumerate(self.tela.entrys):
+                if produto[i+1] == None:
+                    var.set("")
+                    continue
                 var.set(produto[i+1])
                 print(produto[i+1])
             self.mudar_conteudo(produto[3])
@@ -377,3 +359,22 @@ class ProdutoController:
                 if i == 0:
                     continue
                 tupla[1].set("")
+
+    def coletar_dados_produto(self):
+        try:
+            dados = {
+                "codigo": int(self.tela.codigo.get()),
+                "nome": self.tela.nome.get(),
+                "preco_custo": float(self.tela.preco_custo.get()),
+                "preco_venda": float(self.tela.preco_venda.get()),
+                "quantidade": int(self.tela.quantidade.get()),
+                "tipo": self.tela.tipo,
+                "id_produto_pai": int(self.tela.referencia_codigo_fardo.get())
+                    if self.tela.referencia_codigo_fardo.get().strip() else None,
+                "quantidade_fardo": int(self.tela.qtd_fardo.get())
+                    if self.tela.qtd_fardo.get().strip() else None
+            }
+            return dados
+        except ValueError:
+            self.tela.status_menu.set("Digite apenas números")
+            return None

@@ -18,20 +18,20 @@ class Estoque:
                         )""")
         self.con.commit()
 
-    def criar_produto(self, *args):
+    def criar_produto(self, dados: dict):
         from Utils.Produto import Produto
 
-        obj_produto = Produto(*args) #Cria o objeto produto usando a classe Produto
+        obj_produto = Produto(**dados) #Cria o objeto produto usando a classe Produto
 
         if self.conferir_se_existe_no_estoque(obj_produto.codigo):
             return {"Status": "Erro",
                     "Mensagem": "Um item já está cadastrado com esse código"}
         
         #busca o código do produto referenciado e pega o id dele
-        self.cur.execute("SELECT id FROM produtos WHERE codigo=?", (obj_produto.id_produto_pai,))
-        produto = self.cur.fetchone()
-        if produto:
-            obj_produto.id_produto_pai = produto[0]
+        if obj_produto.id_produto_pai:
+            self.cur.execute("SELECT id FROM produtos WHERE codigo=?", (obj_produto.id_produto_pai,))
+            produto = self.cur.fetchone()
+            obj_produto.id_produto_pai = produto[0] if produto else None
 
         #insere o produto na tabela         
         self.cur.execute("INSERT INTO produtos (codigo, nome, tipo, preco_custo, preco_venda, quantidade, id_produto_pai, quantidade_fardo) VALUES (?,?,?,?,?,?,?,?)",
@@ -46,29 +46,31 @@ class Estoque:
         self.con.commit()
         return "Produto removido com sucesso" if self.cur.rowcount>0 else "Produto não encontrado"
     
-    def atualizar_produto(self, codigo_produto, atributos: list):
-        colunas_validas = ["codigo", "nome", "preco_custo", "preco_venda", "quantidade"]
-        if atributo not in colunas_validas:
-            return "Atributo inválido!"
-        
-        if atributo == "codigo":
-            if self.conferir_se_existe_no_estoque(valor_novo):
-                return"Já existe um item com o mesmo código"
-        
-        try:
-            if atributo in ["codigo", "quantidade"]:
-                valor_novo = int(valor_novo)
-            elif atributo in ["preco_custo", "preco_venda"]:
-                valor_novo = float(valor_novo)
-            elif atributo == "nome":
-                valor_novo = valor_novo
-        except ValueError:
-            return "Valor inválido"
-    
-        sql = f"UPDATE produtos SET {atributo}=? WHERE codigo=?"
-        self.cur.execute(sql, (valor_novo, codigo_produto))
+    def atualizar_produto(self, dados: dict):
+        codigo = dados.pop("codigo")
+
+        campos = []
+        valores = []
+
+        for campo, valor in dados.items():
+            campos.append(f"{campo} = ?")
+            valores.append(valor)
+
+        valores.append(codigo)
+
+        sql = f"""
+            UPDATE produtos
+            SET {', '.join(campos)}
+            WHERE codigo = ?
+        """
+
+        self.cur.execute(sql, valores)
         self.con.commit()
-        return "Produto alterado com sucesso!"
+
+        if self.cur.rowcount == 0:
+            return {"Status": "Erro", "Mensagem": "Produto não encontrado"}
+
+        return {"Status": "Sucesso", "Mensagem": "Produto atualizado com sucesso"}
 
     def conferir_se_existe_no_estoque(self, codigo_produto):
         self.cur.execute("SELECT 1 FROM produtos WHERE codigo=? LIMIT 1", (codigo_produto,))
