@@ -85,7 +85,7 @@ class ProdutoMenu(ctk.CTkFrame):
 
             buttons = [("""Salvar""", "green", self.controller.criar),
                        ("Excluir produto", "red", lambda: self.controller.deletar(self.codigo.get())),
-                       ("Alterar código", "green", self.controller.editar),
+                       ("Alterar código", "green", self.modal_codigo_novo),
                        ("Voltar", "red", self.voltar)]
             
             self.entrys = [("Código", self.codigo), ("Nome", self.nome), ("Tipo", self.tipo), ("Preço custo", self.preco_custo), ("Preço venda", self.preco_venda), ("Quantidade", self.quantidade), ("Qtd_fardo", self.referencia_codigo_fardo), ("Referencia_id_pai", self.qtd_fardo)]
@@ -320,6 +320,31 @@ class ProdutoMenu(ctk.CTkFrame):
             self.master.bind("<Return>", lambda e: self.controller.produto_selecionado())
             self.entries[0].focus_set()
 
+        def modal_codigo_novo(self):
+            codigo_atual = self.codigo.get()
+
+            produto = self.referencia_main.estoque.get_produto(codigo_atual)
+
+            if produto:
+                codigo_novo = ctk.StringVar()
+                modal = ctk.CTkToplevel(self.frame_conteudo, fg_color="#1e1e1e")
+
+                modal.title("Alterar código")
+                modal.geometry("300x200")
+                modal.transient(self.frame_conteudo)
+                modal.update_idletasks()
+                modal.grab_set()
+
+                label = ctk.CTkLabel(modal, text="Digite o novo código", font=("Arial", 20, "bold"))
+                label.pack(padx=20, pady=20)
+
+                entry = ctk.CTkEntry(modal, textvariable=codigo_novo, width=200, height=50, font=("Arial", 20, "bold"))
+                entry.pack(padx=20, pady=20)
+
+                entry.bind("<Return>", lambda e: self.controller.alterar_codigo(codigo_atual, codigo_novo.get()))
+                entry.focus_set()
+
+
         def carregar_estoque(self, estoque=None):
             for item in self.tabela.get_children():
                 self.tabela.delete(item)
@@ -410,10 +435,16 @@ class ProdutoController:
         self.limpar_variaveis()
         self.tela.carregar_estoque()
 
-    def editar(self, dados):
-        resultado = self.ref_estoque.atualizar_produto(dados)
-        self.tela.status_menu.set(resultado.get("Mensagem", ""))
+    def alterar_codigo(self, codigo_atual, codigo_novo):
+        resultado = self.ref_estoque.alterar_codigo(codigo_atual, codigo_novo)
+        self.limpar_variaveis()
         self.tela.carregar_estoque()
+
+    def editar(self, dados):
+        if dados:
+            resultado = self.ref_estoque.atualizar_produto(dados)
+            self.tela.status_menu.set(resultado.get("Mensagem", ""))
+            self.tela.carregar_estoque()
 
     def deletar(self, codigo):
         self.ref_estoque.remover_produto(codigo)

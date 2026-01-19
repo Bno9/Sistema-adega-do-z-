@@ -71,6 +71,12 @@ class Estoque:
             return {"Status": "Erro", "Mensagem": "Produto não encontrado"}
 
         return {"Status": "Sucesso", "Mensagem": "Produto atualizado com sucesso"}
+    
+    def alterar_codigo(self, codigo_atual, codigo_novo):
+        self.cur.execute(f"SELECT id FROM produtos WHERE codigo=?", (codigo_atual,))
+        produto = self.cur.fetchone()
+        id_produto = produto[0]
+        self.cur.execute(f"UPDATE produtos SET codigo=? WHERE id=?", (codigo_novo, id_produto))
 
     def conferir_se_existe_no_estoque(self, codigo_produto):
         self.cur.execute("SELECT 1 FROM produtos WHERE codigo=? LIMIT 1", (codigo_produto,))
