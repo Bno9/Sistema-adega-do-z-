@@ -46,10 +46,6 @@ class Main:
         self.despesa = Despesas(self.con)
         self.root.bind_all("<Key>", self.tecla_apertada)
 
-        #produtos criados para teste
-        self.estoque.criar_produto(1,"fardo cerveja", "fardo", 25,40,10,None,6)
-        self.estoque.criar_produto(2,"cerveja", "unidade", 3,6,1,1)
-
         #despesas criadas para teste
         self.despesa.adicionar_despesa("contador", 100)
         self.despesa.adicionar_despesa("aluguel", 1700, "10/12/2026", "Aluguel do imóvel")
@@ -326,6 +322,7 @@ class MenuPrincipal(ctk.CTkFrame):
 
 
 ctk.set_default_color_theme("blue")
+ctk.set_appearance_mode("dark")
 
 root = ctk.CTk()
 root.title("Adega do zé 2.0")

@@ -38,9 +38,9 @@ class ProdutoMenu(ctk.CTkFrame):
             self.codigo.trace("w", self.controller.buscar_produto)
             self.nome = ctk.StringVar()
             self.preco_custo = ctk.IntVar()
-            self.preco_custo.trace("w", self.atualizar_margem)
+            #self.preco_custo.trace("w", self.atualizar_margem)
             self.preco_venda = ctk.IntVar()
-            self.preco_venda.trace("w", self.atualizar_margem)
+            #self.preco_venda.trace("w", self.atualizar_margem)
             self.quantidade = ctk.StringVar()
 
             self.margem = StringVar()
@@ -304,72 +304,58 @@ class ProdutoController:
         self.limpar_variaveis()
 
     def editar(self, dados):
-        self.tela.status_menu.set(self.ref_estoque.atualizar_produto(dados))
+        resultado = self.ref_estoque.atualizar_produto(dados)
+        self.tela.status_menu.set(resultado.get("Mensagem", ""))
 
     def deletar(self, codigo):
-        try:
-            codigo = int(codigo)
-            self.tela.status_menu.set(self.ref_estoque.remover_produto(codigo))
-        except ValueError:
-            self.tela.status_menu.set("Digite apenas numeros")
-            return
-
-        for i, tupla in enumerate(self.tela.entrys):
-                if i == 0:
-                    continue
-                tupla[1].set("")
+        self.ref_estoque.remover_produto(codigo)
+        self.limpar_variaveis()
         
     def mudar_conteudo(self, valor):
         self.tela.tipo = valor
         if self.tela.tipo == "fardo":
             self.tela.label_tipo.configure(text="Quantidade no fardo")
             self.tela.entry_tipo.configure(textvariable=self.tela.qtd_fardo)
+            self.tela.referencia_codigo_fardo.set("")
             
         else:
             self.tela.label_tipo.configure(text="Referencia produto")
             self.tela.entry_tipo.configure(textvariable=self.tela.referencia_codigo_fardo)
+            self.tela.qtd_fardo.set("")
     
     def buscar_produto(self, *args):
         codigo = self.tela.codigo.get()
-        try:
-            codigo = int(codigo)
-        except:
-            raise ValueError
         
         produto = self.ref_estoque.get_produto(codigo)
 
         if produto:
-            print(produto)
             for i, (texto, var) in enumerate(self.tela.entrys):
                 if produto[i+1] == None:
                     var.set("")
                     continue
                 var.set(produto[i+1])
-                print(produto[i+1])
             self.mudar_conteudo(produto[3])
 
         else:
-            for i, tupla in enumerate(self.tela.entrys):
-                if i == 0:
-                    continue
-                tupla[1].set("")
+            self.limpar_variaveis()
     
     def limpar_variaveis(self):
         for i, tupla in enumerate(self.tela.entrys):
-                if i == 0:
+                if i == 0 or i == 2:
                     continue
                 tupla[1].set("")
+        self.tela.entries[0].focus_set()
 
     def coletar_dados_produto(self):
         try:
             dados = {
-                "codigo": int(self.tela.codigo.get()),
+                "codigo": self.tela.codigo.get(),
                 "nome": self.tela.nome.get(),
                 "preco_custo": float(self.tela.preco_custo.get()),
                 "preco_venda": float(self.tela.preco_venda.get()),
                 "quantidade": int(self.tela.quantidade.get()),
                 "tipo": self.tela.tipo,
-                "id_produto_pai": int(self.tela.referencia_codigo_fardo.get())
+                "id_produto_pai": self.tela.referencia_codigo_fardo.get()
                     if self.tela.referencia_codigo_fardo.get().strip() else None,
                 "quantidade_fardo": int(self.tela.qtd_fardo.get())
                     if self.tela.qtd_fardo.get().strip() else None

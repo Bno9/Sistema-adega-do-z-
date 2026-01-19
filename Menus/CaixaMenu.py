@@ -605,13 +605,8 @@ class CaixaController:
 
         if code == "":
             self.tela.abrir_modal_finalizar()
-
-        try:
-            code = int(self.tela.codigo.get())
-
-        except ValueError:
-            self.tela.status.set("")
-            return
+    
+        code = self.tela.codigo.get()
         
         quantidade = self.tela.quantidade.get()
         
@@ -629,12 +624,7 @@ class CaixaController:
         self.ref_caixa.imprimir_recibo(linhas, cpf)
         self.tela.fechar_modal(self.tela.modal)
 
-    def consultar_produto(self, codigo, label_nome, label_quantidade, label_preco):
-        try:
-            codigo = int(codigo)
-        except ValueError:
-            raise "Erro na conversão"
-        
+    def consultar_produto(self, codigo, label_nome, label_quantidade, label_preco):     
         produto = self.tela.referencia_main.estoque.get_produto(codigo)
 
         _, _, nome, preco, _, quantidade = produto

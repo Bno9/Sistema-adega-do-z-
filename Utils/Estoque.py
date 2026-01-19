@@ -7,7 +7,7 @@ class Estoque:
         self.cur.execute("""
                         CREATE TABLE IF NOT EXISTS produtos (
                         id INTEGER PRIMARY KEY AUTOINCREMENT,
-                        codigo INTEGER NOT NULL,
+                        codigo TEXT NOT NULL,
                         nome TEXT NOT NULL,
                         tipo TEXT NOT NULL,
                         preco_custo REAL NOT NULL,
@@ -18,7 +18,7 @@ class Estoque:
                         )""")
         self.con.commit()
 
-    def criar_produto(self, dados: dict):
+    def criar_produto(self, **dados: dict):
         from Utils.Produto import Produto
 
         obj_produto = Produto(**dados) #Cria o objeto produto usando a classe Produto
@@ -118,7 +118,6 @@ class Estoque:
         self.cur.execute("UPDATE produtos SET quantidade=? WHERE codigo=?", (quantidade_atualizada, codigo_produto))
         self.con.commit()
 
-        print(f"produto {produto[3]} tem {quantidade_atualizada} quantidade e tem pai:{tem_pai}")
         if quantidade_atualizada <= 0 and tem_pai:
             self.cadastro_automatico(codigo_produto)
 
@@ -149,5 +148,3 @@ class Estoque:
 
         self.cur.execute("UPDATE produtos SET quantidade=? WHERE codigo=?", (quantidade_fardo, codigo_produto))
         self.con.commit()
-
-        #tambem preciso arrumar o coisa de editar produto e o deletar item do caixa

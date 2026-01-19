@@ -2,12 +2,14 @@ from tkinter import ttk
 from tkinter import *
 import customtkinter as ctk
 
+
+
 class EstoqueMenu(ctk.CTkFrame):
 
     def __init__(self, root, referencia_main):
         super().__init__(master=root, fg_color="#1e1e1e")
         self.referencia_main = referencia_main
-
+        
         #frame
         self.frame_conteudo = ttk.Frame(self)
         self.frame_conteudo.grid(row=0, column=0, sticky="nsew")
