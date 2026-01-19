@@ -33,14 +33,17 @@ class ProdutoMenu(ctk.CTkFrame):
         def menu(self):
             self.limpar_tela()
             self.status_menu = StringVar()
+            self.coluna_filtro = "nome"
+            self.filtro = StringVar()
+            self.filtro.trace("w", self.filtrar)
 
             self.codigo = ctk.StringVar()
             self.codigo.trace("w", self.controller.buscar_produto)
             self.nome = ctk.StringVar()
             self.preco_custo = ctk.IntVar()
-            #self.preco_custo.trace("w", self.atualizar_margem)
+            self.preco_custo.trace("w", self.atualizar_margem)
             self.preco_venda = ctk.IntVar()
-            #self.preco_venda.trace("w", self.atualizar_margem)
+            self.preco_venda.trace("w", self.atualizar_margem)
             self.quantidade = ctk.StringVar()
 
             self.margem = StringVar()
@@ -60,10 +63,19 @@ class ProdutoMenu(ctk.CTkFrame):
             header.columnconfigure((0,1,2), weight=1)
             header.rowconfigure((0,1), weight=1)
 
-            entrys_frame = ctk.CTkFrame(produto_tela, fg_color="#1e1e1e")
-            entrys_frame.grid(column=0, row=1, sticky="nsew")
+            body = ctk.CTkFrame(produto_tela, fg_color="#1e1e1e")
+            body.grid(column=0, row=1, sticky="nsew")
+            body.columnconfigure((0,1), weight=1)
+
+            entrys_frame = ctk.CTkFrame(body, fg_color="#1e1e1e")
+            entrys_frame.grid(column=0, row=0, sticky="nsew")
             entrys_frame.columnconfigure((0,1,2), weight=1)
             entrys_frame.rowconfigure((0,1,2,3,4,5,6,7,8), weight=1)
+
+            estoque = ctk.CTkFrame(body, fg_color="#1e1e1e")
+            estoque.grid(column=1, row=0, sticky="nsew")
+            estoque.columnconfigure(0, weight=1)
+            estoque.rowconfigure((0,1,2), weight=1)
 
 
             botoes_frame = ctk.CTkFrame(produto_tela, fg_color="#1e1e1e")
@@ -78,6 +90,74 @@ class ProdutoMenu(ctk.CTkFrame):
             
             self.entrys = [("Código", self.codigo), ("Nome", self.nome), ("Tipo", self.tipo), ("Preço custo", self.preco_custo), ("Preço venda", self.preco_venda), ("Quantidade", self.quantidade), ("Qtd_fardo", self.referencia_codigo_fardo), ("Referencia_id_pai", self.qtd_fardo)]
             
+            style = ttk.Style()
+            style.theme_use("clam")
+
+            style.configure(
+                "Treeview",
+                background="#1e1e1e",
+                foreground="white",
+                rowheight=30,
+                fieldbackground="#1e1e1e"
+            )
+            style.configure(
+                "Treeview.Heading",
+                background="#2b2b2b",
+                foreground="white",
+                font=("Arial", 12, "bold")
+            )
+            style.map("Treeview", background=[("selected", "#2a7fff")])
+
+            self.tabela = ttk.Treeview(
+                estoque,
+                columns=("codigo", "nome", "qtd"),
+                show="headings"
+            )
+
+            self.tabela.heading("codigo", text="Código")
+            self.tabela.heading("nome", text="Nome")
+            self.tabela.heading("qtd", text="Qtd")
+
+            self.tabela.column("codigo", width=100, anchor="center")
+            self.tabela.column("nome", width=220, anchor="w")
+            self.tabela.column("qtd", width=60, anchor="center")
+
+            self.tabela.grid(row=0, column=0, sticky="nsew")
+
+            scroll = ttk.Scrollbar(
+                estoque,
+                orient="vertical",
+                command=self.tabela.yview
+            )
+            self.tabela.configure(yscrollcommand=scroll.set)
+
+            scroll.grid(row=0, column=1, sticky="ns")
+            estoque.rowconfigure(0, weight=1)
+            estoque.columnconfigure(0, weight=1)
+
+            #botao carregar estoque
+            ctk.CTkButton(estoque, 
+                        text="Carregar estoque", 
+                        text_color="black", 
+                        corner_radius=40,
+                        border_color="black",
+                        hover_color="white",
+                        border_width=5,
+                        width=200,  
+                        height=100,
+                        font=("Arial", 30, "bold"),
+                        fg_color="orange",
+                        command=self.carregar_estoque
+                        ).grid(column=0, row=1, padx=20)
+            
+            ctk.CTkEntry(estoque, 
+                        textvariable=self.filtro, 
+                        width=200,
+                        height=50,
+                        font=("Arial", 20, "bold")
+                        ).grid(row=2, column=0, padx=20, sticky="n")
+                
+
             #label principal
             ctk.CTkLabel(header, 
                       text="""Menu de cadastro de produtos""", 
@@ -237,7 +317,33 @@ class ProdutoMenu(ctk.CTkFrame):
                         ).grid(column=i, row=0, padx=20)
                 
             self.master.bind("<Escape>", lambda e: self.voltar())
+            self.master.bind("<Return>", lambda e: self.controller.produto_selecionado())
             self.entries[0].focus_set()
+
+        def carregar_estoque(self, estoque=None):
+            for item in self.tabela.get_children():
+                self.tabela.delete(item)
+
+            if not estoque:
+                estoque = self.referencia_main.estoque.get_banco()
+
+            for produto in estoque:
+                _, codigo, nome, tipo, preco_custo, preco_venda, quantidade, _, _ = produto
+
+                self.tabela.insert(
+                    "",
+                    "end",
+                    values=(
+                        codigo,
+                        nome,
+                        quantidade
+                    )
+                )
+        
+        def filtrar(self, *args):
+            digitado = self.filtro.get()
+            filtro = self.referencia_main.estoque.filtrar_produto(self.coluna_filtro, digitado)
+            self.carregar_estoque(filtro)
 
         def atualizar_margem(self, *args):
             try:
@@ -302,14 +408,17 @@ class ProdutoController:
     
         self.tela.status_menu.set(resultado.get("Mensagem", "Erro"))
         self.limpar_variaveis()
+        self.tela.carregar_estoque()
 
     def editar(self, dados):
         resultado = self.ref_estoque.atualizar_produto(dados)
         self.tela.status_menu.set(resultado.get("Mensagem", ""))
+        self.tela.carregar_estoque()
 
     def deletar(self, codigo):
         self.ref_estoque.remover_produto(codigo)
         self.limpar_variaveis()
+        self.tela.carregar_estoque()
         
     def mudar_conteudo(self, valor):
         self.tela.tipo = valor
@@ -322,6 +431,29 @@ class ProdutoController:
             self.tela.label_tipo.configure(text="Referencia produto")
             self.tela.entry_tipo.configure(textvariable=self.tela.referencia_codigo_fardo)
             self.tela.qtd_fardo.set("")
+    
+    def produto_selecionado(self):
+        selecionado = self.tela.tabela.selection()
+        
+        if not selecionado:
+            return
+
+        item_id = selecionado[0] #id do item
+        valores = self.tela.tabela.item(item_id, "values")
+        print(valores)
+
+        produto = self.ref_estoque.get_produto(valores[0])
+
+        if produto:
+            for i, (texto, var) in enumerate(self.tela.entrys):
+                if produto[i+1] == None:
+                    var.set("")
+                    continue
+                var.set(produto[i+1])
+            self.mudar_conteudo(produto[3])
+
+        else:
+            self.limpar_variaveis()
     
     def buscar_produto(self, *args):
         codigo = self.tela.codigo.get()
