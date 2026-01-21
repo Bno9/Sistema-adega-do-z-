@@ -80,12 +80,12 @@ class ProdutoMenu(ctk.CTkFrame):
 
             botoes_frame = ctk.CTkFrame(produto_tela, fg_color="#1e1e1e")
             botoes_frame.grid(column=0, row=2, sticky="nsew")
-            botoes_frame.columnconfigure((0,1,2,3,4,5), weight=1)
+            botoes_frame.columnconfigure((0,1,2,3,4), weight=1)
             botoes_frame.rowconfigure((0,1), weight=1)
 
             buttons = [("""Salvar""", "green", self.controller.criar),
-                       ("Excluir produto", "red", lambda: self.controller.deletar(self.codigo.get())),
                        ("Alterar código", "green", self.modal_codigo_novo),
+                       ("Excluir produto", "red", self.modal_confirmar_exclusao),
                        ("Voltar", "red", self.voltar)]
             
             self.entrys = [("Código", self.codigo), ("Nome", self.nome), ("Tipo", self.tipo), ("Preço custo", self.preco_custo), ("Preço venda", self.preco_venda), ("Quantidade", self.quantidade), ("Qtd_fardo", self.referencia_codigo_fardo), ("Referencia_id_pai", self.qtd_fardo)]
@@ -135,21 +135,15 @@ class ProdutoMenu(ctk.CTkFrame):
             estoque.rowconfigure(0, weight=1)
             estoque.columnconfigure(0, weight=1)
 
-            #botao carregar estoque
-            ctk.CTkButton(estoque, 
-                        text="Carregar estoque", 
-                        text_color="black", 
-                        corner_radius=40,
-                        border_color="black",
-                        hover_color="white",
-                        border_width=5,
-                        width=200,  
-                        height=100,
+            #label filtro estoque
+            ctk.CTkLabel(estoque, 
+                        text="Digite o nome do produto", 
+                        text_color="blue",
                         font=("Arial", 30, "bold"),
-                        fg_color="orange",
-                        command=self.carregar_estoque
+                        fg_color="#1e1e1e"
                         ).grid(column=0, row=1, padx=20)
             
+            #entry filtro estoque
             ctk.CTkEntry(estoque, 
                         textvariable=self.filtro, 
                         width=200,
@@ -316,9 +310,91 @@ class ProdutoMenu(ctk.CTkFrame):
                         command=comando
                         ).grid(column=i, row=0, padx=20)
                 
+            #frame atalhos
+            frame_atalho = ctk.CTkFrame(botoes_frame, fg_color="#e7dddd", corner_radius=12)
+            frame_atalho.grid(row=0, column=5, sticky="nsew")
+
+            frame_atalho.grid_columnconfigure(0, weight=1)
+            frame_atalho.grid_rowconfigure(1, weight=1)
+
+            # título
+            label_titulo = ctk.CTkLabel(
+                frame_atalho,
+                text="Atalhos",
+                font=("Arial", 17, "bold"),
+                text_color="black",
+                anchor="center"
+            )
+            label_titulo.grid(row=0, column=0, sticky="n", padx=14, pady=(12, 6))
+
+            label_atalhos = ctk.CTkLabel(frame_atalho,
+                                         text="""
+F1 - Salvar
+F2 - Alterar código
+F3 - Excluir
+Esc - Voltar""",
+                    text_color="black",
+                    font=("Consolas", 15),
+                    anchor="w")
+            label_atalhos.grid(row=1, column=0, sticky="nw", padx=10, pady=(0,12))
+            
+            
+            self.master.bind("<F1>", lambda e: self.controller.criar())
+            self.master.bind("<F2>", lambda e: self.modal_codigo_novo())
+            self.master.bind("<F3>", lambda e: self.modal_confirmar_exclusao())
             self.master.bind("<Escape>", lambda e: self.voltar())
             self.master.bind("<Return>", lambda e: self.controller.produto_selecionado())
             self.entries[0].focus_set()
+
+            self.carregar_estoque()
+
+        def modal_confirmar_exclusao(self):
+            codigo = self.referencia_main.estoque.conferir_se_existe_no_estoque(self.codigo.get())
+
+            if codigo:
+                modal = ctk.CTkToplevel(self.frame_conteudo, fg_color="#1e1e1e")
+
+                modal.title("Excluir")
+                modal.geometry("400x300")
+                modal.transient(self.frame_conteudo)
+                modal.update_idletasks()
+                modal.grab_set()
+
+                label = ctk.CTkLabel(modal, text="Deseja realmente excluir?", font=("Arial", 20, "bold"))
+                label.pack(padx=20, pady=20)
+
+                botao_sim = ctk.CTkButton(modal,
+                            text="Sim", 
+                            text_color="black", 
+                            corner_radius=40,
+                            border_color="black",
+                            hover_color="green",
+                            border_width=5,
+                            width=150,  
+                            height=100,
+                            font=("Arial", 30, "bold"),
+                            fg_color="orange",
+                            command=lambda: self.controller.deletar(self.codigo.get(), modal))
+                botao_sim.pack(side="left", padx=28)
+
+                botao_nao = ctk.CTkButton(modal,
+                            text="Não", 
+                            text_color="black", 
+                            corner_radius=40,
+                            border_color="black",
+                            hover_color="red",
+                            border_width=5,
+                            width=150,  
+                            height=100,
+                            font=("Arial", 30, "bold"),
+                            fg_color="orange",
+                            command=lambda: modal.destroy()
+                            )
+                botao_nao.pack(side="left", padx=28)
+
+                modal.bind("<Return>", lambda e: self.controller.deletar(self.codigo.get(), modal))
+                modal.bind("<Escape>", lambda e: modal.destroy())
+
 
         def modal_codigo_novo(self):
             codigo_atual = self.codigo.get()
@@ -330,7 +406,7 @@ class ProdutoMenu(ctk.CTkFrame):
                 modal = ctk.CTkToplevel(self.frame_conteudo, fg_color="#1e1e1e")
 
                 modal.title("Alterar código")
-                modal.geometry("300x200")
+                modal.geometry("400x400")
                 modal.transient(self.frame_conteudo)
                 modal.update_idletasks()
                 modal.grab_set()
@@ -341,7 +417,8 @@ class ProdutoMenu(ctk.CTkFrame):
                 entry = ctk.CTkEntry(modal, textvariable=codigo_novo, width=200, height=50, font=("Arial", 20, "bold"))
                 entry.pack(padx=20, pady=20)
 
-                entry.bind("<Return>", lambda e: self.controller.alterar_codigo(codigo_atual, codigo_novo.get()))
+                entry.bind("<Return>", lambda e: self.controller.alterar_codigo(codigo_atual, codigo_novo.get(), modal))
+                entry.bind("<Escape>", lambda e: modal.destroy())
                 entry.focus_set()
 
 
@@ -435,10 +512,14 @@ class ProdutoController:
         self.limpar_variaveis()
         self.tela.carregar_estoque()
 
-    def alterar_codigo(self, codigo_atual, codigo_novo):
+    def alterar_codigo(self, codigo_atual, codigo_novo, modal):
+        produto = self.ref_estoque.conferir_se_existe_no_estoque(codigo_atual)
+        if produto:
+            return {"Erro": "Já existe um produto com esse código"}
         resultado = self.ref_estoque.alterar_codigo(codigo_atual, codigo_novo)
         self.limpar_variaveis()
         self.tela.carregar_estoque()
+        modal.destroy()
 
     def editar(self, dados):
         if dados:
@@ -446,10 +527,11 @@ class ProdutoController:
             self.tela.status_menu.set(resultado.get("Mensagem", ""))
             self.tela.carregar_estoque()
 
-    def deletar(self, codigo):
+    def deletar(self, codigo, modal):
         self.ref_estoque.remover_produto(codigo)
         self.limpar_variaveis()
         self.tela.carregar_estoque()
+        modal.destroy()
         
     def mudar_conteudo(self, valor):
         self.tela.tipo = valor

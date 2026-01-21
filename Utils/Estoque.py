@@ -77,6 +77,7 @@ class Estoque:
         produto = self.cur.fetchone()
         id_produto = produto[0]
         self.cur.execute(f"UPDATE produtos SET codigo=? WHERE id=?", (codigo_novo, id_produto))
+        self.con.commit()
 
     def conferir_se_existe_no_estoque(self, codigo_produto):
         self.cur.execute("SELECT 1 FROM produtos WHERE codigo=? LIMIT 1", (codigo_produto,))
