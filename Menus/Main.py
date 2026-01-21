@@ -325,7 +325,7 @@ ctk.set_default_color_theme("blue")
 ctk.set_appearance_mode("dark")
 
 root = ctk.CTk()
-root.title("Adega do zé 2.0")
+root.title("Adega do zé 2.1")
 root.configure(bg="#1e1e1e")
 root.attributes("-zoomed", True)
 #root.state("zoomed") para windows
@@ -337,5 +337,5 @@ root.rowconfigure(0, weight=1)
 m = Main(root) #Instanciando a main
 
 
-root.mainloop() #Loop de eventos do tkinter
+root.mainloop() #Loop de eventos do customtkinter
 

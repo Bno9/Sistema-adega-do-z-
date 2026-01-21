@@ -105,11 +105,27 @@ class Caixa:
     def validar_codigo(self, codigo_produto, quantidade=1):
         if self.estoque.conferir_se_existe_no_estoque(codigo_produto):
             cursor_estoque = self.estoque.cur
-            cursor_estoque.execute("SELECT codigo, nome, tipo, preco_custo, preco_venda, quantidade FROM produtos WHERE codigo=?", (codigo_produto,))
+            cursor_estoque.execute("SELECT * FROM produtos WHERE codigo=?", (codigo_produto,))
             row = cursor_estoque.fetchone()
 
+            try:
+                dados = {
+                    "codigo": row[1],
+                    "nome": row[2],
+                    "tipo": row[3],
+                    "preco_custo": float(row[4]),
+                    "preco_venda": float(row[5]),
+                    "quantidade": int(row[6]),
+                    "id_produto_pai": int(row[7])
+                        if row[7] is not None  else None,
+                    "quantidade_fardo": int(row[8])
+                        if row[8] is not None else None
+                }
+            except ValueError:
+                return
+
             from Utils.Produto import Produto
-            produto = Produto(*row)
+            produto = Produto(**dados)
         
             self.carrinho_caixa(produto, quantidade) 
             return True
