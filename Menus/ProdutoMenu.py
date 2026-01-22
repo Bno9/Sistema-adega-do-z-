@@ -83,7 +83,9 @@ class ProdutoMenu(ctk.CTkFrame):
             botoes_frame.columnconfigure((0,1,2,3,4), weight=1)
             botoes_frame.rowconfigure((0,1), weight=1)
 
-            buttons = [("""Salvar""", "green", self.controller.criar),
+            buttons = [("""Salvar""", "green", lambda: self.setar_status(resultado=self.controller.criar(), 
+                                                                         label_status=self.label_status, 
+                                                                         var_status=self.status_menu)),
                        ("Alterar código", "green", self.modal_codigo_novo),
                        ("Excluir produto", "red", self.modal_confirmar_exclusao),
                        ("Voltar", "red", self.voltar)]
@@ -161,12 +163,13 @@ class ProdutoMenu(ctk.CTkFrame):
                       ).grid(column=1, row=0)
             
             #label status
-            ctk.CTkLabel(header, 
+            self.label_status = ctk.CTkLabel(header, 
                       textvariable=self.status_menu,
                       text_color="red",
                       fg_color="#1e1e1e",
-                      font=("arial", 22, "bold")
-                      ).grid(column=1, row=1, sticky="s") 
+                      font=("arial", 28, "bold")
+                      )
+            self.label_status.grid(column=1, row=1, sticky="s") 
 
             entry_codigo = ctk.CTkEntry(entrys_frame,
                         width=350,
@@ -339,7 +342,9 @@ Esc - Voltar""",
             label_atalhos.grid(row=1, column=0, sticky="nw", padx=10, pady=(0,12))
             
             
-            self.master.bind("<F1>", lambda e: self.controller.criar())
+            self.master.bind("<F1>", lambda e: self.setar_status(resultado=self.controller.criar(), 
+                                                                 label_status=self.label_status, 
+                                                                 var_status=self.status_menu))
             self.master.bind("<F2>", lambda e: self.modal_codigo_novo())
             self.master.bind("<F3>", lambda e: self.modal_confirmar_exclusao())
             self.master.bind("<Escape>", lambda e: self.voltar())
@@ -374,7 +379,9 @@ Esc - Voltar""",
                             height=100,
                             font=("Arial", 30, "bold"),
                             fg_color="orange",
-                            command=lambda: self.controller.deletar(self.codigo.get(), modal))
+                            command=lambda: self.setar_status(resultado=self.controller.deletar(self.codigo.get(), modal), 
+                                                            label_status=self.label_status,
+                                                            var_status=self.status_menu))
                 botao_sim.pack(side="left", padx=28)
 
                 botao_nao = ctk.CTkButton(modal,
@@ -392,7 +399,9 @@ Esc - Voltar""",
                             )
                 botao_nao.pack(side="left", padx=28)
 
-                modal.bind("<Return>", lambda e: self.controller.deletar(self.codigo.get(), modal))
+                modal.bind("<Return>", lambda e: self.setar_status(resultado=self.controller.deletar(self.codigo.get(), modal), 
+                                                                   label_status=self.label_status,
+                                                                   var_status=self.status_menu))
                 modal.bind("<Escape>", lambda e: modal.destroy())
 
 
@@ -404,6 +413,13 @@ Esc - Voltar""",
             if produto:
                 codigo_novo = ctk.StringVar()
                 modal = ctk.CTkToplevel(self.frame_conteudo, fg_color="#1e1e1e")
+                modal_status = StringVar()
+
+                label_modal_status = ctk.CTkLabel(modal, 
+                      textvariable=modal_status,
+                      fg_color="#1e1e1e",
+                      font=("arial", 18, "bold"))
+                label_modal_status.pack(padx=20, pady=20)
 
                 modal.title("Alterar código")
                 modal.geometry("400x400")
@@ -417,7 +433,7 @@ Esc - Voltar""",
                 entry = ctk.CTkEntry(modal, textvariable=codigo_novo, width=200, height=50, font=("Arial", 20, "bold"))
                 entry.pack(padx=20, pady=20)
 
-                entry.bind("<Return>", lambda e: self.controller.alterar_codigo(codigo_atual, codigo_novo.get(), modal))
+                entry.bind("<Return>", lambda e: self.setar_status(resultado=self.controller.alterar_codigo(codigo_atual, codigo_novo.get(), modal), label_status=label_modal_status, var_status=modal_status))
                 entry.bind("<Escape>", lambda e: modal.destroy())
                 entry.focus_set()
 
@@ -465,6 +481,17 @@ Esc - Voltar""",
                 return
 
             self.margem.set(f"Margem de lucro: {margem:.2f}%")
+
+        def setar_status(self, resultado, label_status=None, var_status=None):
+            if resultado is None:
+                return
+            
+            if label_status:
+                label_status.configure(text_color=resultado.cor)
+        
+            if var_status:
+                var_status.set(resultado.mensagem)
+                self.after(resultado.tempo, lambda: var_status.set(""))
             
         def voltar(self):
             self.referencia_main.voltar_menu_principal()
@@ -478,7 +505,9 @@ Esc - Voltar""",
                 if indice + 1 < len(self.entries):
                     self.entries[indice + 1].focus_set()
                 else:
-                    self.controller.criar()
+                    self.setar_status(resultado=self.controller.criar(), 
+                                      label_status=self.label_status, 
+                                      var_status=self.status_menu)
                     self.entries[0].focus_set()
 
         def campo_anterior(self, indice):
@@ -504,18 +533,21 @@ class ProdutoController:
         
         resultado = self.ref_estoque.criar_produto(**dados)
 
-        if resultado.get("Status", "Erro") == "Erro":
-            self.editar(dados)
+        if resultado == True:
+            self.tela.setar_status(resultado=self.editar(dados), 
+                                   label_status=self.tela.label_status, 
+                                   var_status=self.tela.status_menu)
             return
-    
-        self.tela.status_menu.set(resultado.get("Mensagem", "Erro"))
+        
         self.limpar_variaveis()
         self.tela.carregar_estoque()
+        return resultado
 
     def alterar_codigo(self, codigo_atual, codigo_novo, modal):
-        produto = self.ref_estoque.conferir_se_existe_no_estoque(codigo_atual)
+        produto = self.ref_estoque.conferir_se_existe_no_estoque(codigo_novo)
         if produto:
-            return {"Erro": "Já existe um produto com esse código"}
+            from Utils.Resultado import Resultado
+            return Resultado(False, "Já existe um produto com esse código", "erro")
         resultado = self.ref_estoque.alterar_codigo(codigo_atual, codigo_novo)
         self.limpar_variaveis()
         self.tela.carregar_estoque()
@@ -524,14 +556,15 @@ class ProdutoController:
     def editar(self, dados):
         if dados:
             resultado = self.ref_estoque.atualizar_produto(dados)
-            self.tela.status_menu.set(resultado.get("Mensagem", ""))
             self.tela.carregar_estoque()
+            return resultado
 
     def deletar(self, codigo, modal):
-        self.ref_estoque.remover_produto(codigo)
+        resultado = self.ref_estoque.remover_produto(codigo)
         self.limpar_variaveis()
         self.tela.carregar_estoque()
         modal.destroy()
+        return resultado
         
     def mudar_conteudo(self, valor):
         self.tela.tipo = valor
@@ -553,7 +586,6 @@ class ProdutoController:
 
         item_id = selecionado[0] #id do item
         valores = self.tela.tabela.item(item_id, "values")
-        print(valores)
 
         produto = self.ref_estoque.get_produto(valores[0])
 

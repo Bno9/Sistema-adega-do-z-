@@ -591,7 +591,7 @@ Troco: R$ {resultado.dados["troco"]:.2f}""")
             var_status.set(resultado.mensagem)
             self.after(resultado.tempo, lambda: var_status.set(""))
 
-    def voltar(self, event=None): #feito
+    def voltar(self, event=None):
         resultado = self.referencia_main.caixa.validar_compra_existente()
 
         if resultado.sucesso == False:
@@ -631,7 +631,7 @@ class CaixaController:
         self.tela.atualizar_tabela()
         self.tela.atualizar_total()
 
-    def enviar_codigo(self, event=None): #feito
+    def enviar_codigo(self, event=None):
         """Envia o codigo para a classe caixa e valida se existe no estoque"""
 
         code = self.tela.codigo.get()

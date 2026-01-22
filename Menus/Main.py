@@ -328,6 +328,7 @@ root = ctk.CTk()
 root.title("Adega do zé 2.1")
 root.configure(bg="#1e1e1e")
 root.attributes("-zoomed", True)
+root.protocol("WM_DELETE_WINDOW", lambda: None)
 #root.state("zoomed") para windows
 
 root.columnconfigure(0, weight=1)

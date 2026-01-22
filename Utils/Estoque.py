@@ -1,3 +1,5 @@
+from Utils.Resultado import Resultado
+
 class Estoque:
     """Classe que armazena os produtos cadastrados e suas informações"""
 
@@ -24,8 +26,7 @@ class Estoque:
         obj_produto = Produto(**dados) #Cria o objeto produto usando a classe Produto
 
         if self.conferir_se_existe_no_estoque(obj_produto.codigo):
-            return {"Status": "Erro",
-                    "Mensagem": "Um item já está cadastrado com esse código"}
+            return True
         
         #busca o código do produto referenciado e pega o id dele
         if obj_produto.id_produto_pai:
@@ -38,13 +39,12 @@ class Estoque:
                          (obj_produto.codigo, obj_produto.nome, obj_produto.tipo, obj_produto.preco_custo, obj_produto.preco_venda, obj_produto.quantidade, obj_produto.id_produto_pai, obj_produto.qtd_fardo))
         self.con.commit()
 
-        return {"Status": "Sucesso",
-                "Mensagem": f"{obj_produto.nome} criado"}
+        return Resultado(True, f"{obj_produto.nome} criado", "sucesso")
       
     def remover_produto(self, codigo_produto):
         self.cur.execute("DELETE FROM produtos WHERE codigo=?", (codigo_produto,))
         self.con.commit()
-        return "Produto removido com sucesso" if self.cur.rowcount>0 else "Produto não encontrado"
+        return Resultado(True, "Produto removido com sucesso", "sucesso") if self.cur.rowcount>0 else Resultado(False, "Produto não encontrado", "info")
     
     def atualizar_produto(self, dados: dict):
         codigo = dados.pop("codigo")
@@ -68,9 +68,9 @@ class Estoque:
         self.con.commit()
 
         if self.cur.rowcount == 0:
-            return {"Status": "Erro", "Mensagem": "Produto não encontrado"}
+            return Resultado(False, "Produto não encontrado", "info")
 
-        return {"Status": "Sucesso", "Mensagem": "Produto atualizado com sucesso"}
+        return Resultado(True, "Produto atualizado com sucesso", "sucesso")
     
     def alterar_codigo(self, codigo_atual, codigo_novo):
         self.cur.execute(f"SELECT id FROM produtos WHERE codigo=?", (codigo_atual,))
@@ -135,8 +135,6 @@ class Estoque:
         :param self: Classe EstoqueMenu
         :param codigo_produto: produto com quantidade menor que 0
         """
-
-        print("Chegou no cadastro automatico")
 
         self.cur.execute("SELECT quantidade,id_produto_pai FROM produtos WHERE codigo=?", (codigo_produto,))
         produto_filho = self.cur.fetchone()
