@@ -1,4 +1,5 @@
 from Utils.Recibo import Recibo, ImpressoraBase, ImpressoraTxt, ImpressoraWindows
+from Utils.Resultado import Resultado
 
 class Caixa:
     
@@ -25,26 +26,17 @@ class Caixa:
         """Método que finaliza a compra e da baixa no estoque"""
         
         if not self.itens_no_carrinho:
-            return {
-                "sucesso": False,
-                "mensagem": "Nenhum item registrado"
-            }
+            return Resultado(False, "Nenhum item registrado", "aviso", 5000)
 
         total = self.total()
 
         try:
             valor_pago = float(valor_pago)
         except ValueError:
-            return{
-                "sucesso": False,
-                "mensagem": "Erro de processamento"
-            }
+            return Resultado(False, "Erro de processamento", "erro", 5000)
 
         if valor_pago < total or valor_pago > 100000:
-            return{
-                "sucesso": False,
-                "mensagem": "Valor recebido inválido"
-            }
+            return Resultado(False, "Valor recebido inválido", "aviso", 5000)
 
         troco = valor_pago - total
         
@@ -62,19 +54,32 @@ class Caixa:
 
         self.itens_no_carrinho.clear()
 
-        return{
-                    "sucesso": True,
-                    "mensagem": "Compra finalizada com sucesso",
-                    "total": total,
-                    "troco": troco,
-                    "linhas": linhas
-                }
+        return Resultado(True, "", "info", 1000000, {"total": total,
+                                                                              "troco": troco,
+                                                                              "linhas": linhas})
     
     def aplicar_desconto(self, valor):
+        if valor == "":
+            self.desconto = 0
+            return self.total()
+        
+        try:
+            valor = int(valor)
+        except ValueError:
+            return Resultado(False, "Digite apenas numeros", "erro", 5000)
+        
+        if valor < 0:
+            self.desconto = 0
+            return self.total()
+        
         self.desconto = valor
-        #aqui é pra atualizar a tela
+        
+        if self.total() < 0:
+            self.desconto = 0
+            return Resultado(False, "Desconto maior que o valor dos produtos", "erro", 5000)
+        
         return self.total()
-
+        
     def imprimir_recibo(self, linhas, cpf=None):
         if cpf == "":
             return
@@ -97,12 +102,14 @@ class Caixa:
         Usado para evitar o fechamento do caixa sem finalizar a compra"""
 
         if self.itens_no_carrinho:
-            return {"sucesso": True,
-            "mensagem": "Finalize a compra primeiro"}
+            return Resultado(False, "Finalize a compra primeiro", "info")
 
-        return {"sucesso": False}
+        return Resultado(True)
 
     def validar_codigo(self, codigo_produto, quantidade=1):
+        if quantidade < 0:
+             return Resultado(False, "Quantidade não pode ser negativa", "erro", 5000)
+
         if self.estoque.conferir_se_existe_no_estoque(codigo_produto):
             cursor_estoque = self.estoque.cur
             cursor_estoque.execute("SELECT * FROM produtos WHERE codigo=?", (codigo_produto,))
@@ -122,15 +129,15 @@ class Caixa:
                         if row[8] is not None else None
                 }
             except ValueError:
-                return
+                return Resultado(False, "Erro de processamento", "erro")
 
             from Utils.Produto import Produto
             produto = Produto(**dados)
         
             self.carrinho_caixa(produto, quantidade) 
-            return True
+            return Resultado(True)
 
-        return False
+        return Resultado(False, "Produto não encontrado", "aviso", 5000)
 
     def excluir_do_carrinho(self, produto_codigo):
         for i, (item, _) in enumerate(self.itens_no_carrinho):

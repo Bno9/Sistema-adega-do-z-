@@ -1,7 +1,7 @@
 class Produto:
     """Classe molde para criar produtos"""
     
-    def __init__(self, **dados):
+    def __init__(self, **dados: dict):
         self.codigo = dados["codigo"]
         self.nome = dados["nome"]
         self.tipo = dados["tipo"]
