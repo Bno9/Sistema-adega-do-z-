@@ -161,7 +161,7 @@ class MenuPrincipal(ctk.CTkFrame):
         #botao caixa
         ctk.CTkButton(
             self, 
-            text="Abrir caixa",
+            text="Caixa",
             text_color="black", 
             corner_radius=40,
             border_color="black",
@@ -189,9 +189,9 @@ class MenuPrincipal(ctk.CTkFrame):
             command=lambda: self.escolher(2)
             ).grid(column=0, row=2, padx=20, pady=20)
 
-        #botao cadastro
+        #botao Relatórios
         ctk.CTkButton(self, 
-            text="Cadastrar / Editar produto", 
+            text="Relatórios (W.I.P)", 
             text_color="black", 
             corner_radius=40,
             border_color="black",
@@ -201,7 +201,7 @@ class MenuPrincipal(ctk.CTkFrame):
             height=200,
             fg_color="orange",
             font=("Arial", 30, "bold"),
-            command=lambda: self.escolher(3)
+            command=lambda: self.escolher(5)
             ).grid(column=1, row=1, padx=20, pady=20)
         
         #botao despesas
@@ -219,9 +219,9 @@ class MenuPrincipal(ctk.CTkFrame):
             command=lambda: self.escolher(4)
             ).grid(column=1, row=2, padx=20, pady=20)
         
-        #botao relatorio
+        #botao cadastro
         ctk.CTkButton(self, 
-            text="Relatórios", 
+            text="Cadastro", 
             text_color="black", 
             corner_radius=40,
             border_color="black",
@@ -231,7 +231,7 @@ class MenuPrincipal(ctk.CTkFrame):
             height=200,
             fg_color="orange",
             font=("Arial", 30, "bold"),
-            command=lambda: self.escolher(5)
+            command=lambda: self.escolher(3)
             ).grid(column=0, row=3, padx=20, pady=20)
 
         #botao sair
@@ -286,9 +286,12 @@ class MenuPrincipal(ctk.CTkFrame):
             entry.focus_set()
 
 
-            tela_senha.protocol("WM_DELETE_WINDOW", self.master.quit)
+            tela_senha.protocol("WM_DELETE_WINDOW", self.master.quit) #Fecha o programa caso o modal seja fechado
 
             entry.bind("<Return>", lambda e: self.main.verificar_senha(senha, tela_senha))
+
+    def donothing(self):
+        pass
 
     def escolher(self, opcao):
         """Recebe a opção escolhida,
@@ -328,7 +331,7 @@ root = ctk.CTk()
 root.title("Adega do zé 2.1")
 root.configure(bg="#1e1e1e")
 root.attributes("-zoomed", True)
-root.protocol("WM_DELETE_WINDOW", lambda: None)
+#root.protocol("WM_DELETE_WINDOW", lambda: None) #bloqueia o X
 #root.state("zoomed") para windows
 
 root.columnconfigure(0, weight=1)
