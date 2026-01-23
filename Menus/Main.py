@@ -46,14 +46,6 @@ class Main:
         self.despesa = Despesas(self.con)
         self.root.bind_all("<Key>", self.tecla_apertada)
 
-        #produtos criados para teste
-        self.estoque.criar_produto(1,"Whisky",2.20,5,10)
-        self.estoque.criar_produto(34,"Red label",50,80,2)
-        self.estoque.criar_produto(913495182,"Cigarro",10,30,10)
-        self.estoque.criar_produto(2,"Agua sem gas",1,3,100)
-        for i in range(2000):
-             self.estoque.criar_produto(i,"Teste",20,150,10)
-
         #despesas criadas para teste
         self.despesa.adicionar_despesa("contador", 100)
         self.despesa.adicionar_despesa("aluguel", 1700, "10/12/2026", "Aluguel do imóvel")
@@ -169,7 +161,7 @@ class MenuPrincipal(ctk.CTkFrame):
         #botao caixa
         ctk.CTkButton(
             self, 
-            text="Abrir caixa",
+            text="Caixa",
             text_color="black", 
             corner_radius=40,
             border_color="black",
@@ -197,9 +189,9 @@ class MenuPrincipal(ctk.CTkFrame):
             command=lambda: self.escolher(2)
             ).grid(column=0, row=2, padx=20, pady=20)
 
-        #botao cadastro
+        #botao Relatórios
         ctk.CTkButton(self, 
-            text="Cadastrar / Editar produto", 
+            text="Relatórios (W.I.P)", 
             text_color="black", 
             corner_radius=40,
             border_color="black",
@@ -209,7 +201,7 @@ class MenuPrincipal(ctk.CTkFrame):
             height=200,
             fg_color="orange",
             font=("Arial", 30, "bold"),
-            command=lambda: self.escolher(3)
+            command=lambda: self.escolher(5)
             ).grid(column=1, row=1, padx=20, pady=20)
         
         #botao despesas
@@ -227,9 +219,9 @@ class MenuPrincipal(ctk.CTkFrame):
             command=lambda: self.escolher(4)
             ).grid(column=1, row=2, padx=20, pady=20)
         
-        #botao relatorio
+        #botao cadastro
         ctk.CTkButton(self, 
-            text="Relatórios", 
+            text="Cadastro", 
             text_color="black", 
             corner_radius=40,
             border_color="black",
@@ -239,7 +231,7 @@ class MenuPrincipal(ctk.CTkFrame):
             height=200,
             fg_color="orange",
             font=("Arial", 30, "bold"),
-            command=lambda: self.escolher(5)
+            command=lambda: self.escolher(3)
             ).grid(column=0, row=3, padx=20, pady=20)
 
         #botao sair
@@ -294,9 +286,12 @@ class MenuPrincipal(ctk.CTkFrame):
             entry.focus_set()
 
 
-            tela_senha.protocol("WM_DELETE_WINDOW", self.master.quit)
+            tela_senha.protocol("WM_DELETE_WINDOW", self.master.quit) #Fecha o programa caso o modal seja fechado
 
             entry.bind("<Return>", lambda e: self.main.verificar_senha(senha, tela_senha))
+
+    def donothing(self):
+        pass
 
     def escolher(self, opcao):
         """Recebe a opção escolhida,
@@ -330,11 +325,13 @@ class MenuPrincipal(ctk.CTkFrame):
 
 
 ctk.set_default_color_theme("blue")
+ctk.set_appearance_mode("dark")
 
 root = ctk.CTk()
-root.title("Adega do zé 2.0")
+root.title("Adega do zé 2.1")
 root.configure(bg="#1e1e1e")
 root.attributes("-zoomed", True)
+#root.protocol("WM_DELETE_WINDOW", lambda: None) #bloqueia o X
 #root.state("zoomed") para windows
 
 root.columnconfigure(0, weight=1)
@@ -344,5 +341,5 @@ root.rowconfigure(0, weight=1)
 m = Main(root) #Instanciando a main
 
 
-root.mainloop() #Loop de eventos do tkinter
+root.mainloop() #Loop de eventos do customtkinter
 

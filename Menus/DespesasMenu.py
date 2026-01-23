@@ -1,5 +1,6 @@
 import customtkinter as ctk
 from tkinter import ttk
+from Utils.Resultado import Resultado
 
 class DespesasMenu(ctk.CTkFrame):
     
@@ -120,9 +121,8 @@ class DespesasMenu(ctk.CTkFrame):
         self.controller.atualizar_total("Tudo")
 
         frame_botoes = ctk.CTkFrame(self.frame_conteudo, fg_color="#1e1e1e")
-        frame_botoes.grid(row=2, column=0, sticky="ew", pady=20) #cria o frame na terceira linha do frame_conteudo (linha 2 é a tabela e linha 1 a combobox. a coluna 0 com peso 1 ocupa todo espaço da tela, entao precisa desse fram pra separar o rodapé em 3 colunas porque se separar no frame conteudo vai quebrar a tabela)
-
-        frame_botoes.columnconfigure((0,1,2,3), weight=1) #divide em 3 colunas iguais
+        frame_botoes.grid(row=2, column=0, sticky="ew", pady=20)
+        frame_botoes.columnconfigure((0,1,2,3), weight=1)
 
         #Label total
         ctk.CTkLabel(self.frame_conteudo,
@@ -130,6 +130,14 @@ class DespesasMenu(ctk.CTkFrame):
                     font=("Arial", 44, "bold"),
                     text_color="white"
                      ).grid(row=0, column=0, sticky="e")
+        
+        #Label status
+        self.label_status = ctk.CTkLabel(self.frame_conteudo,
+                     textvariable=self.status,
+                    font=("Arial", 30, "bold"),
+                    text_color="white"
+                     )
+        self.label_status.grid(row=0, column=0, sticky="n")
         
         #botao adicionar
         ctk.CTkButton(frame_botoes, 
@@ -275,7 +283,12 @@ class DespesasMenu(ctk.CTkFrame):
                       text_color="black",
                       fg_color="green",
                       font=("arial", 30, "bold"),
-                      command=lambda: self.controller.adicionar(modal_cadastrar, self.nome.get(), self.valor.get(), self.data.get(), self.observacao.get())
+                      command=lambda: self.setar_status(resultado=self.controller.adicionar(modal_cadastrar, 
+                                                                                            self.nome.get(), 
+                                                                                            self.valor.get(), 
+                                                                                            self.data.get(), 
+                                                                                            self.observacao.get()),
+                                                        label_status=self.label_status, var_status=self.status)
                       )
         botao_cadastro.grid(row=0, column=0, padx=70)
         
@@ -286,12 +299,11 @@ class DespesasMenu(ctk.CTkFrame):
                 entry.bind("<Up>", lambda e, idx=i: self.campo_anterior(idx)) #seta pra cima
         
     def tela_editar(self):
-        try:
-            id_despesa = self.pegar_id_selecionado()
-        except ValueError as e:
-            print(e)
-            return
+        id_despesa = self.pegar_id_selecionado()
         
+        if isinstance(id_despesa, Resultado):
+            self.status.set(id_despesa.mensagem)
+            return
         modal_editar = ctk.CTkToplevel(self.frame_conteudo, fg_color="#1e1e1e")
 
         modal_editar.title("Edição")
@@ -322,20 +334,20 @@ class DespesasMenu(ctk.CTkFrame):
 
         #label confirmação
         ctk.CTkLabel(header, 
-                     text="Digite as novas informações",
-                     font=("arial", 32, "bold")
-                     ).grid(row=0, column=0)
+                    text="Digite as novas informações",
+                    font=("arial", 32, "bold")
+                    ).grid(row=0, column=0)
         
         for i, (texto, variavel) in enumerate(self.campos):
             ctk.CTkLabel(entrys,
-                         text=texto,
-                         font=("arial", 32, "bold")
+                        text=texto,
+                        font=("arial", 32, "bold")
                         ).grid(row=i, column=1,  padx=10, pady=20)
             
             entry = ctk.CTkEntry(entrys,
-                         textvariable=variavel,
-                         font=("Arial", 20, "bold"),
-                         width=200)
+                        textvariable=variavel,
+                        font=("Arial", 20, "bold"),
+                        width=200)
             entry.grid(row=i, column=0, padx=10, pady=20)
             self.entries.append(entry)
 
@@ -344,26 +356,32 @@ class DespesasMenu(ctk.CTkFrame):
 
         #botao editar
         botao_editar = ctk.CTkButton(botoes, 
-                      text="Editar",
-                      width=300,
-                      height=150, 
-                      text_color="black",
-                      fg_color="green",
-                      font=("arial", 30, "bold"),
-                      command=lambda: self.controller.editar(modal_editar, id_despesa, self.nome.get(), self.valor.get(), self.data.get(), self.observacao.get())
-                      )
+                    text="Editar",
+                    width=300,
+                    height=150, 
+                    text_color="black",
+                    fg_color="green",
+                    font=("arial", 30, "bold"),
+                    command=lambda: self.setar_status(resultado=self.controller.editar(modal_editar, 
+                                                                                        id_despesa, 
+                                                                                        self.nome.get(), 
+                                                                                        self.valor.get(), 
+                                                                                        self.data.get(), 
+                                                                                        self.observacao.get()),
+                                                        label_status=self.label_status,var_status=self.status)
+                    )
         botao_editar.grid(row=0, column=1, padx=70)
         
         #botao cancelar
         ctk.CTkButton(botoes, 
-                      text="Cancelar", 
-                      width=300,
-                      height=150,
-                      text_color="black",
-                      fg_color="red",
-                      font=("arial", 30, "bold"),
-                      command=lambda: self.fechar_modal(modal_editar)
-                      ).grid(row=0, column=2, padx=70)
+                    text="Cancelar", 
+                    width=300,
+                    height=150,
+                    text_color="black",
+                    fg_color="red",
+                    font=("arial", 30, "bold"),
+                    command=lambda: self.fechar_modal(modal_editar)
+                    ).grid(row=0, column=2, padx=70)
         
 
         for i, entry in enumerate(self.entries):
@@ -371,13 +389,13 @@ class DespesasMenu(ctk.CTkFrame):
                 entry.bind("<Down>", lambda e, idx=i: self.proximo_campo(idx, botao_editar)) #seta pra baixo
                 entry.bind("<Up>", lambda e, idx=i: self.campo_anterior(idx)) #seta pra cima
 
-        
+    
        
     def tela_deletar(self):
-        try:
-            id_despesa = self.pegar_id_selecionado()
-        except ValueError as e:
-            print(e)
+        id_despesa = self.pegar_id_selecionado()
+
+        if isinstance(id_despesa, Resultado):
+            self.status.set(id_despesa.mensagem)
             return
         
         modal_deletar = ctk.CTkToplevel(self.frame_conteudo, fg_color="#1e1e1e")
@@ -390,7 +408,7 @@ class DespesasMenu(ctk.CTkFrame):
         modal_deletar.grab_set()        #trava interação com a janela principal
 
         modal_deletar.bind("<Escape>", lambda e: self.fechar_modal(modal_deletar))
-        modal_deletar.bind("<Return>", lambda e: self.controller.deletar(modal_deletar, id_despesa))
+        modal_deletar.bind("<Return>", lambda e: self.setar_status(resultado=self.controller.deletar(modal_deletar, id_despesa), label_status=self.label_status, var_status=self.status))
         
         modal_deletar.rowconfigure((0,1), weight=1)
         modal_deletar.columnconfigure(0, weight=1)
@@ -404,31 +422,31 @@ class DespesasMenu(ctk.CTkFrame):
 
         #label confirmação
         ctk.CTkLabel(header, 
-                     text="Deseja realmente excluir?",
-                     font=("arial", 32, "bold")
-                     ).grid(row=0, column=0)
+                    text="Deseja realmente excluir?",
+                    font=("arial", 32, "bold")
+                    ).grid(row=0, column=0)
         
         #botao nao
         ctk.CTkButton(botoes, 
-                      text="Não", 
-                      width=100,
-                      height=80,
-                      text_color="black",
-                      fg_color="red",
-                      font=("arial", 30, "bold"),
-                      command=lambda e: self.fechar_modal(modal_deletar)
-                      ).grid(row=0, column=2, padx=30)
+                    text="Não", 
+                    width=100,
+                    height=80,
+                    text_color="black",
+                    fg_color="red",
+                    font=("arial", 30, "bold"),
+                    command=lambda: self.fechar_modal(modal_deletar)
+                    ).grid(row=0, column=2, padx=30)
         
         #botao sim
         ctk.CTkButton(botoes, 
-                      text="Sim",
-                      width=100,
-                      height=80, 
-                      text_color="black",
-                      fg_color="green",
-                      font=("arial", 30, "bold"),
-                      command=lambda e: self.controller.deletar(modal_deletar, id_despesa)
-                      ).grid(row=0, column=0, padx=30)
+                    text="Sim",
+                    width=100,
+                    height=80, 
+                    text_color="black",
+                    fg_color="green",
+                    font=("arial", 30, "bold"),
+                    command=lambda: self.setar_status(resultado=self.controller.deletar(modal_deletar, id_despesa), label_status=self.label_status, var_status=self.status)
+                    ).grid(row=0, column=0, padx=30)
 
     def carregar_tabela(self, despesas=None):
         for item in self.tabela.get_children():
@@ -457,7 +475,7 @@ class DespesasMenu(ctk.CTkFrame):
         selecionado = self.tabela.selection()
         if not selecionado:
             self.pode_usar_atalho = True
-            raise ValueError("Nenhuma despesa selecionada")
+            return Resultado(False, "Nenhuma despesa selecionada")
         return int(selecionado[0])
     
     def confirmar_exclusao(self):
@@ -468,6 +486,17 @@ class DespesasMenu(ctk.CTkFrame):
 
         except ValueError as e:
             print(e)
+
+    def setar_status(self, resultado, label_status=None, var_status=None):
+        if resultado is None:
+            return
+        
+        if label_status:
+            label_status.configure(text_color=resultado.cor)
+
+        if var_status:
+            var_status.set(resultado.mensagem)
+            self.after(resultado.tempo, lambda: var_status.set(""))
 
     def fechar_modal(self, modal):
         modal.grab_release()
@@ -493,26 +522,25 @@ class DespesasMenu(ctk.CTkFrame):
 
 class DespesaController:
     from Utils.Despesa import Despesas
-    def __init__(self, tela, despesa_ref: Despesas): #acredito que assim nao vai dar certo porque eu ja tenho a despesa criada na main e conectada no banco de dados
-        #até funcionaria porque nao vai dar erro acredito eu, mas ou eu vou ter que excluir ela da main e criar apenas aqui, ou excluir daqui e referenciar a main aqui
+    def __init__(self, tela, despesa_ref: Despesas): 
         self.tela = tela
         self.despesa = despesa_ref
 
     def adicionar(self, modal_cadastrar, nome, valor, data=None, observacao=None):
         if not nome.strip():
-            raise ValueError("Nome da despesa é obrigatório")
+            return Resultado(False, "Nome da despesa é obrigatório", "info")
         
         try:
             valor = float(valor)
 
         except ValueError:
-            raise ValueError("Valor inválido")
+             return Resultado(False, "Valor inválido", "info")
 
         if valor <= 0:
-            raise ValueError("Valor deve ser maior que zero")
+             return Resultado(False, "Valor deve ser maior que 0", "info")
         
         try:
-            self.despesa.adicionar_despesa(
+            resultado = self.despesa.adicionar_despesa(
             nome=nome.strip(),
             valor=valor,
             data=data,
@@ -525,24 +553,23 @@ class DespesaController:
             self.atualizar_combobox(self.tela.combobox)
             self.tela.entries.clear()
             self.tela.fechar_modal(modal_cadastrar)
-
-        
+            return resultado
 
     def editar(self, modal_editar, id_despesa, nome, valor, data="", observacao=""):
         if not nome.strip():
-            raise ValueError("Nome da despesa é obrigatório")
+             return Resultado(False, "Nome da despesa é obrigatório", "info")
         
         try:
             valor = float(valor)
 
         except ValueError:
-            raise ValueError("Valor inválido")
+            return Resultado(False, "Valor inválido", "info")
 
         if valor <= 0:
-            raise ValueError("Valor deve ser maior que zero")
+            return Resultado(False, "Valor deve ser maior que 0", "info")
 
         try:
-            self.despesa.editar_despesa(id_despesa,
+            resultado = self.despesa.editar_despesa(id_despesa,
             nome=nome.strip(),
             valor=valor,
             data=data,
@@ -555,11 +582,11 @@ class DespesaController:
             self.atualizar_combobox(self.tela.combobox) 
             self.tela.entries.clear()
             self.tela.fechar_modal(modal_editar)
-
+            return resultado
 
     def deletar(self, modal_deletar, id):
         try:
-            self.despesa.excluir_despesa(id)
+            resultado = self.despesa.excluir_despesa(id)
             self.tela.carregar_tabela()
         except ValueError as e:
             print(e)
@@ -567,6 +594,7 @@ class DespesaController:
             self.atualizar_combobox(self.tela.combobox)
             self.tela.entries.clear()
             self.tela.fechar_modal(modal_deletar)
+            return resultado
 
     def listar(self):
         return self.despesa.listar_despesas()
@@ -597,6 +625,4 @@ class DespesaController:
        if escolha == "Tudo":
            filtro = None
 
-        
-       print(filtro)
        self.tela.carregar_tabela(filtro)

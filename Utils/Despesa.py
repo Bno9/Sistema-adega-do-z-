@@ -1,4 +1,5 @@
 from datetime import date, datetime
+from Utils.Resultado import Resultado
 
 class Despesas():
     def __init__(self, con):
@@ -22,10 +23,8 @@ class Despesas():
             if data:
                 data_formatada = datetime.strptime(data, "%d/%m/%Y").date().isoformat()
         except ValueError:
-            raise ValueError("Data inválida. Use DD/MM/AAAA")
+            return Resultado(False, "Data inválida. Use DD/MM/AAAA", "erro", 6000)
         
-        #talvez mudar toda essa validação para o controller 
-
         if not observacao:
             observacao = ""
 
@@ -35,21 +34,21 @@ class Despesas():
                     )
         
         self.con.commit()
+        return Resultado(True, "Despesa criada", "sucesso")
     
     def editar_despesa(self, id_despesa, nome, valor, data="", observacao=""):
         try:
             if data:
-                print(f"entrou no primeiro if com valor {data}")
                 data = datetime.strptime(data, "%d/%m/%Y").date().isoformat()
         except ValueError:
-            raise ValueError("Data inválida. Use DD/MM/AAAA")
+            return Resultado(False, "Data inválida. Use DD/MM/AAAA", "erro", 6000)
         
         if data == "":
             self.cur.execute("""SELECT data FROM despesas WHERE id=?""", (id_despesa,))
             res = self.cur.fetchone()
 
             if res is None:
-                raise ValueError("Data não encontrada")
+                return Resultado(False, "Data não encontrada no banco de dados", "erro")
 
             data = res[0]
 
@@ -58,8 +57,7 @@ class Despesas():
             res = self.cur.fetchone()
 
             if res is None:
-                raise ValueError("Observação não encontrada")
-
+                return Resultado(False, "Observação não encontrada no banco de dados", "erro")
             observacao = res[0]
         
         self.cur.execute(
@@ -72,18 +70,17 @@ class Despesas():
             )
         
         self.con.commit()
-        print("Editado com sucesso")
+        return Resultado(True, "Editado com sucesso", "sucesso")
 
     def excluir_despesa(self, id_despesa):
         self.cur.execute("DELETE FROM despesas WHERE id=?",
                         (id_despesa,))
         
         if self.cur.rowcount == 0:
-            return #return temporario pra nao impedir o loop de apagar os testes
-            #raise ValueError("Despesa não encontrada")
+            return Resultado(False, "Despesa não encontrada", "erro")
 
         self.con.commit()
-        print("excluido")
+        return Resultado(True, "Despesa excluida", "sucesso")
         
     def listar_despesas(self):
         self.cur.execute("SELECT * FROM despesas")
