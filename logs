@@ -20293,3 +20293,103 @@
 2026-01-23 20:25:16,274 [INFO] Utils.Despesa - Despesa criada | nome=mercadoria | valor=1206.00 | data=2025-08-15 | observacao=Red label, Black label, Ballena
 2026-01-23 20:25:16,276 [INFO] Utils.Despesa - Despesa criada | nome=mercadoria | valor=600.00 | data=2025-08-15 | observacao=Fardos energetico
 2026-01-23 20:25:16,278 [INFO] Utils.Despesa - Despesa criada | nome=funcionario | valor=5000.00 | data=2026-02-05 | observacao=Salário e décimo terceiro
+2026-01-23 20:26:05,826 [INFO] Utils.Despesa - Despesa criada | nome=contador | valor=100.00 | data=2026-01-23 | observacao=
+2026-01-23 20:26:05,830 [INFO] Utils.Despesa - Despesa criada | nome=aluguel | valor=1700.00 | data=2026-12-10 | observacao=Aluguel do imóvel
+2026-01-23 20:26:05,832 [INFO] Utils.Despesa - Despesa criada | nome=mercadoria | valor=10000.00 | data=2025-08-15 | observacao=
+2026-01-23 20:26:05,834 [INFO] Utils.Despesa - Despesa criada | nome=mercadoria | valor=1206.00 | data=2025-08-15 | observacao=Red label, Black label, Ballena
+2026-01-23 20:26:05,835 [INFO] Utils.Despesa - Despesa criada | nome=mercadoria | valor=600.00 | data=2025-08-15 | observacao=Fardos energetico
+2026-01-23 20:26:05,837 [INFO] Utils.Despesa - Despesa criada | nome=funcionario | valor=5000.00 | data=2026-02-05 | observacao=Salário e décimo terceiro
+2026-01-23 20:26:41,169 [INFO] Utils.Caixa - Item registrado no caixa | item=Código: 1 - Produto: heineken | Preço: R$40.0 | Quantidade no estoque: -12 quantidade=1
+2026-01-23 20:26:43,525 [WARNING] Utils.Caixa - Entrada de desconto maior que valor total dos produtos
+2026-01-23 20:26:46,374 [WARNING] Utils.Caixa - Entrada de desconto maior que valor total dos produtos
+2026-01-23 20:26:48,243 [WARNING] Utils.Caixa - Entrada de desconto maior que valor total dos produtos
+2026-01-23 20:26:48,691 [WARNING] Utils.Caixa - Entrada de desconto maior que valor total dos produtos
+2026-01-23 20:26:49,046 [WARNING] Utils.Caixa - Entrada de desconto maior que valor total dos produtos
+2026-01-23 20:26:49,246 [WARNING] Utils.Caixa - Entrada de desconto maior que valor total dos produtos
+2026-01-23 20:26:49,352 [WARNING] Utils.Caixa - Entrada de desconto maior que valor total dos produtos
+2026-01-23 20:26:49,477 [WARNING] Utils.Caixa - Entrada de desconto maior que valor total dos produtos
+2026-01-23 20:26:49,524 [WARNING] Utils.Caixa - Entrada de desconto maior que valor total dos produtos
+2026-01-23 20:26:49,693 [WARNING] Utils.Caixa - Entrada de desconto maior que valor total dos produtos
+2026-01-23 20:26:52,775 [ERROR] Utils.Caixa - Valor de desconto inválido | valor=-
+2026-01-23 20:26:53,879 [ERROR] Utils.Caixa - Valor de desconto inválido | valor=-
+2026-01-23 20:26:54,927 [ERROR] Utils.Caixa - Valor de desconto inválido | valor=-
+2026-01-23 20:26:58,122 [ERROR] Utils.Caixa - Valor de desconto inválido | valor=-
+2026-01-23 20:26:58,788 [ERROR] Utils.Caixa - Valor de desconto inválido | valor=-
+2026-01-23 20:26:59,982 [WARNING] Utils.Caixa - Entrada de desconto maior que valor total dos produtos
+2026-01-23 20:30:26,029 [WARNING] Utils.Caixa - Tentativa de fechar caixa com produto registrado
+2026-01-23 20:30:27,180 [WARNING] Utils.Caixa - Tentativa de fechar caixa com produto registrado
+2026-01-23 20:30:31,528 [WARNING] Utils.Caixa - Tentativa de fechar caixa com produto registrado
+2026-01-23 20:30:32,020 [WARNING] Utils.Caixa - Tentativa de fechar caixa com produto registrado
+2026-01-23 20:30:35,318 [WARNING] Utils.Caixa - Tentativa de fechar caixa com produto registrado
+2026-01-23 20:30:37,377 [WARNING] Utils.Caixa - Tentativa de fechar caixa com produto registrado
+2026-01-23 20:30:37,852 [WARNING] Utils.Caixa - Tentativa de fechar caixa com produto registrado
+2026-01-23 20:30:38,177 [WARNING] Utils.Caixa - Tentativa de fechar caixa com produto registrado
+2026-01-23 20:30:38,372 [WARNING] Utils.Caixa - Tentativa de fechar caixa com produto registrado
+2026-01-23 20:30:38,560 [WARNING] Utils.Caixa - Tentativa de fechar caixa com produto registrado
+2026-01-23 20:30:38,766 [WARNING] Utils.Caixa - Tentativa de fechar caixa com produto registrado
+2026-01-23 20:30:39,060 [WARNING] Utils.Caixa - Tentativa de fechar caixa com produto registrado
+2026-01-23 20:30:39,344 [INFO] Utils.Caixa - Item registrado no caixa | item=Código: 3 - Produto: teste2 | Preço: R$10.0 | Quantidade no estoque: 10 quantidade=1
+2026-01-23 20:30:40,329 [WARNING] Utils.Caixa - Tentativa de fechar caixa com produto registrado
+2026-01-23 20:30:41,331 [WARNING] Utils.Caixa - Tentativa de fechar caixa com produto registrado
+2026-01-23 20:30:41,540 [WARNING] Utils.Caixa - Tentativa de fechar caixa com produto registrado
+2026-01-23 20:30:41,719 [WARNING] Utils.Caixa - Tentativa de fechar caixa com produto registrado
+2026-01-23 20:30:41,882 [WARNING] Utils.Caixa - Tentativa de fechar caixa com produto registrado
+2026-01-23 20:30:43,326 [WARNING] Utils.Caixa - Tentativa de fechar caixa com produto registrado
+2026-01-23 20:33:20,217 [INFO] Utils.Despesa - Despesa criada | nome=contador | valor=100.00 | data=2026-01-23 | observacao=
+2026-01-23 20:33:20,221 [INFO] Utils.Despesa - Despesa criada | nome=aluguel | valor=1700.00 | data=2026-12-10 | observacao=Aluguel do imóvel
+2026-01-23 20:33:20,224 [INFO] Utils.Despesa - Despesa criada | nome=mercadoria | valor=10000.00 | data=2025-08-15 | observacao=
+2026-01-23 20:33:20,225 [INFO] Utils.Despesa - Despesa criada | nome=mercadoria | valor=1206.00 | data=2025-08-15 | observacao=Red label, Black label, Ballena
+2026-01-23 20:33:20,227 [INFO] Utils.Despesa - Despesa criada | nome=mercadoria | valor=600.00 | data=2025-08-15 | observacao=Fardos energetico
+2026-01-23 20:33:20,228 [INFO] Utils.Despesa - Despesa criada | nome=funcionario | valor=5000.00 | data=2026-02-05 | observacao=Salário e décimo terceiro
+2026-01-23 20:36:15,034 [INFO] Utils.Despesa - Despesa criada | nome=contador | valor=100.00 | data=2026-01-23 | observacao=
+2026-01-23 20:36:15,039 [INFO] Utils.Despesa - Despesa criada | nome=aluguel | valor=1700.00 | data=2026-12-10 | observacao=Aluguel do imóvel
+2026-01-23 20:36:15,040 [INFO] Utils.Despesa - Despesa criada | nome=mercadoria | valor=10000.00 | data=2025-08-15 | observacao=
+2026-01-23 20:36:15,043 [INFO] Utils.Despesa - Despesa criada | nome=mercadoria | valor=1206.00 | data=2025-08-15 | observacao=Red label, Black label, Ballena
+2026-01-23 20:36:15,045 [INFO] Utils.Despesa - Despesa criada | nome=mercadoria | valor=600.00 | data=2025-08-15 | observacao=Fardos energetico
+2026-01-23 20:36:15,048 [INFO] Utils.Despesa - Despesa criada | nome=funcionario | valor=5000.00 | data=2026-02-05 | observacao=Salário e décimo terceiro
+2026-01-23 20:36:30,680 [INFO] Utils.Despesa - Despesa criada | nome=contador | valor=100.00 | data=2026-01-23 | observacao=
+2026-01-23 20:36:30,683 [INFO] Utils.Despesa - Despesa criada | nome=aluguel | valor=1700.00 | data=2026-12-10 | observacao=Aluguel do imóvel
+2026-01-23 20:36:30,685 [INFO] Utils.Despesa - Despesa criada | nome=mercadoria | valor=10000.00 | data=2025-08-15 | observacao=
+2026-01-23 20:36:30,687 [INFO] Utils.Despesa - Despesa criada | nome=mercadoria | valor=1206.00 | data=2025-08-15 | observacao=Red label, Black label, Ballena
+2026-01-23 20:36:30,689 [INFO] Utils.Despesa - Despesa criada | nome=mercadoria | valor=600.00 | data=2025-08-15 | observacao=Fardos energetico
+2026-01-23 20:36:30,692 [INFO] Utils.Despesa - Despesa criada | nome=funcionario | valor=5000.00 | data=2026-02-05 | observacao=Salário e décimo terceiro
+2026-01-23 20:36:51,181 [INFO] Utils.Despesa - Despesa criada | nome=contador | valor=100.00 | data=2026-01-23 | observacao=
+2026-01-23 20:36:51,185 [INFO] Utils.Despesa - Despesa criada | nome=aluguel | valor=1700.00 | data=2026-12-10 | observacao=Aluguel do imóvel
+2026-01-23 20:36:51,188 [INFO] Utils.Despesa - Despesa criada | nome=mercadoria | valor=10000.00 | data=2025-08-15 | observacao=
+2026-01-23 20:36:51,190 [INFO] Utils.Despesa - Despesa criada | nome=mercadoria | valor=1206.00 | data=2025-08-15 | observacao=Red label, Black label, Ballena
+2026-01-23 20:36:51,193 [INFO] Utils.Despesa - Despesa criada | nome=mercadoria | valor=600.00 | data=2025-08-15 | observacao=Fardos energetico
+2026-01-23 20:36:51,195 [INFO] Utils.Despesa - Despesa criada | nome=funcionario | valor=5000.00 | data=2026-02-05 | observacao=Salário e décimo terceiro
+2026-01-23 20:37:09,626 [INFO] Utils.Despesa - Despesa criada | nome=contador | valor=100.00 | data=2026-01-23 | observacao=
+2026-01-23 20:37:09,629 [INFO] Utils.Despesa - Despesa criada | nome=aluguel | valor=1700.00 | data=2026-12-10 | observacao=Aluguel do imóvel
+2026-01-23 20:37:09,631 [INFO] Utils.Despesa - Despesa criada | nome=mercadoria | valor=10000.00 | data=2025-08-15 | observacao=
+2026-01-23 20:37:09,633 [INFO] Utils.Despesa - Despesa criada | nome=mercadoria | valor=1206.00 | data=2025-08-15 | observacao=Red label, Black label, Ballena
+2026-01-23 20:37:09,635 [INFO] Utils.Despesa - Despesa criada | nome=mercadoria | valor=600.00 | data=2025-08-15 | observacao=Fardos energetico
+2026-01-23 20:37:09,636 [INFO] Utils.Despesa - Despesa criada | nome=funcionario | valor=5000.00 | data=2026-02-05 | observacao=Salário e décimo terceiro
+2026-01-23 20:37:22,775 [INFO] Utils.Despesa - Despesa criada | nome=contador | valor=100.00 | data=2026-01-23 | observacao=
+2026-01-23 20:37:22,778 [INFO] Utils.Despesa - Despesa criada | nome=aluguel | valor=1700.00 | data=2026-12-10 | observacao=Aluguel do imóvel
+2026-01-23 20:37:22,779 [INFO] Utils.Despesa - Despesa criada | nome=mercadoria | valor=10000.00 | data=2025-08-15 | observacao=
+2026-01-23 20:37:22,781 [INFO] Utils.Despesa - Despesa criada | nome=mercadoria | valor=1206.00 | data=2025-08-15 | observacao=Red label, Black label, Ballena
+2026-01-23 20:37:22,783 [INFO] Utils.Despesa - Despesa criada | nome=mercadoria | valor=600.00 | data=2025-08-15 | observacao=Fardos energetico
+2026-01-23 20:37:22,784 [INFO] Utils.Despesa - Despesa criada | nome=funcionario | valor=5000.00 | data=2026-02-05 | observacao=Salário e décimo terceiro
+2026-01-23 20:39:26,845 [INFO] Utils.Despesa - Despesa criada | nome=contador | valor=100.00 | data=2026-01-23 | observacao=
+2026-01-23 20:39:26,849 [INFO] Utils.Despesa - Despesa criada | nome=aluguel | valor=1700.00 | data=2026-12-10 | observacao=Aluguel do imóvel
+2026-01-23 20:39:26,851 [INFO] Utils.Despesa - Despesa criada | nome=mercadoria | valor=10000.00 | data=2025-08-15 | observacao=
+2026-01-23 20:39:26,853 [INFO] Utils.Despesa - Despesa criada | nome=mercadoria | valor=1206.00 | data=2025-08-15 | observacao=Red label, Black label, Ballena
+2026-01-23 20:39:26,854 [INFO] Utils.Despesa - Despesa criada | nome=mercadoria | valor=600.00 | data=2025-08-15 | observacao=Fardos energetico
+2026-01-23 20:39:26,856 [INFO] Utils.Despesa - Despesa criada | nome=funcionario | valor=5000.00 | data=2026-02-05 | observacao=Salário e décimo terceiro
+2026-01-23 20:39:28,317 [INFO] Utils.Caixa - Item registrado no caixa | item=Código: 1 - Produto: heineken | Preço: R$40.0 | Quantidade no estoque: -12 quantidade=1
+2026-01-23 20:39:28,905 [INFO] Utils.Caixa - Item registrado no caixa | item=Código: 2 - Produto: heineken | Preço: R$9.0 | Quantidade no estoque: 6 quantidade=1
+2026-01-23 20:39:31,672 [INFO] Utils.Caixa - Quantidade=11 adicionada ao produto=heineken
+2026-01-23 20:39:31,672 [INFO] Utils.Caixa - Item registrado no caixa | item=Código: 1 - Produto: heineken | Preço: R$40.0 | Quantidade no estoque: -12 quantidade=11
+2026-01-23 20:39:33,182 [WARNING] Utils.Caixa - Produto não encontrado
+2026-01-23 20:39:33,369 [WARNING] Utils.Caixa - Produto não encontrado
+2026-01-23 20:39:33,581 [INFO] Utils.Caixa - Quantidade=1 adicionada ao produto=heineken
+2026-01-23 20:39:33,581 [INFO] Utils.Caixa - Item registrado no caixa | item=Código: 1 - Produto: heineken | Preço: R$40.0 | Quantidade no estoque: -12 quantidade=1
+2026-01-23 20:39:34,174 [INFO] Utils.Caixa - Quantidade=1 adicionada ao produto=heineken
+2026-01-23 20:39:34,174 [INFO] Utils.Caixa - Item registrado no caixa | item=Código: 1 - Produto: heineken | Preço: R$40.0 | Quantidade no estoque: -12 quantidade=1
+2026-01-23 20:39:34,362 [INFO] Utils.Caixa - Quantidade=1 adicionada ao produto=heineken
+2026-01-23 20:39:34,362 [INFO] Utils.Caixa - Item registrado no caixa | item=Código: 1 - Produto: heineken | Preço: R$40.0 | Quantidade no estoque: -12 quantidade=1
+2026-01-23 20:39:34,510 [INFO] Utils.Caixa - Quantidade=1 adicionada ao produto=heineken
+2026-01-23 20:39:34,510 [INFO] Utils.Caixa - Item registrado no caixa | item=Código: 1 - Produto: heineken | Preço: R$40.0 | Quantidade no estoque: -12 quantidade=1
+2026-01-23 20:39:35,191 [WARNING] Utils.Caixa - Produto não encontrado
+2026-01-23 20:39:38,478 [INFO] Utils.Caixa - Produto excluido do carrinho | nome=heineken

@@ -99,6 +99,7 @@ class Caixa:
 
     def total(self):
         if self.desconto:
+            logger.debug("Desconto aplicado | Desconto=%s", self.desconto)
             return sum(item.preco_venda * quantidade for item, quantidade in self.itens_no_carrinho) - self.desconto
     
         return sum(item.preco_venda * quantidade for item, quantidade in self.itens_no_carrinho)

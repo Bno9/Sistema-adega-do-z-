@@ -12,6 +12,7 @@ class CaixaMenu(ctk.CTkFrame):
         #textos
         self.status = StringVar()
         self.total_var = StringVar()
+        self.total_itens = StringVar()
 
         #entradas
         self.codigo = StringVar()
@@ -58,6 +59,7 @@ class CaixaMenu(ctk.CTkFrame):
                                                            var_status=self.status))
         self.entry_codigo.bind("<Right>", lambda e: self.entry_quantidade.focus())
 
+        #label codigo
         ctk.CTkLabel(
         self.header,
         text="Código do produto",
@@ -65,6 +67,15 @@ class CaixaMenu(ctk.CTkFrame):
         fg_color="#1e1e1e",
         font=("arial", 24, "bold")
         ).grid(row=0, column=0, sticky="w", padx=10, pady=10)
+
+        #label total itens
+        ctk.CTkLabel(self.header,
+                     textvariable=self.total_itens,
+                     text_color="white",
+        fg_color="#1e1e1e",
+        font=("arial", 48, "bold")
+        ).grid(row=1, column=1, sticky="s")
+        self.total_itens.set("ITENS: 0")
 
         #entry/label quantidade
         self.entry_quantidade = ctk.CTkEntry(
@@ -209,6 +220,8 @@ class CaixaMenu(ctk.CTkFrame):
         label_atalhos = ctk.CTkLabel(frame_atalho,
                                         text="""
 F1 - Finalizar compra
+F5 - Aplicar desconto
+F10 - Consultar produto
 Delete - Excluir
 Right - Quantidade
 Left - Código
@@ -479,10 +492,12 @@ Troco: R$ {resultado.dados["troco"]:.2f}""")
         self.total_var.set(f"Total: R$ {total:.2f}")
 
     def atualizar_tabela(self):
+        total = 0
         for item in self.tabela.get_children():
             self.tabela.delete(item)
 
         for produto, quantidade in self.referencia_main.caixa.itens_no_carrinho:
+            total += quantidade
             self.tabela.insert(
                 "",
                 "end",
@@ -492,6 +507,8 @@ Troco: R$ {resultado.dados["troco"]:.2f}""")
                     f"R$ {produto.preco_venda:.2f}",
                     quantidade
                 ))
+        
+        self.total_itens.set(f"ITENS: {total}")
             
     def frame_desconto(self, event=None):
         desconto = StringVar()
