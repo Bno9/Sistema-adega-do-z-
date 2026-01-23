@@ -1,0 +1,79 @@
+2026-01-23 00:38:28,757 [INFO] Utils.Despesa - Despesa criada | nome=contador | valor=100.00 | data=2026-01-23 | observacao=
+2026-01-23 00:38:28,761 [INFO] Utils.Despesa - Despesa criada | nome=aluguel | valor=1700.00 | data=2026-12-10 | observacao=Aluguel do imóvel
+2026-01-23 00:38:28,763 [INFO] Utils.Despesa - Despesa criada | nome=mercadoria | valor=10000.00 | data=2025-08-15 | observacao=
+2026-01-23 00:38:28,764 [INFO] Utils.Despesa - Despesa criada | nome=mercadoria | valor=1206.00 | data=2025-08-15 | observacao=Red label, Black label, Ballena
+2026-01-23 00:38:28,766 [INFO] Utils.Despesa - Despesa criada | nome=mercadoria | valor=600.00 | data=2025-08-15 | observacao=Fardos energetico
+2026-01-23 00:38:28,767 [INFO] Utils.Despesa - Despesa criada | nome=funcionario | valor=5000.00 | data=2026-02-05 | observacao=Salário e décimo terceiro
+2026-01-23 00:38:33,363 [INFO] Utils.Caixa - Produto registrado no caixa
+2026-01-23 00:38:33,363 [INFO] Utils.Caixa - Item registrado no caixa | item=Código: 1 - Produto: heineken | Preço: R$40.0 | Quantidade no estoque: -5 quantidade=1
+2026-01-23 00:38:34,917 [INFO] Utils.Caixa - Compra finalizada | valor_total=40.0 | troco=60.0 | items=['                  Adega do ze                   ', '       RUA JUAN VICENTE, 461 - OSASCO/SP        ', '              CPF/CPNJ:00000000-0               ', '------------------------------------------------', 'Data/Hora: 23/01/2026 00:38:34', 'Produto          Cod       Quant     Valor', '------------------------------------------------', 'heineken           1          1      R$40.00', '', 'Total                                R$40.00', 'Valor pago                           R$100.00', 'Troco                                 R$60.00', '           Obrigado pela preferencia            ', '']
+2026-01-23 00:38:36,838 [INFO] Utils.Caixa - Produto registrado no caixa
+2026-01-23 00:38:36,839 [INFO] Utils.Caixa - Item registrado no caixa | item=Código: 1 - Produto: heineken | Preço: R$40.0 | Quantidade no estoque: -6 quantidade=1
+2026-01-23 00:38:38,244 [WARNING] Utils.Caixa - Valor recebido inválido | valor=0.0
+2026-01-23 00:38:39,048 [ERROR] Utils.Caixa - Erro ao converter valor pago para float | valor_pago=a
+2026-01-23 00:38:47,088 [INFO] Utils.Caixa - Quantidade=1 adicionada ao produto=heineken
+2026-01-23 00:38:47,088 [INFO] Utils.Caixa - Item registrado no caixa | item=Código: 1 - Produto: heineken | Preço: R$40.0 | Quantidade no estoque: -6 quantidade=1
+2026-01-23 00:38:54,627 [WARNING] Utils.Caixa - Valor recebido inválido | valor=10.0
+2026-01-23 00:38:55,457 [INFO] Utils.Caixa - Compra finalizada | valor_total=80.0 | troco=920.0 | items=['                  Adega do ze                   ', '       RUA JUAN VICENTE, 461 - OSASCO/SP        ', '              CPF/CPNJ:00000000-0               ', '------------------------------------------------', 'Data/Hora: 23/01/2026 00:38:55', 'Produto          Cod       Quant     Valor', '------------------------------------------------', 'heineken           1          2      R$80.00', '', 'Total                                R$80.00', 'Valor pago                          R$1000.00', 'Troco                                R$920.00', '           Obrigado pela preferencia            ', '']
+2026-01-23 00:49:39,685 [INFO] Utils.Despesa - Despesa excluida | id_despesa=2693
+2026-01-23 00:50:37,225 [INFO] Utils.Despesa - Despesa criada | nome=contador | valor=100.00 | data=2026-01-23 | observacao=
+2026-01-23 00:50:37,228 [INFO] Utils.Despesa - Despesa criada | nome=aluguel | valor=1700.00 | data=2026-12-10 | observacao=Aluguel do imóvel
+2026-01-23 00:50:37,229 [INFO] Utils.Despesa - Despesa criada | nome=mercadoria | valor=10000.00 | data=2025-08-15 | observacao=
+2026-01-23 00:50:37,231 [INFO] Utils.Despesa - Despesa criada | nome=mercadoria | valor=1206.00 | data=2025-08-15 | observacao=Red label, Black label, Ballena
+2026-01-23 00:50:37,232 [INFO] Utils.Despesa - Despesa criada | nome=mercadoria | valor=600.00 | data=2025-08-15 | observacao=Fardos energetico
+2026-01-23 00:50:37,234 [INFO] Utils.Despesa - Despesa criada | nome=funcionario | valor=5000.00 | data=2026-02-05 | observacao=Salário e décimo terceiro
+2026-01-23 00:50:38,622 [INFO] Utils.Caixa - Item registrado no caixa | item=Código: 1 - Produto: heineken | Preço: R$40.0 | Quantidade no estoque: -8 quantidade=1
+2026-01-23 00:50:38,910 [INFO] Utils.Caixa - Item registrado no caixa | item=Código: 2 - Produto: heineken | Preço: R$9.0 | Quantidade no estoque: 10 quantidade=1
+2026-01-23 00:50:40,627 [INFO] Utils.Caixa - Compra finalizada | valor_total=49.0 | troco=51.0 | itens=[(<Utils.Produto.Produto object at 0x7f0e1e1bf8d0>, 1), (<Utils.Produto.Produto object at 0x7f0e1e1bc090>, 1)]
+2026-01-23 00:51:48,255 [INFO] Utils.Despesa - Despesa criada | nome=contador | valor=100.00 | data=2026-01-23 | observacao=
+2026-01-23 00:51:48,258 [INFO] Utils.Despesa - Despesa criada | nome=aluguel | valor=1700.00 | data=2026-12-10 | observacao=Aluguel do imóvel
+2026-01-23 00:51:48,261 [INFO] Utils.Despesa - Despesa criada | nome=mercadoria | valor=10000.00 | data=2025-08-15 | observacao=
+2026-01-23 00:51:48,263 [INFO] Utils.Despesa - Despesa criada | nome=mercadoria | valor=1206.00 | data=2025-08-15 | observacao=Red label, Black label, Ballena
+2026-01-23 00:51:48,265 [INFO] Utils.Despesa - Despesa criada | nome=mercadoria | valor=600.00 | data=2025-08-15 | observacao=Fardos energetico
+2026-01-23 00:51:48,266 [INFO] Utils.Despesa - Despesa criada | nome=funcionario | valor=5000.00 | data=2026-02-05 | observacao=Salário e décimo terceiro
+2026-01-23 00:51:50,279 [INFO] Utils.Caixa - Item registrado no caixa | item=Código: 1 - Produto: heineken | Preço: R$40.0 | Quantidade no estoque: -9 quantidade=1
+2026-01-23 00:51:51,120 [INFO] Utils.Caixa - Item registrado no caixa | item=Código: 2 - Produto: heineken | Preço: R$9.0 | Quantidade no estoque: 9 quantidade=1
+2026-01-23 00:52:05,402 [INFO] Utils.Despesa - Despesa criada | nome=contador | valor=100.00 | data=2026-01-23 | observacao=
+2026-01-23 00:52:05,407 [INFO] Utils.Despesa - Despesa criada | nome=aluguel | valor=1700.00 | data=2026-12-10 | observacao=Aluguel do imóvel
+2026-01-23 00:52:05,409 [INFO] Utils.Despesa - Despesa criada | nome=mercadoria | valor=10000.00 | data=2025-08-15 | observacao=
+2026-01-23 00:52:05,410 [INFO] Utils.Despesa - Despesa criada | nome=mercadoria | valor=1206.00 | data=2025-08-15 | observacao=Red label, Black label, Ballena
+2026-01-23 00:52:05,412 [INFO] Utils.Despesa - Despesa criada | nome=mercadoria | valor=600.00 | data=2025-08-15 | observacao=Fardos energetico
+2026-01-23 00:52:05,414 [INFO] Utils.Despesa - Despesa criada | nome=funcionario | valor=5000.00 | data=2026-02-05 | observacao=Salário e décimo terceiro
+2026-01-23 00:52:07,132 [INFO] Utils.Caixa - Item registrado no caixa | item=Código: 1 - Produto: heineken | Preço: R$40.0 | Quantidade no estoque: -11 quantidade=1
+2026-01-23 00:52:07,431 [INFO] Utils.Caixa - Item registrado no caixa | item=Código: 2 - Produto: heineken | Preço: R$9.0 | Quantidade no estoque: 7 quantidade=1
+2026-01-23 00:52:08,162 [INFO] Utils.Caixa - Compra finalizada | valor_total=49.0 | troco=51.0 | itens=['heineken', 'heineken']
+2026-01-23 01:04:27,226 [INFO] Utils.Despesa - Despesa criada | nome=contador | valor=100.00 | data=2026-01-23 | observacao=
+2026-01-23 01:04:27,229 [INFO] Utils.Despesa - Despesa criada | nome=aluguel | valor=1700.00 | data=2026-12-10 | observacao=Aluguel do imóvel
+2026-01-23 01:04:27,231 [INFO] Utils.Despesa - Despesa criada | nome=mercadoria | valor=10000.00 | data=2025-08-15 | observacao=
+2026-01-23 01:04:27,233 [INFO] Utils.Despesa - Despesa criada | nome=mercadoria | valor=1206.00 | data=2025-08-15 | observacao=Red label, Black label, Ballena
+2026-01-23 01:04:27,234 [INFO] Utils.Despesa - Despesa criada | nome=mercadoria | valor=600.00 | data=2025-08-15 | observacao=Fardos energetico
+2026-01-23 01:04:27,236 [INFO] Utils.Despesa - Despesa criada | nome=funcionario | valor=5000.00 | data=2026-02-05 | observacao=Salário e décimo terceiro
+2026-01-23 01:05:22,415 [INFO] Utils.Despesa - Despesa criada | nome=contador | valor=100.00 | data=2026-01-23 | observacao=
+2026-01-23 01:05:22,419 [INFO] Utils.Despesa - Despesa criada | nome=aluguel | valor=1700.00 | data=2026-12-10 | observacao=Aluguel do imóvel
+2026-01-23 01:05:22,421 [INFO] Utils.Despesa - Despesa criada | nome=mercadoria | valor=10000.00 | data=2025-08-15 | observacao=
+2026-01-23 01:05:22,423 [INFO] Utils.Despesa - Despesa criada | nome=mercadoria | valor=1206.00 | data=2025-08-15 | observacao=Red label, Black label, Ballena
+2026-01-23 01:05:22,425 [INFO] Utils.Despesa - Despesa criada | nome=mercadoria | valor=600.00 | data=2025-08-15 | observacao=Fardos energetico
+2026-01-23 01:05:22,426 [INFO] Utils.Despesa - Despesa criada | nome=funcionario | valor=5000.00 | data=2026-02-05 | observacao=Salário e décimo terceiro
+2026-01-23 01:05:43,861 [INFO] Utils.Despesa - Despesa criada | nome=contador | valor=100.00 | data=2026-01-23 | observacao=
+2026-01-23 01:05:43,865 [INFO] Utils.Despesa - Despesa criada | nome=aluguel | valor=1700.00 | data=2026-12-10 | observacao=Aluguel do imóvel
+2026-01-23 01:05:43,866 [INFO] Utils.Despesa - Despesa criada | nome=mercadoria | valor=10000.00 | data=2025-08-15 | observacao=
+2026-01-23 01:05:43,868 [INFO] Utils.Despesa - Despesa criada | nome=mercadoria | valor=1206.00 | data=2025-08-15 | observacao=Red label, Black label, Ballena
+2026-01-23 01:05:43,870 [INFO] Utils.Despesa - Despesa criada | nome=mercadoria | valor=600.00 | data=2025-08-15 | observacao=Fardos energetico
+2026-01-23 01:05:43,872 [INFO] Utils.Despesa - Despesa criada | nome=funcionario | valor=5000.00 | data=2026-02-05 | observacao=Salário e décimo terceiro
+2026-01-23 01:05:43,889 [DEBUG] PIL.PngImagePlugin - STREAM b'IHDR' 16 13
+2026-01-23 01:05:43,889 [DEBUG] PIL.PngImagePlugin - STREAM b'caBX' 41 54333
+2026-01-23 01:05:43,889 [DEBUG] PIL.PngImagePlugin - b'caBX' 41 54333 (unknown)
+2026-01-23 01:05:43,889 [DEBUG] PIL.PngImagePlugin - STREAM b'IDAT' 54386 65536
+2026-01-23 01:05:44,016 [DEBUG] __main__ - Frame trocado | frame_atual=.!menuprincipal
+2026-01-23 01:05:45,233 [DEBUG] __main__ - Frame trocado | frame_atual=.!caixamenu
+2026-01-23 01:05:45,566 [DEBUG] PIL.PngImagePlugin - STREAM b'IHDR' 16 13
+2026-01-23 01:05:45,566 [DEBUG] PIL.PngImagePlugin - STREAM b'caBX' 41 54333
+2026-01-23 01:05:45,566 [DEBUG] PIL.PngImagePlugin - b'caBX' 41 54333 (unknown)
+2026-01-23 01:05:45,566 [DEBUG] PIL.PngImagePlugin - STREAM b'IDAT' 54386 65536
+2026-01-23 01:05:45,625 [DEBUG] __main__ - Frame trocado | frame_atual=.!menuprincipal2
+2026-01-23 01:06:06,877 [DEBUG] __main__ - Frame trocado | frame_atual=.!estoquemenu
+2026-01-23 01:06:08,782 [DEBUG] PIL.PngImagePlugin - STREAM b'IHDR' 16 13
+2026-01-23 01:06:08,782 [DEBUG] PIL.PngImagePlugin - STREAM b'caBX' 41 54333
+2026-01-23 01:06:08,782 [DEBUG] PIL.PngImagePlugin - b'caBX' 41 54333 (unknown)
+2026-01-23 01:06:08,782 [DEBUG] PIL.PngImagePlugin - STREAM b'IDAT' 54386 65536
+2026-01-23 01:06:08,841 [DEBUG] __main__ - Frame trocado | frame_atual=.!menuprincipal3

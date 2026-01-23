@@ -1,5 +1,8 @@
 from Utils.Recibo import Recibo, ImpressoraBase, ImpressoraTxt, ImpressoraWindows
 from Utils.Resultado import Resultado
+import logging
+
+logger = logging.getLogger(__name__)
 
 class Caixa:
     
@@ -18,6 +21,7 @@ class Caixa:
         for i, (item, quantidade_atual) in enumerate(self.itens_no_carrinho):
             if produto.codigo == item.codigo:
                 self.itens_no_carrinho[i] = (item, quantidade_atual + quantidade)
+                logger.info("Quantidade=%d adicionada ao produto=%s", quantidade, item.nome)
                 return
 
         self.itens_no_carrinho.append((produto, quantidade))
@@ -33,9 +37,11 @@ class Caixa:
         try:
             valor_pago = float(valor_pago)
         except ValueError:
+            logger.error("Erro ao converter valor pago para float | valor_pago=%s", valor_pago)
             return Resultado(False, "Erro de processamento", "erro", 5000)
 
         if valor_pago < total or valor_pago > 100000:
+            logger.warning("Valor recebido inválido | valor=%s", valor_pago)
             return Resultado(False, "Valor recebido inválido", "aviso", 5000)
 
         troco = valor_pago - total
@@ -51,6 +57,8 @@ class Caixa:
         })
 
         linhas = self.recibo.gerar_linhas(self.itens_no_carrinho, valor_pago)
+        itens = [i[0].codigo for i in self.itens_no_carrinho]
+        logger.info("Compra finalizada | valor_total=%s | troco=%s | itens=%s", total, troco, itens)
 
         self.itens_no_carrinho.clear()
 
@@ -66,6 +74,7 @@ class Caixa:
         try:
             valor = int(valor)
         except ValueError:
+            logger.error("Valor de desconto inválido | valor=%s", valor)
             return Resultado(False, "Digite apenas numeros", "erro", 5000)
         
         if valor < 0:
@@ -76,6 +85,7 @@ class Caixa:
         
         if self.total() < 0:
             self.desconto = 0
+            logger.warning("Entrada de desconto maior que valor total dos produtos")
             return Resultado(False, "Desconto maior que o valor dos produtos", "erro", 5000)
         
         return self.total()
@@ -102,12 +112,14 @@ class Caixa:
         Usado para evitar o fechamento do caixa sem finalizar a compra"""
 
         if self.itens_no_carrinho:
+            logger.warning("Tentativa de fechar caixa com produto registrado")
             return Resultado(False, "Finalize a compra primeiro", "info")
 
         return Resultado(True)
 
     def validar_codigo(self, codigo_produto, quantidade=1):
         if quantidade < 0:
+             logger.warning("Quantidade não pode ser negativa")
              return Resultado(False, "Quantidade não pode ser negativa", "erro", 5000)
 
         if self.estoque.conferir_se_existe_no_estoque(codigo_produto):
@@ -129,18 +141,22 @@ class Caixa:
                         if row[8] is not None else None
                 }
             except ValueError:
+                logger.error("Erro ao processar dados")
                 return Resultado(False, "Erro de processamento", "erro")
 
             from Utils.Produto import Produto
             produto = Produto(**dados)
         
             self.carrinho_caixa(produto, quantidade) 
+            logger.info("Item registrado no caixa | item=%s quantidade=%d", produto, quantidade)
             return Resultado(True)
 
+        logger.warning("Produto não encontrado")
         return Resultado(False, "Produto não encontrado", "aviso", 5000)
 
     def excluir_do_carrinho(self, produto_codigo):
         for i, (item, _) in enumerate(self.itens_no_carrinho):
             if produto_codigo == item.codigo:
                 del self.itens_no_carrinho[i]
+                logger.info("Produto excluido do carrinho | nome=%s", item.nome)
                 return True

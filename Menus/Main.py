@@ -6,6 +6,7 @@ from tkinter import ttk
 from tkinter import *
 import customtkinter as ctk
 from PIL import Image, UnidentifiedImageError
+import logging
 
 import sqlite3
 
@@ -73,7 +74,7 @@ class Main:
             try:
                 self.impressora = ImpressoraWindows("MP-4200 TH")
             except Exception as e:
-                print(f"Erro ao iniciar impressora: {e}")
+                logger.error("Erro ao iniciar impressora | erro=%s", e)
                 self.impressora = ImpressoraTxt()
             
             return self.impressora
@@ -88,6 +89,7 @@ class Main:
         if self.frame_atual:
             self.frame_atual.destroy()
 
+        logger.debug("Frame trocado | frame_atual=%s", novo_frame)
         self.frame_atual = novo_frame
         self.frame_atual.grid(column=0, row=0, sticky="nsew")
 
@@ -139,7 +141,7 @@ class MenuPrincipal(ctk.CTkFrame):
             ).grid(column=0, row=0, columnspan=2, sticky="ew", pady=20)
 
         except (FileNotFoundError, UnidentifiedImageError, OSError) as e:
-            print(f"Erro ao carregar logo: {e}")
+            logger.error("Erro ao carregar logo | erro=%s", e)
 
             #label menu texto caso imagem nao seja carregada
             ctk.CTkLabel(
@@ -290,9 +292,6 @@ class MenuPrincipal(ctk.CTkFrame):
 
             entry.bind("<Return>", lambda e: self.main.verificar_senha(senha, tela_senha))
 
-    def donothing(self):
-        pass
-
     def escolher(self, opcao):
         """Recebe a opção escolhida,
          Converte a opção em int, busca a tela correspondente no mapa
@@ -315,6 +314,7 @@ class MenuPrincipal(ctk.CTkFrame):
             self.main.con.close()
             self.status.set("Finalizando programa...")
             self.master.after(2000, self.master.quit)
+            logger.info("Programa finalizado")
             return
             
         self.main.trocar_frame(escolhido(self.master, self.main))
@@ -336,6 +336,10 @@ root.attributes("-zoomed", True)
 
 root.columnconfigure(0, weight=1)
 root.rowconfigure(0, weight=1)
+
+logger = logging.getLogger(__name__)
+
+logging.basicConfig(filename="logs", level=logging.INFO, format="%(asctime)s [%(levelname)s] %(name)s - %(message)s")
 
 
 m = Main(root) #Instanciando a main

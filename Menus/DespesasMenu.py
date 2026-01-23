@@ -1,6 +1,9 @@
 import customtkinter as ctk
 from tkinter import ttk
 from Utils.Resultado import Resultado
+import logging
+
+logger = logging.getLogger(__name__)
 
 class DespesasMenu(ctk.CTkFrame):
     
@@ -304,6 +307,7 @@ class DespesasMenu(ctk.CTkFrame):
         if isinstance(id_despesa, Resultado):
             self.status.set(id_despesa.mensagem)
             return
+        
         modal_editar = ctk.CTkToplevel(self.frame_conteudo, fg_color="#1e1e1e")
 
         modal_editar.title("Edição")
@@ -485,7 +489,7 @@ class DespesasMenu(ctk.CTkFrame):
             self.carregar_tabela()
 
         except ValueError as e:
-            print(e)
+            logger.error("Erro ao confirmar exclusao despesa erro=%s", e)
 
     def setar_status(self, resultado, label_status=None, var_status=None):
         if resultado is None:
@@ -548,7 +552,7 @@ class DespesaController:
         )
             self.tela.carregar_tabela()
         except ValueError as e:
-            print(e)
+            logger.error("Erro ao criar despesa erro=%s", e)
         finally:
             self.atualizar_combobox(self.tela.combobox)
             self.tela.entries.clear()
@@ -577,7 +581,7 @@ class DespesaController:
 
             self.tela.carregar_tabela()
         except ValueError as e:
-            print(e)
+            logger.error("Erro ao editar despesa erro=%s", e)
         finally:
             self.atualizar_combobox(self.tela.combobox) 
             self.tela.entries.clear()
@@ -589,7 +593,7 @@ class DespesaController:
             resultado = self.despesa.excluir_despesa(id)
             self.tela.carregar_tabela()
         except ValueError as e:
-            print(e)
+            logger.error("Erro ao deletar despesa erro=%s", e)
         finally:
             self.atualizar_combobox(self.tela.combobox)
             self.tela.entries.clear()

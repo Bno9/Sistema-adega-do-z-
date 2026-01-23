@@ -1,4 +1,7 @@
 from datetime import datetime
+import logging
+
+logger = logging.getLogger(__name__)
 
 class Recibo:
     def gerar_linhas(self, venda, valor_pago):
@@ -28,6 +31,7 @@ class Recibo:
         linhas.append(f'{"Troco":<{largura//2}} {f"R${valor_pago - total:.2f}":>{largura//2-4}}')
         linhas.append("Obrigado pela preferencia".center(largura))
         linhas.append("")
+        logger.debug("Recibo gerado | Linhas=%s", linhas)
         return linhas
 
 
@@ -49,11 +53,12 @@ class ImpressoraWindows(ImpressoraBase): #classe para cliente
         import win32print
         
         if not hasattr(self, "nome") or not self.nome:
-            print("Nome da impressora não definido. Tentando usar impressora padrão")
+            logger.warning("Nome da impressora não definido. Tentando usar impressora padrão")
             try:
                 self.nome = win32print.GetDefaultPrinter()
             except Exception as e:
                 self.nome = None
+                logger.error("Impressora não encontrada")
                 raise RuntimeError("Impressora nao encontrada")
 
         self.handle = None
@@ -64,7 +69,8 @@ class ImpressoraWindows(ImpressoraBase): #classe para cliente
             self.handle = None
 
         if not self.handle:
-            raise RuntimeError("Impressora não disponível")
+            logger.error("Impressora indisponivel")
+            raise RuntimeError("Impressora indisponível")
 
         try:
             win32print.StartDocPrinter(
@@ -90,3 +96,4 @@ class ImpressoraWindows(ImpressoraBase): #classe para cliente
         finally:
             win32print.ClosePrinter(self.handle)
             self.handle = None
+            logger.info("Recibo imprimido")
