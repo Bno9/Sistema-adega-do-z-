@@ -189,8 +189,37 @@ class CaixaMenu(ctk.CTkFrame):
             fg_color="orange",
             command=self.voltar
         ).grid(row=0, column=2, padx=10)
+
+        frame_atalho = ctk.CTkFrame(self.botoes, fg_color="#e7dddd", corner_radius=12)
+        frame_atalho.grid(row=0, column=3, sticky="se")
+
+        frame_atalho.grid_columnconfigure(0, weight=1)
+        frame_atalho.grid_rowconfigure(1, weight=1)
+
+        # título
+        label_titulo = ctk.CTkLabel(
+            frame_atalho,
+            text="Atalhos",
+            font=("Arial", 17, "bold"),
+            text_color="black",
+            anchor="center"
+        )
+        label_titulo.grid(row=0, column=0, sticky="n", padx=14, pady=(12, 6))
+
+        label_atalhos = ctk.CTkLabel(frame_atalho,
+                                        text="""
+F1 - Finalizar compra
+Delete - Excluir
+Right - Quantidade
+Left - Código
+Esc - Voltar""",
+                text_color="black",
+                font=("Consolas", 15),
+                anchor="w")
+        label_atalhos.grid(row=1, column=0, sticky="nw", padx=10, pady=(0,12))
         
         #binds
+        self.master.bind("<F1>", self.atalho_finalizar)
         self.master.bind("<F5>", self.frame_desconto)
         self.master.bind("<F10>", self.consultar_produto)
         self.master.bind("<Escape>", self.voltar)
@@ -495,6 +524,11 @@ Troco: R$ {resultado.dados["troco"]:.2f}""")
         )
         entry_desconto.grid(row=1, column=1, padx=10)
         entry_desconto.focus_set()
+
+    def atalho_finalizar(self, event=None):
+        resultado = self.controller.enviar_codigo()
+        self.setar_status(resultado, label_status=self.label_status, var_status=self.status)
+        self.abrir_modal_finalizar()
         
     def consultar_produto(self, event=None):
         codigo_consulta = StringVar()
@@ -644,6 +678,7 @@ class CaixaController:
         resultado = self.ref_caixa.validar_codigo(code, quantidade)
         
         self.tela.codigo.set("")
+        self.tela.quantidade.set(1)
         self.tela.status.set("")
         self.tela.atualizar_tabela()
         self.tela.atualizar_total()
