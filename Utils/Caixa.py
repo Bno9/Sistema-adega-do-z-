@@ -56,7 +56,7 @@ class Caixa:
             "troco": troco
         })
 
-        linhas = self.recibo.gerar_linhas(self.itens_no_carrinho, valor_pago)
+        linhas = self.recibo.gerar_linhas(self.itens_no_carrinho, valor_pago, self.desconto)
         itens = [i[0].codigo for i in self.itens_no_carrinho]
         logger.info("Compra finalizada | valor_total=%s | troco=%s | itens=%s", total, troco, itens)
 
@@ -91,10 +91,12 @@ class Caixa:
         return self.total()
         
     def imprimir_recibo(self, linhas, cpf=None):
+        logger.debug("Cpf=%s recebido", cpf)
+        logger.debug("linhas=%s", linhas)
         if cpf == "":
             return
         
-        impressora = self.iniciar_impressora()
+        impressora = self.iniciar_impressora() #se for trocar aqui pra testes nao posso esquecer que o quee ta vindo no self é uma função, então vai dar nonetype caso eu nao mude a main
         impressora.imprimir(linhas)
 
     def total(self):

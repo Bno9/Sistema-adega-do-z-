@@ -39,7 +39,7 @@ class Main:
         """
         self.root = root
         self.con = sqlite3.connect("adega.db", timeout=10, check_same_thread=False)
-        self.impressora = None
+        self.impressora =  None
         self.frame_atual = None
         self.pode_usar_atalho = False
         self.estoque = Estoque(self.con)

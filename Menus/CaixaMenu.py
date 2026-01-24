@@ -542,6 +542,17 @@ Troco: R$ {resultado.dados["troco"]:.2f}""")
         entry_desconto.grid(row=1, column=1, padx=10)
         entry_desconto.focus_set()
 
+
+        self.master.unbind("<Escape>")
+        entry_desconto.bind("<Return>", lambda e:  self.entry_codigo.focus_set())
+        entry_desconto.bind("<Escape>", lambda e: self.destruir_desconto(label_desconto, entry_desconto))
+
+    def destruir_desconto(self, label, entry):
+        label.destroy()
+        entry.destroy()
+        self.entry_codigo.focus_set()
+        self.master.bind("<Escape>", self.voltar)
+
     def atalho_finalizar(self, event=None):
         resultado = self.controller.enviar_codigo()
         self.setar_status(resultado, label_status=self.label_status, var_status=self.status)
