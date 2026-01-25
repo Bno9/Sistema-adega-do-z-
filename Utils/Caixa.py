@@ -12,7 +12,8 @@ class Caixa:
         self.estoque = estoque
         self.con = con
         self.vendas = []
-        self.itens_no_carrinho = [] #aqui eu mantive objetos produto porque ficou mais facil e nao precisei mexer muito no codigo
+        self.itens_no_carrinho = []
+        self.itens_passados = []
         self.desconto = 0
 
     def carrinho_caixa(self, produto, quantidade=1):
@@ -26,7 +27,7 @@ class Caixa:
 
         self.itens_no_carrinho.append((produto, quantidade))
 
-    def finalizar_compra(self, valor_pago):
+    def finalizar_compra(self, valor_pago, metodo_pagamento):
         """Método que finaliza a compra e da baixa no estoque"""
         
         if not self.itens_no_carrinho:
@@ -53,14 +54,16 @@ class Caixa:
             "itens": [{"codigo": p.codigo, "nome": p.nome, "quantidade": q, "total_produto": p.preco_venda*q} for p, q in self.itens_no_carrinho],
             "total": total,
             "recebido": valor_pago,
+            "metodo pagamento": metodo_pagamento,
             "troco": troco
         })
 
         linhas = self.recibo.gerar_linhas(self.itens_no_carrinho, valor_pago, self.desconto)
         itens = [i[0].codigo for i in self.itens_no_carrinho]
-        logger.info("Compra finalizada | valor_total=%s | troco=%s | itens=%s", total, troco, itens)
+        logger.info("Compra finalizada | valor_total=%s | metodo_pagamento=%s | troco=%s | itens=%s", total, metodo_pagamento, troco, itens)
 
         self.itens_no_carrinho.clear()
+        self.alternar_compra()
 
         return Resultado(True, "", "info", 1000000, {"total": total,
                                                                               "troco": troco,
@@ -163,3 +166,28 @@ class Caixa:
                 del self.itens_no_carrinho[i]
                 logger.info("Produto excluido do carrinho | nome=%s", item.nome)
                 return True
+            
+    def alternar_compra(self):
+        if self.itens_passados:
+            logger.debug("Itens da compra pendente copiados para tela atual")
+            intermediario = self.itens_no_carrinho
+            self.itens_no_carrinho = self.itens_passados.copy()
+            self.itens_passados = intermediario
+            self.desconto = 0
+            logger.debug(self.itens_no_carrinho)
+            if not self.itens_passados:
+                print("retomou")
+                return "Retomou"
+
+            return "Pendente"
+        
+        if not self.itens_no_carrinho:
+            return False
+        
+        self.itens_passados = self.itens_no_carrinho.copy()
+        self.itens_no_carrinho.clear()
+        self.desconto = 0
+        logger.debug("Itens da tela colocados em pendencia")
+        logger.debug(self.itens_passados)
+        
+        return "Pendente"
