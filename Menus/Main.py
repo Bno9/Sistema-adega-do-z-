@@ -42,6 +42,7 @@ class Main:
         self.impressora =  None
         self.frame_atual = None
         self.pode_usar_atalho = False
+        self.configs = {"vazio": 0}
         self.estoque = Estoque(self.con)
         self.caixa = Caixa(self.estoque, self.iniciar_impressora, self.con)
         self.despesa = Despesas(self.con)
@@ -291,6 +292,12 @@ class MenuPrincipal(ctk.CTkFrame):
 
             entry.bind("<Return>", lambda e: self.main.verificar_senha(senha, tela_senha))
 
+        estoque_baixo = self.main.estoque.estoque_baixo(self.main.configs.get("quantidade_repor", 4))
+        
+        if estoque_baixo:
+            PopupBaixoEstoque(self, estoque_baixo, self.main.configs)
+            logger.info("Produtos com estoque baixo produtos=%s", estoque_baixo)
+
     def escolher(self, opcao):
         """Recebe a opção escolhida,
          Converte a opção em int, busca a tela correspondente no mapa
@@ -322,6 +329,65 @@ class MenuPrincipal(ctk.CTkFrame):
         if tecla.char in ["1", "2", "3", "4", "5"] and self.main.pode_usar_atalho:
             self.escolher(int(tecla.char))
 
+import customtkinter as ctk
+
+class PopupBaixoEstoque(ctk.CTkToplevel):
+    #fiz essa classe pra nao deixar tao poluido e ilegivel  o código (inclusive acho que vou fazer nas outras telas tambem com as coisas repetidas)
+    def __init__(self, master, produtos, configs):
+        super().__init__(master)
+
+        # Config básica
+        self.overrideredirect(True)
+        self.attributes("-topmost", True)
+        self.configs = configs #aqui vai ser um dicionario com informações por exemplo "quantidade": 1, "tempo para fechar popup": "10000" (vou salvar num banco de dados isso e o usuario vai poder configurar na menubar)
+
+        largura = 320
+        altura = 180
+        margem = 80
+
+        self.update_idletasks()
+
+        screen_w = self.winfo_screenwidth()
+        screen_h = self.winfo_screenheight()
+
+        x = screen_w - largura - margem
+        y = screen_h - altura - margem
+
+        self.geometry(f"{largura}x{altura}+{x}+{y}")
+
+        frame = ctk.CTkFrame(self, corner_radius=12)
+        frame.pack(fill="both", expand=True, padx=8, pady=8)
+
+        ctk.CTkLabel(
+            frame,
+            text="⚠️ Estoque baixo",
+            font=("Arial", 16, "bold")
+        ).pack(pady=(10, 5))
+
+        for i, produto in enumerate(produtos):
+            nome = produto[2]
+            quantidade = produto[6]
+            
+            ctk.CTkLabel(
+                frame,
+                text=f"Produto {nome} com estoque baixo | Quantidade: {quantidade}",
+                text_color="red",
+                justify="left",
+                wraplength=280
+            ).pack(padx=10)
+
+
+            if i >= 2:
+                ctk.CTkLabel(
+                    frame,
+                    text="E mais...",
+                    justify="left",
+                    wraplength=280
+                ).pack(padx=10)
+                self.after(self.configs.get("tempo_fechar_popup", 4000), self.destroy)
+                return
+
+        self.after(self.configs.get("tempo_fechar_popup", 4000), self.destroy)
 
 ctk.set_default_color_theme("blue")
 ctk.set_appearance_mode("dark")

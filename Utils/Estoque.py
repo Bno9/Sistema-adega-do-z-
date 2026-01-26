@@ -165,3 +165,18 @@ class Estoque:
 
         self.cur.execute("UPDATE produtos SET quantidade=? WHERE codigo=?", (quantidade_fardo, codigo_produto))
         self.con.commit()
+
+    def estoque_baixo(self, quantidade_aviso):
+        self.cur.execute("SELECT * FROM produtos")
+        row = self.cur.fetchall()
+
+        produtos = []
+
+        for produto in row:
+            quantidade = produto[6]
+
+            if quantidade <= quantidade_aviso:
+                produtos.append(produto)
+        
+
+        return produtos if produtos else None
