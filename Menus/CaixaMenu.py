@@ -233,6 +233,7 @@ class CaixaMenu(ctk.CTkFrame):
                                         text="""
 F1 - Finalizar compra
 F5 - Aplicar desconto
+F7 - Alternar compra
 F10 - Consultar produto
 Delete - Excluir
 Right - Quantidade
@@ -245,6 +246,7 @@ Esc - Voltar""",
         
         #binds
         self.master.bind("<F1>", self.atalho_finalizar)
+        self.master.bind("<F2>", lambda e: self.pesquisar_produto())
         self.master.bind("<F5>", self.frame_desconto)
         self.master.bind("<F7>", self.mudar_compra)
         self.master.bind("<F10>", self.consultar_produto)
@@ -617,6 +619,122 @@ Esc - Voltar""",
         self.entry_codigo.focus_set()
         self.master.bind("<Escape>", self.voltar)
 
+    def pesquisar_produto(self):
+        self.filtro_nome = StringVar()
+        self.filtro_nome.trace("w", self.filtrar)
+        self.coluna_filtro = "nome"
+
+        modal = ctk.CTkToplevel(self.frame_conteudo, fg_color="#1e1e1e")
+
+        modal.bind("<Escape>", lambda e: self.fechar_modal(modal))
+        modal.bind("<Return>", lambda e: self.controller.adicionar_ao_carrinho())
+
+        modal.title("Pesquisar produto")
+        modal.geometry("900x900")
+
+        modal.transient(self.frame_conteudo)
+        modal.update_idletasks()
+        modal.grab_set()   
+
+        style = ttk.Style()
+        style.theme_use("clam")
+
+        style.configure(
+            "Treeview",
+            background="#1e1e1e",
+            foreground="white",
+            rowheight=30,
+            fieldbackground="#1e1e1e"
+        )
+        style.configure(
+            "Treeview.Heading",
+            background="#2b2b2b",
+            foreground="white",
+            font=("Arial", 12, "bold")
+        )
+        style.map("Treeview", background=[("selected", "#2a7fff")])
+
+        self.tabela_estoque = ttk.Treeview(
+            modal,
+            columns=("codigo", "nome", "preço", "qtd"),
+            show="headings"
+        )
+
+        self.tabela_estoque.heading("codigo", text="Código")
+        self.tabela_estoque.heading("nome", text="Nome")
+        self.tabela_estoque.heading("preço", text="Preço")
+        self.tabela_estoque.heading("qtd", text="Qtd")
+
+        self.tabela_estoque.column("codigo", width=200, anchor="center")
+        self.tabela_estoque.column("nome", width=220, anchor="w")
+        self.tabela_estoque.column("preço", width=120, anchor="center")
+        self.tabela_estoque.column("qtd", width=60, anchor="center")
+
+        self.tabela_estoque.grid(row=0, column=0, sticky="nsew")
+
+        scroll = ttk.Scrollbar(
+            modal,
+            orient="vertical",
+            command=self.tabela_estoque.yview
+        )
+        self.tabela_estoque.configure(yscrollcommand=scroll.set)
+
+        scroll.grid(row=0, column=1, sticky="ns")
+        modal.rowconfigure(0, weight=1)
+        modal.rowconfigure(1, weight=0)
+        modal.columnconfigure(0, weight=1)
+
+        frame_filtro = ctk.CTkFrame(modal, fg_color="#1e1e1e")
+        frame_filtro.grid(row=1, column=0, sticky="nsew")
+        frame_filtro.rowconfigure(0, weight=1)
+        frame_filtro.columnconfigure((0,1), weight=1)
+
+        label_nome = ctk.CTkLabel(
+            frame_filtro,
+            text="Digite o nome",
+            text_color="white",
+            fg_color="#1e1e1e",
+            width=100,
+            font=("Arial", 32, "bold")
+        )
+        label_nome.grid(row=1, column=0, sticky="e")
+        entry_nome = ctk.CTkEntry(frame_filtro,
+                         textvariable=self.filtro_nome,
+                         font=("Arial", 20, "bold"),
+                         width=200,
+                         height=50)
+        entry_nome.grid(row=1, column=1, sticky="w")
+        entry_nome.focus_set()
+
+        self.carregar_tabela_pesquisa()
+
+    def carregar_tabela_pesquisa(self, estoque=None):
+
+        for item in self.tabela_estoque.get_children():
+            self.tabela_estoque.delete(item)
+
+        if estoque is None:
+            estoque = self.referencia_main.estoque.get_banco()
+
+        for produto in estoque:
+            _, codigo, nome, tipo, preco_custo, preco_venda, quantidade, _, _ = produto
+
+            self.tabela_estoque.insert(
+                "",
+                "end",
+                values=(
+                    codigo,
+                    nome,
+                    preco_venda,
+                    quantidade
+                )
+            )
+
+    def filtrar(self, *args):
+        digitado = self.filtro_nome.get()
+        filtro = self.referencia_main.estoque.filtrar_produto(self.coluna_filtro, digitado)
+        self.carregar_tabela_pesquisa(filtro)
+
     def atalho_finalizar(self, event=None):
         resultado = self.controller.enviar_codigo()
         self.setar_status(resultado, label_status=self.label_status, var_status=self.status)
@@ -793,7 +911,7 @@ class CaixaController:
     def consultar_produto(self, codigo, label_nome, label_quantidade, label_preco):     
         produto = self.tela.referencia_main.estoque.get_produto(codigo)
 
-        _, _, nome, preco, _, quantidade = produto
+        _, _, nome, _, preco, _, quantidade, _, _ = produto
 
         label_nome.configure(text=nome)
         label_preco.configure(text=f"R$ {preco:.2f}")
@@ -823,3 +941,18 @@ class CaixaController:
         else:
             self.tela.compra_pendente.set("")
             return False
+        
+    def adicionar_ao_carrinho(self):
+        selecionado = self.tela.tabela_estoque.selection()
+
+        if not selecionado:
+            return
+        
+        item_id = selecionado[0] #codigo do item
+        valores = self.tela.tabela_estoque.item(item_id, "values")
+
+        produto = self.tela.referencia_main.estoque.get_produto(valores[0])
+        self.ref_caixa.validar_codigo(produto[1])
+        self.tela.atualizar_tabela()
+        self.tela.atualizar_total()
+        return

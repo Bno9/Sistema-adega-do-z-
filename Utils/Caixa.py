@@ -59,7 +59,7 @@ class Caixa:
         })
 
         linhas = self.recibo.gerar_linhas(self.itens_no_carrinho, valor_pago, self.desconto)
-        itens = [i[0].codigo for i in self.itens_no_carrinho]
+        itens = [self.vendas["itens"]] #arrumar depois
         logger.info("Compra finalizada | valor_total=%s | metodo_pagamento=%s | troco=%s | itens=%s", total, metodo_pagamento, troco, itens)
 
         self.itens_no_carrinho.clear()

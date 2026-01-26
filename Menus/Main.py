@@ -62,8 +62,7 @@ class Main:
             2:EstoqueMenu,
             3:ProdutoMenu,
             4:DespesasMenu,
-            5:None,
-            6:None
+            5:None
         }
 
         #inicia o frame menu principal
@@ -320,7 +319,7 @@ class MenuPrincipal(ctk.CTkFrame):
         self.main.trocar_frame(escolhido(self.master, self.main))
 
     def teclas_menu(self, tecla):
-        if tecla.char in ["1", "2", "3", "4", "5", "6"]and self.main.pode_usar_atalho:
+        if tecla.char in ["1", "2", "3", "4", "5"] and self.main.pode_usar_atalho:
             self.escolher(int(tecla.char))
 
 
