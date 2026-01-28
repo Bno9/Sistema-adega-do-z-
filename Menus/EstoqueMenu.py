@@ -35,6 +35,7 @@ class EstoqueMenu(ctk.CTkFrame):
 
         #Estilo para tabela
         style = ttk.Style()
+        style.theme_use("clam")
 
         style.configure(
             "Custom.Treeview",
