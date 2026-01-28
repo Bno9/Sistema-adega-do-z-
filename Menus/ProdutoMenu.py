@@ -315,7 +315,7 @@ class ProdutoMenu(ctk.CTkFrame):
                 
             #frame atalhos
             frame_atalho = ctk.CTkFrame(botoes_frame, fg_color="#e7dddd", corner_radius=12)
-            frame_atalho.grid(row=0, column=5, sticky="nsew")
+            frame_atalho.grid(row=0, column=5, sticky="new")
 
             frame_atalho.grid_columnconfigure(0, weight=1)
             frame_atalho.grid_rowconfigure(1, weight=1)

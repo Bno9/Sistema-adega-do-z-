@@ -1,6 +1,9 @@
 import customtkinter as ctk
 from tkinter import ttk
 from Utils.Resultado import Resultado
+import logging
+
+logger = logging.getLogger(__name__)
 
 class DespesasMenu(ctk.CTkFrame):
     
@@ -108,6 +111,8 @@ class DespesasMenu(ctk.CTkFrame):
         self.tabela.column("observacao", width=200)
 
         self.master.bind("<Delete>", lambda e: self.tela_deletar())
+        self.master.bind("<F1>", lambda e: self.tela_cadastrar())
+        self.master.bind("<F2>", lambda e: self.tela_editar())
 
         self.carregar_tabela()
 
@@ -122,7 +127,7 @@ class DespesasMenu(ctk.CTkFrame):
 
         frame_botoes = ctk.CTkFrame(self.frame_conteudo, fg_color="#1e1e1e")
         frame_botoes.grid(row=2, column=0, sticky="ew", pady=20)
-        frame_botoes.columnconfigure((0,1,2,3), weight=1)
+        frame_botoes.columnconfigure((0,1,2,3,4), weight=1)
 
         #Label total
         ctk.CTkLabel(self.frame_conteudo,
@@ -195,6 +200,32 @@ class DespesasMenu(ctk.CTkFrame):
                    command=self.referencia_main.voltar_menu_principal
                    ).grid(row=0, column=3)
         
+        frame_atalho = ctk.CTkFrame(frame_botoes, fg_color="#e7dddd", corner_radius=12)
+        frame_atalho.grid(row=0, column=4, sticky="se")
+
+        frame_atalho.grid_columnconfigure(0, weight=1)
+        frame_atalho.grid_rowconfigure(1, weight=1)
+
+        # título
+        label_titulo = ctk.CTkLabel(
+            frame_atalho,
+            text="Atalhos",
+            font=("Arial", 17, "bold"),
+            text_color="black",
+            anchor="center"
+        )
+        label_titulo.grid(row=0, column=0, sticky="n", padx=14, pady=(12, 6))
+
+        label_atalhos = ctk.CTkLabel(frame_atalho,
+                                        text="""
+F1 - Adicionar despesa
+F2 - Editar Despesa
+Delete - Excluir
+Esc - Voltar""",
+                text_color="black",
+                font=("Consolas", 15),
+                anchor="w")
+        label_atalhos.grid(row=1, column=0, sticky="nw", padx=10, pady=(0,12))
 
     def escolha_tela(self, escolha):
         mapa = {1: self.tela_cadastrar,
@@ -302,8 +333,9 @@ class DespesasMenu(ctk.CTkFrame):
         id_despesa = self.pegar_id_selecionado()
         
         if isinstance(id_despesa, Resultado):
-            self.status.set(id_despesa.mensagem)
+            self.setar_status(id_despesa, self.label_status, self.status)
             return
+        
         modal_editar = ctk.CTkToplevel(self.frame_conteudo, fg_color="#1e1e1e")
 
         modal_editar.title("Edição")
@@ -395,7 +427,7 @@ class DespesasMenu(ctk.CTkFrame):
         id_despesa = self.pegar_id_selecionado()
 
         if isinstance(id_despesa, Resultado):
-            self.status.set(id_despesa.mensagem)
+            self.setar_status(id_despesa, self.label_status, self.status)
             return
         
         modal_deletar = ctk.CTkToplevel(self.frame_conteudo, fg_color="#1e1e1e")
@@ -475,7 +507,7 @@ class DespesasMenu(ctk.CTkFrame):
         selecionado = self.tabela.selection()
         if not selecionado:
             self.pode_usar_atalho = True
-            return Resultado(False, "Nenhuma despesa selecionada")
+            return Resultado(False, "Nenhuma despesa selecionada", 3000)
         return int(selecionado[0])
     
     def confirmar_exclusao(self):
@@ -485,7 +517,7 @@ class DespesasMenu(ctk.CTkFrame):
             self.carregar_tabela()
 
         except ValueError as e:
-            print(e)
+            logger.error("Erro ao confirmar exclusao despesa erro=%s", e)
 
     def setar_status(self, resultado, label_status=None, var_status=None):
         if resultado is None:
@@ -548,7 +580,7 @@ class DespesaController:
         )
             self.tela.carregar_tabela()
         except ValueError as e:
-            print(e)
+            logger.error("Erro ao criar despesa erro=%s", e)
         finally:
             self.atualizar_combobox(self.tela.combobox)
             self.tela.entries.clear()
@@ -577,7 +609,7 @@ class DespesaController:
 
             self.tela.carregar_tabela()
         except ValueError as e:
-            print(e)
+            logger.error("Erro ao editar despesa erro=%s", e)
         finally:
             self.atualizar_combobox(self.tela.combobox) 
             self.tela.entries.clear()
@@ -589,7 +621,7 @@ class DespesaController:
             resultado = self.despesa.excluir_despesa(id)
             self.tela.carregar_tabela()
         except ValueError as e:
-            print(e)
+            logger.error("Erro ao deletar despesa erro=%s", e)
         finally:
             self.atualizar_combobox(self.tela.combobox)
             self.tela.entries.clear()

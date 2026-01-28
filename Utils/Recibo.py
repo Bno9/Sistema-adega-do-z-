@@ -1,9 +1,14 @@
 from datetime import datetime
+import logging
+
+logger = logging.getLogger(__name__)
 
 class Recibo:
-    def gerar_linhas(self, venda, valor_pago):
+    def gerar_linhas(self, venda, valor_pago, desconto=None):
         linhas = []
         total = 0
+        subtotal = 0
+        subtotal -= desconto
 
         largura = 48
         horario = datetime.now().strftime("%d/%m/%Y %H:%M:%S")
@@ -17,17 +22,22 @@ class Recibo:
         linhas.append("-" * largura)
 
         for item, quantidade in venda:
-            subtotal = item.preco_venda * quantidade
-            total += subtotal
-            linha = f"{item.nome:<18} {item.codigo:<10} {quantidade:<6} {f'R${subtotal:.2f}':>6}"
+            valor_item = item.preco_venda * quantidade
+            total += valor_item
+            subtotal += valor_item
+            linha = f"{item.nome:<18} {item.codigo:<10} {quantidade:<6} {f'R${valor_item:.2f}':>6}"
             linhas.append(linha)
 
         linhas.append("")
         linhas.append(f'{"Total":<{largura//2}}{f"R${total:.2f}":>{largura//2-4}}')
+        if desconto > 0:
+            linhas.append(f'{"Desconto":<{largura//2}}{f"R${desconto:.2f}":>{largura//2-4}}')
+            linhas.append(f'{"Subtotal":<{largura//2}}{f"R${subtotal:.2f}":>{largura//2-4}}')
         linhas.append(f'{"Valor pago":<{largura//2}} {f"R${valor_pago:.2f}":>{largura//2-4}}')
         linhas.append(f'{"Troco":<{largura//2}} {f"R${valor_pago - total:.2f}":>{largura//2-4}}')
         linhas.append("Obrigado pela preferencia".center(largura))
         linhas.append("")
+        logger.debug("Recibo gerado | Linhas=%s", linhas)
         return linhas
 
 
@@ -49,11 +59,12 @@ class ImpressoraWindows(ImpressoraBase): #classe para cliente
         import win32print
         
         if not hasattr(self, "nome") or not self.nome:
-            print("Nome da impressora não definido. Tentando usar impressora padrão")
+            logger.warning("Nome da impressora não definido. Tentando usar impressora padrão")
             try:
                 self.nome = win32print.GetDefaultPrinter()
             except Exception as e:
                 self.nome = None
+                logger.error("Impressora não encontrada")
                 raise RuntimeError("Impressora nao encontrada")
 
         self.handle = None
@@ -64,7 +75,8 @@ class ImpressoraWindows(ImpressoraBase): #classe para cliente
             self.handle = None
 
         if not self.handle:
-            raise RuntimeError("Impressora não disponível")
+            logger.error("Impressora indisponivel")
+            raise RuntimeError("Impressora indisponível")
 
         try:
             win32print.StartDocPrinter(
@@ -90,3 +102,4 @@ class ImpressoraWindows(ImpressoraBase): #classe para cliente
         finally:
             win32print.ClosePrinter(self.handle)
             self.handle = None
+            logger.info("Recibo imprimido")

@@ -25,6 +25,7 @@ class EstoqueMenu(ctk.CTkFrame):
 
         self.ordem = {"nome": False,
         "codigo": False}
+        self.mostrando_estoque_baixo = False
 
         self.coluna_filtro = "nome"
         self.filtro = StringVar()
@@ -112,7 +113,22 @@ class EstoqueMenu(ctk.CTkFrame):
                     font=("Arial", 16, "bold"),
                     fg_color="orange",
                    command=self.referencia_main.voltar_menu_principal
-                   ).grid(row=0, column=0, sticky="w")
+                   ).grid(row=0, column=1, sticky="e")
+        
+        #botao mudar tabela
+        self.botao_mudar_tela = ctk.CTkButton(rodape, 
+                    text="Ver produtos com estoque baixo", 
+                    text_color="black", 
+                    corner_radius=20,
+                    border_color="black",
+                    hover_color="white",
+                    width=300,  
+                    height=100,
+                    font=("Arial", 16, "bold"),
+                    fg_color="orange",
+                   command=self.mudar_tabela
+                   )
+        self.botao_mudar_tela.grid(row=0, column=0)
         
         #entry de pesquisa
         entry_pesquisa = ctk.CTkEntry(canto_filtro,
@@ -181,6 +197,24 @@ class EstoqueMenu(ctk.CTkFrame):
     def mudar_coluna(self, valor):
         self.coluna_filtro = valor
         self.filtrar()
+
+    def mudar_tabela(self):
+        if not self.mostrando_estoque_baixo:
+            produtos = self.referencia_main.estoque.estoque_baixo(self.referencia_main.configs.get("quantidade_repor", 4))
+            if produtos is None:
+                for item in self.tabela.get_children():
+                    self.tabela.delete(item)
+                self.botao_mudar_tela.configure(text="Ver todos produtos")
+                self.mostrando_estoque_baixo = True
+                return
+            self.botao_mudar_tela.configure(text="Ver todos produtos")
+            self.mostrando_estoque_baixo = True
+            self.carregar_estoque(produtos)
+            
+        else:    
+            self.carregar_estoque()
+            self.botao_mudar_tela.configure(text="Ver produtos com estoque baixo")
+            self.mostrando_estoque_baixo = False
 
     def voltar(self, event):
         self.master.unbind("<Escape>")

@@ -1,5 +1,8 @@
 from datetime import date, datetime
 from Utils.Resultado import Resultado
+import logging
+
+logger = logging.getLogger(__name__)
 
 class Despesas():
     def __init__(self, con):
@@ -23,6 +26,7 @@ class Despesas():
             if data:
                 data_formatada = datetime.strptime(data, "%d/%m/%Y").date().isoformat()
         except ValueError:
+            logger.warning("Data recebida inválida -> Data=%s", data)
             return Resultado(False, "Data inválida. Use DD/MM/AAAA", "erro", 6000)
         
         if not observacao:
@@ -34,6 +38,7 @@ class Despesas():
                     )
         
         self.con.commit()
+        logger.info("Despesa criada | nome=%s | valor=%.2f | data=%s | observacao=%s", nome, valor, data_formatada, observacao)
         return Resultado(True, "Despesa criada", "sucesso")
     
     def editar_despesa(self, id_despesa, nome, valor, data="", observacao=""):
@@ -41,6 +46,7 @@ class Despesas():
             if data:
                 data = datetime.strptime(data, "%d/%m/%Y").date().isoformat()
         except ValueError:
+            logger.warning("Data recebida inválida -> Data=%s", data)
             return Resultado(False, "Data inválida. Use DD/MM/AAAA", "erro", 6000)
         
         if data == "":
@@ -48,6 +54,7 @@ class Despesas():
             res = self.cur.fetchone()
 
             if res is None:
+                logger.warning("Data não encontrada no banco de dados | Data=%s | resultado_Banco=%s", data, res)
                 return Resultado(False, "Data não encontrada no banco de dados", "erro")
 
             data = res[0]
@@ -57,6 +64,7 @@ class Despesas():
             res = self.cur.fetchone()
 
             if res is None:
+                logger.warning("Obersvaçao não encontrada no banco de dados | Observacao=%s | resultado_Banco=%s", observacao, res)
                 return Resultado(False, "Observação não encontrada no banco de dados", "erro")
             observacao = res[0]
         
@@ -70,6 +78,7 @@ class Despesas():
             )
         
         self.con.commit()
+        logger.info("Despesa editada | nome=%s | valor=%.2f | data=%s | observacao=%s", nome, valor, data, observacao)
         return Resultado(True, "Editado com sucesso", "sucesso")
 
     def excluir_despesa(self, id_despesa):
@@ -77,9 +86,11 @@ class Despesas():
                         (id_despesa,))
         
         if self.cur.rowcount == 0:
+            logger.warning("Despesa não encontrada para exclusao | id_despesa=%s", id_despesa)
             return Resultado(False, "Despesa não encontrada", "erro")
 
         self.con.commit()
+        logger.info("Despesa excluida | id_despesa=%s", id_despesa)
         return Resultado(True, "Despesa excluida", "sucesso")
         
     def listar_despesas(self):
