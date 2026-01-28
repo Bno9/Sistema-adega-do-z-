@@ -9,7 +9,7 @@ from PIL import Image, UnidentifiedImageError
 import logging
 import json
 import os
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, date
 
 import sqlite3
 
@@ -51,7 +51,20 @@ class Main:
         self.despesa = Despesas(self.con)
         self.root.bind_all("<Key>", self.tecla_apertada)
 
-        self.fazer_backup()
+        ultimo = self.configs.get("ultimo_dia_backup")
+        if ultimo:
+            self.ultimo_dia_backup = datetime.fromisoformat(ultimo).date()
+        else:
+            self.ultimo_dia_backup = None
+
+        hoje = date.today()
+
+        if self.ultimo_dia_backup is None or self.ultimo_dia_backup < hoje:
+            self.fazer_backup()
+            self.configs["ultimo_dia_backup"] = hoje.isoformat()
+
+            with open("configs.json", "w", encoding="utf-8") as f:
+                json.dump(self.configs, f, indent=4, ensure_ascii=False)
 
         #despesas criadas para teste
         self.despesa.adicionar_despesa("contador", 100)
@@ -90,6 +103,11 @@ class Main:
                 config = json.load(arquivo)
                 return config
         except FileNotFoundError:
+                logger.warning("configs.json não encontrado, usando configurações padrão")
+                return {}
+
+        except json.JSONDecodeError:
+            logger.error("configs.json está vazio ou inválido, recriando arquivo")
             return {}
 
     def tecla_apertada(self, tecla):
@@ -122,6 +140,12 @@ class Main:
                 self.con.backup(destino)
 
             destino.close()
+
+            hoje = date.today()
+            self.configs["ultimo_dia_backup"] = hoje.isoformat()
+
+            with open("configs.json", "w", encoding="utf-8") as f:
+                json.dump(self.configs, f, indent=4, ensure_ascii=False)
 
             self.limpar_backups_antigos()
 
@@ -180,6 +204,8 @@ class MenuPrincipal(ctk.CTkFrame):
         super().__init__(master=root, fg_color="#1e1e1e") #instancia o root usando o init da classe pai
         self.main = main
         self.submenu_aberto = None
+        
+        root.protocol("WM_DELETE_WINDOW", lambda: self.escolher(5)) #bloqueia o X
 
         #texto
         self.status = StringVar()
@@ -245,16 +271,6 @@ class MenuPrincipal(ctk.CTkFrame):
         ctk.CTkButton(
             self.submenu_admin,
             text="Alterar senha",
-            fg_color="#313030",
-            hover_color="gray",
-            font=("Arial", 16),
-            width=180
-        ).pack(padx=10, pady=5)
-
-        #submenu botao fazer backup
-        ctk.CTkButton(
-            self.submenu_admin,
-            text="Fazer backup",
             fg_color="#313030",
             hover_color="gray",
             font=("Arial", 16),
@@ -501,6 +517,8 @@ class MenuPrincipal(ctk.CTkFrame):
             for i in range(10000):
                 self.main.despesa.excluir_despesa(i)
 
+            with open("configs.json", "w", encoding="utf-8") as f:
+                json.dump(self.main.configs, f, indent=4, ensure_ascii=False)
 
             self.main.con.close()
             self.status.set("Finalizando programa...")
@@ -711,7 +729,7 @@ class Configs(ctk.CTkToplevel):
         self.main.configs.update(self.config)
 
         with open("configs.json", "w", encoding="utf-8") as arquivo:
-            json.dump(self.config, arquivo, indent=4, ensure_ascii=False)
+            json.dump(self.main.configs, arquivo, indent=4, ensure_ascii=False)
 
         self.main.pode_usar_atalho = True
         self.destroy()
@@ -743,7 +761,6 @@ root = ctk.CTk()
 root.title("Adega do zé 2.1")
 root.configure(bg="#1e1e1e")
 root.attributes("-zoomed", True)
-#root.protocol("WM_DELETE_WINDOW", lambda: None) #bloqueia o X
 #root.state("zoomed") para windows
 
 root.columnconfigure(0, weight=1)
