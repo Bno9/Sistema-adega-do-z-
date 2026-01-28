@@ -56,6 +56,7 @@ class DespesasMenu(ctk.CTkFrame):
                       )
 
         style = ttk.Style()
+        style.theme_use("clam")
 
         style.configure(
             "Custom.Treeview",
