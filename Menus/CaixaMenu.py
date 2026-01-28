@@ -357,7 +357,7 @@ Esc - Voltar""",
             font=("Arial", 20, "bold")
         )
         self.entry_valor_pago.grid(row=0, column=0, pady=5)
-        self.entry_valor_pago.focus_set()
+        self.entry_valor_pago.after(1000, self.entry_valor_pago.focus_set)
         self.entry_valor_pago.bind("<Return>", lambda e: self.setar_status(
                                                                             resultado=self.finalizar_compra(),
                                                                            label_status=label_status_modal, 

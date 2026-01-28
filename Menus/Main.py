@@ -211,8 +211,7 @@ class MenuPrincipal(ctk.CTkFrame):
         
         #ajustando coluna para centralizar interface
         self.columnconfigure((0,1), weight=1)
-        self.rowconfigure(0, weight=0)
-        self.rowconfigure((1,2,3,4), weight=1)
+        self.rowconfigure(2, weight=1)
 
         self.master.bind("<Escape>", lambda e: self.escolher(6))
 
@@ -220,6 +219,22 @@ class MenuPrincipal(ctk.CTkFrame):
         header_menubar = ctk.CTkFrame(self, fg_color="#313030")
         header_menubar.grid(row=0, column=0, sticky="w")
         header_menubar.columnconfigure((0,1,2), weight=1)
+
+        botoes_frame = ctk.CTkFrame(self, fg_color="#1e1e1e", height=520)
+        botoes_frame.grid(
+            row=2,
+            column=0,
+            columnspan=2,
+            sticky="nsew"
+        )
+        botoes_frame.columnconfigure((0, 1), weight=1)
+
+        for i in range(3):
+            botoes_frame.rowconfigure(i, weight=1)
+
+        botoes_frame.columnconfigure(0, weight=1)
+        botoes_frame.columnconfigure(1, weight=1)
+        botoes_frame.grid_propagate(False)
 
         #botao configurações
         ctk.CTkButton(header_menubar, 
@@ -308,32 +323,27 @@ class MenuPrincipal(ctk.CTkFrame):
             width=180
         ).pack(padx=10, pady=5)
 
+        logo_frame = ctk.CTkFrame(self, fg_color="#1e1e1e", height=420)
+        logo_frame.grid(row=1, column=0, columnspan=2, pady=30)
+        logo_frame.grid_propagate(False)
+
         #Imagem para usar no label principal
         try:
-            img = ctk.CTkImage(
-                light_image=Image.open("/home/usuario/Projetos/Adega_do_ze/images/Adega_fundo_cinza.png"),
-                size=(400, 400)
+            self.logo_img = ctk.CTkImage(
+                light_image=Image.open("images/Adega_fundo_cinza.png"),
+                size=(300, 300)
             )
 
             #label menu imagem
             ctk.CTkLabel(
-            self, 
+            logo_frame, 
             text="",
-            image=img,
+            image=self.logo_img,
             fg_color="#1e1e1e"
-            ).grid(column=0, row=1, columnspan=2, sticky="new", pady=20)
+            ).pack(pady=(10, 20))
 
         except (FileNotFoundError, UnidentifiedImageError, OSError) as e:
             logger.error("Erro ao carregar logo | erro=%s", e)
-
-            #label menu texto caso imagem nao seja carregada
-            ctk.CTkLabel(
-            self, 
-            text="Adega do zé",
-            text_color="white",
-            fg_color="#1e1e1e",
-            font=("arial", 32, "bold")
-            ).grid(column=0, row=1, columnspan=2, sticky="ew", pady=20)
 
         #label status
         ctk.CTkLabel(
@@ -345,94 +355,99 @@ class MenuPrincipal(ctk.CTkFrame):
      
         #botao caixa
         ctk.CTkButton(
-            self, 
+            botoes_frame, 
             text="Caixa",
             text_color="black", 
             corner_radius=40,
             border_color="black",
             hover_color="white",
             border_width=5,
-            width=500,  
+            width=350,  
             height=200,
             font=("Arial", 30, "bold"),
             fg_color="orange",
             command=lambda: self.escolher(1)
-            ).grid(column=0, row=2, padx=20, pady=20)
+            ).grid(column=0, row=0, pady=20,  padx=40, sticky="ns")
 
         #botao estoque
-        ctk.CTkButton(self, 
+        ctk.CTkButton(
+            botoes_frame, 
             text="Estoque",
             text_color="black", 
             corner_radius=40,
             border_color="black",
             hover_color="white",
             border_width=5,
-            width=500,  
+            width=350,  
             height=200,
             fg_color="orange",
             font=("Arial", 30, "bold"),
             command=lambda: self.escolher(2)
-            ).grid(column=0, row=3, padx=20, pady=20)
+            ).grid(column=0, row=1, pady=20, padx=40, sticky="ns")
 
         #botao Relatórios
-        ctk.CTkButton(self, 
+        ctk.CTkButton(
+            botoes_frame, 
             text="Relatórios (W.I.P)", 
             text_color="black", 
             corner_radius=40,
             border_color="black",
             hover_color="white",
             border_width=5,
-            width=500,  
+            width=350,  
             height=200,
             fg_color="orange",
             font=("Arial", 30, "bold"),
             command=lambda: self.escolher(5)
-            ).grid(column=1, row=2, padx=20, pady=20)
+            ).grid(column=1, row=0, pady=20,  padx=40, sticky="ns")
         
         #botao despesas
-        ctk.CTkButton(self, 
+        ctk.CTkButton(
+            botoes_frame, 
             text="Despesas", 
             text_color="black", 
             corner_radius=40,
             border_color="black",
             hover_color="white",
             border_width=5,
-            width=500,  
+            width=350,  
             height=200,
             fg_color="orange",
             font=("Arial", 30, "bold"),
             command=lambda: self.escolher(4)
-            ).grid(column=1, row=3, padx=20, pady=20)
+            ).grid(column=1, row=1, pady=20, sticky="ns", padx=40)
         
         #botao cadastro
-        ctk.CTkButton(self, 
+        ctk.CTkButton(
+            botoes_frame, 
             text="Cadastro", 
             text_color="black", 
             corner_radius=40,
             border_color="black",
             hover_color="white",
             border_width=5,
-            width=500,  
+            width=350,  
             height=200,
             fg_color="orange",
             font=("Arial", 30, "bold"),
             command=lambda: self.escolher(3)
-            ).grid(column=0, row=4, padx=20, pady=20)
+            ).grid(column=0, row=2, pady=20, sticky="ns", padx=40)
 
         #botao sair
-        ctk.CTkButton(self, 
+        ctk.CTkButton(
+            botoes_frame, 
             text="Sair", 
             text_color="black", 
             corner_radius=40,
             border_color="black",
             hover_color="red",
             border_width=5,
-            width=500,  
+            width=350,  
             height=200,
             fg_color="orange",
             font=("Arial", 30, "bold"),
             command=lambda: self.escolher(6)
-            ).grid(column=1, row=4, padx=20, pady=20)
+            ).grid(column=1, row=2, pady=20, sticky="ns", padx=40)
         
         if self.main.pode_usar_atalho == False:
             senha = StringVar()
@@ -468,7 +483,7 @@ class MenuPrincipal(ctk.CTkFrame):
                             width=400,
                             height=50)
             entry.grid(row=0, column=0)
-            entry.focus_set()
+            entry.after(1000, entry.focus_set)
 
 
             tela_senha.protocol("WM_DELETE_WINDOW", self.master.quit) #Fecha o programa caso o modal seja fechado
@@ -567,10 +582,10 @@ class PopupBaixoEstoque(ctk.CTkToplevel):
             
             ctk.CTkLabel(
                 frame,
-                text=f"Produto {nome} com estoque baixo | Quantidade: {quantidade}",
+                text=f"Produto '{nome}' com estoque baixo | Quantidade: {quantidade}",
                 text_color="red",
                 justify="left",
-                wraplength=280
+                wraplength=400
             ).pack(padx=10)
 
 
@@ -759,8 +774,8 @@ ctk.set_appearance_mode("dark")
 root = ctk.CTk()
 root.title("Adega do zé 2.1")
 root.configure(bg="#1e1e1e")
-root.attributes("-zoomed", True)
-#root.state("zoomed") para windows
+#root.attributes("-zoomed", True)
+root.state("zoomed") #para windows
 
 root.columnconfigure(0, weight=1)
 root.rowconfigure(0, weight=1)

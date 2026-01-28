@@ -70,7 +70,12 @@ class ProdutoMenu(ctk.CTkFrame):
             entrys_frame = ctk.CTkFrame(body, fg_color="#1e1e1e")
             entrys_frame.grid(column=0, row=0, sticky="nsew")
             entrys_frame.columnconfigure((0,1,2), weight=1)
-            entrys_frame.rowconfigure((0,1,2,3,4,5,6,7,8), weight=1)
+            entrys_frame.rowconfigure((0,1,3,4,5,6,7,8), weight=1)
+            entrys_frame.rowconfigure(2, weight=0)
+
+            margem_frame = ctk.CTkFrame(entrys_frame, fg_color="#1e1e1e")
+            margem_frame.grid(row=5, column=2, sticky="nsew", padx=10)
+            margem_frame.columnconfigure(0, weight=1)
 
             estoque = ctk.CTkFrame(body, fg_color="#1e1e1e")
             estoque.grid(column=1, row=0, sticky="nsew")
@@ -121,7 +126,7 @@ class ProdutoMenu(ctk.CTkFrame):
             self.tabela.heading("qtd", text="Qtd")
 
             self.tabela.column("codigo", width=100, anchor="center")
-            self.tabela.column("nome", width=220, anchor="w")
+            self.tabela.column("nome", width=220, anchor="center")
             self.tabela.column("qtd", width=60, anchor="center")
 
             self.tabela.grid(row=0, column=0, sticky="nsew")
@@ -142,7 +147,9 @@ class ProdutoMenu(ctk.CTkFrame):
                         text="Digite o nome do produto", 
                         text_color="blue",
                         font=("Arial", 30, "bold"),
-                        fg_color="#1e1e1e"
+                        fg_color="#1e1e1e",
+                        anchor="center",
+                        wraplength=320
                         ).grid(column=0, row=1, padx=20)
             
             #entry filtro estoque
@@ -241,12 +248,14 @@ class ProdutoMenu(ctk.CTkFrame):
                     ).grid(row=4, column=1, sticky="s", padx=20)
             
             #margem
-            label_margem = ctk.CTkLabel(entrys_frame, 
+            label_margem = ctk.CTkLabel(margem_frame, 
                     textvariable=self.margem,
                     text_color="white",
                     fg_color="#1e1e1e",
-                    font=("arial", 32, "bold")
-                    ).grid(row=5, column=2, sticky="w", padx=20)
+                    font=("arial", 26, "bold"),
+                    anchor="center",
+                    wraplength=220
+                    ).grid(sticky="nsew")
 
             self.margem.set("Margem de lucro: 0%")
             
