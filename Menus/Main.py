@@ -8,7 +8,6 @@ import customtkinter as ctk
 from PIL import Image, UnidentifiedImageError
 import logging
 import json
-import os
 from datetime import datetime, timedelta, date
 
 import sqlite3
