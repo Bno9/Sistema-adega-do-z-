@@ -2,11 +2,14 @@ import sys
 import os
 sys.path.append(os.path.dirname(os.path.dirname(__file__)))
 
-from tkinter import ttk
+from tkinter import ttk, messagebox
 from tkinter import *
 import customtkinter as ctk
 from PIL import Image, UnidentifiedImageError
 import logging
+import json
+import os
+from datetime import datetime, timedelta
 
 import sqlite3
 
@@ -42,11 +45,13 @@ class Main:
         self.impressora =  None
         self.frame_atual = None
         self.pode_usar_atalho = False
-        self.configs = {"vazio": 0}
+        self.configs = self.carregar_config()
         self.estoque = Estoque(self.con)
         self.caixa = Caixa(self.estoque, self.iniciar_impressora, self.con)
         self.despesa = Despesas(self.con)
         self.root.bind_all("<Key>", self.tecla_apertada)
+
+        self.fazer_backup()
 
         #despesas criadas para teste
         self.despesa.adicionar_despesa("contador", 100)
@@ -79,6 +84,13 @@ class Main:
             
             return self.impressora
 
+    def carregar_config(self):
+        try:
+            with open("configs.json", "r", encoding="utf-8") as arquivo:
+                config = json.load(arquivo)
+                return config
+        except FileNotFoundError:
+            return {}
 
     def tecla_apertada(self, tecla):
         """Detecta a tecla apertada e chama a função teclas menu do frame atual"""
@@ -97,7 +109,59 @@ class Main:
         if senha.get() == "123":
             modal.destroy()
             self.pode_usar_atalho = True
-    
+        
+    def fazer_backup(self):
+        try:
+            os.makedirs("backup", exist_ok=True)
+
+            agora = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+            nome_backup = f"backup/adega_{agora}.db"
+
+            destino = sqlite3.connect(nome_backup)
+            with destino:
+                self.con.backup(destino)
+
+            destino.close()
+
+            self.limpar_backups_antigos()
+
+            logger.info("Backup realizado com sucesso | arquivo=%s", nome_backup)
+            return True
+
+        except Exception as e:
+            logger.error("Erro ao realizar backup | erro=%s", e)
+            return False
+        
+    def limpar_backups_antigos(self):
+        dias = self.configs.get("Dias_backup", 7)
+        limite = datetime.now() - timedelta(days=dias)
+        maximo_backups = 20
+
+        if not os.path.exists("backup"):
+            return
+
+        backups = []
+
+        for nome in os.listdir("backup"):
+            if nome.endswith(".db"):
+                caminho = os.path.join("backup", nome)
+                data = datetime.fromtimestamp(os.path.getmtime(caminho))
+                backups.append((nome, caminho, data))
+
+        for nome, caminho, data in backups:
+            if data < limite:
+                os.remove(caminho)
+                logger.info("Backup antigo removido | arquivo=%s", nome)
+
+        backups = [(n, c, d) for n, c, d in backups if os.path.exists(c)]
+
+        backups.sort(key=lambda x: x[2])
+
+        while len(backups) > maximo_backups:
+            nome, caminho, _ = backups.pop(0)
+            os.remove(caminho)
+            logger.info("Backup removido por excesso | arquivo=%s", nome)
+
     def voltar_menu_principal(self):
         self.trocar_frame(MenuPrincipal(self.root, self))
 
@@ -115,15 +179,119 @@ class MenuPrincipal(ctk.CTkFrame):
 
         super().__init__(master=root, fg_color="#1e1e1e") #instancia o root usando o init da classe pai
         self.main = main
+        self.submenu_aberto = None
 
         #texto
         self.status = StringVar()
         
         #ajustando coluna para centralizar interface
         self.columnconfigure((0,1), weight=1)
-        self.rowconfigure((0,1,2), weight=1)
+        self.rowconfigure(0, weight=0)
+        self.rowconfigure((1,2,3,4), weight=1)
 
         self.master.bind("<Escape>", lambda e: self.escolher(6))
+
+        #frame pra menubar
+        header_menubar = ctk.CTkFrame(self, fg_color="#313030")
+        header_menubar.grid(row=0, column=0, sticky="w")
+        header_menubar.columnconfigure((0,1,2), weight=1)
+
+        #botao configurações
+        ctk.CTkButton(header_menubar, 
+                    text="Configurações",
+                    text_color="white", 
+                    hover_color="gray",
+                    width=50,  
+                    height=30,
+                    font=("arial", 22, "bold"),
+                    fg_color="#313030",
+                    command=lambda: Configs(root, self.main, self.main.configs)
+                    ).grid(column=0, row=0, padx=50, pady=20, sticky="ns")
+        
+        #botao admin
+        ctk.CTkButton(header_menubar, 
+                    text="Admin",
+                    text_color="white", 
+                    hover_color="gray",
+                    width=50,  
+                    height=30,
+                    font=("arial", 22, "bold"),
+                    fg_color="#313030",
+                    command=lambda: self.abrir_submenu(self.submenu_admin)
+                    ).grid(column=1, row=0, padx=50, pady=20, sticky="ns")
+        
+        #submenu
+        self.submenu_admin = ctk.CTkFrame(
+            header_menubar,
+            fg_color="#313030",
+            corner_radius=10
+        )
+
+        #começa escondido
+        self.submenu_admin.grid(column=1, row=1, pady=(0, 10))
+        self.submenu_admin.grid_remove()
+
+        #submenu botao cadastrar usuario
+        ctk.CTkButton(
+            self.submenu_admin,
+            text="Cadastrar usuário",
+            fg_color="#313030",
+            hover_color="gray",
+            font=("Arial", 16),
+            width=180
+        ).pack(padx=10, pady=5)
+
+        #submenu botao alterar senha
+        ctk.CTkButton(
+            self.submenu_admin,
+            text="Alterar senha",
+            fg_color="#313030",
+            hover_color="gray",
+            font=("Arial", 16),
+            width=180
+        ).pack(padx=10, pady=5)
+
+        #submenu botao fazer backup
+        ctk.CTkButton(
+            self.submenu_admin,
+            text="Fazer backup",
+            fg_color="#313030",
+            hover_color="gray",
+            font=("Arial", 16),
+            width=180
+        ).pack(padx=10, pady=5)
+        
+        #botao ajuda
+        ctk.CTkButton(header_menubar, 
+                    text="Ajuda",
+                    text_color="white", 
+                    hover_color="gray",
+                    width=50,  
+                    height=30,
+                    font=("arial", 22, "bold"),
+                    fg_color="#313030",
+                    command=lambda: self.abrir_submenu(self.submenu_ajuda)
+                    ).grid(column=2, row=0, padx=50, pady=20, sticky="ns")
+        
+        self.submenu_ajuda = ctk.CTkFrame(
+            header_menubar,
+            fg_color="#313030",
+            corner_radius=10
+        )
+
+        #começa escondido
+        self.submenu_ajuda.grid(column=2, row=1, pady=(0, 10))
+        self.submenu_ajuda.grid_remove()
+
+        #submenu botao 
+        ctk.CTkButton(
+            self.submenu_ajuda,
+            text="Abrir manual",
+            fg_color="#313030",
+            hover_color="gray",
+            font=("Arial", 16),
+            width=180
+        ).pack(padx=10, pady=5)
 
         #Imagem para usar no label principal
         try:
@@ -138,7 +306,7 @@ class MenuPrincipal(ctk.CTkFrame):
             text="",
             image=img,
             fg_color="#1e1e1e"
-            ).grid(column=0, row=0, columnspan=2, sticky="ew", pady=20)
+            ).grid(column=0, row=1, columnspan=2, sticky="new", pady=20)
 
         except (FileNotFoundError, UnidentifiedImageError, OSError) as e:
             logger.error("Erro ao carregar logo | erro=%s", e)
@@ -150,7 +318,7 @@ class MenuPrincipal(ctk.CTkFrame):
             text_color="white",
             fg_color="#1e1e1e",
             font=("arial", 32, "bold")
-            ).grid(column=0, row=0, columnspan=2, sticky="ew", pady=20)
+            ).grid(column=0, row=1, columnspan=2, sticky="ew", pady=20)
 
         #label status
         ctk.CTkLabel(
@@ -174,7 +342,7 @@ class MenuPrincipal(ctk.CTkFrame):
             font=("Arial", 30, "bold"),
             fg_color="orange",
             command=lambda: self.escolher(1)
-            ).grid(column=0, row=1, padx=20, pady=20)
+            ).grid(column=0, row=2, padx=20, pady=20)
 
         #botao estoque
         ctk.CTkButton(self, 
@@ -189,7 +357,7 @@ class MenuPrincipal(ctk.CTkFrame):
             fg_color="orange",
             font=("Arial", 30, "bold"),
             command=lambda: self.escolher(2)
-            ).grid(column=0, row=2, padx=20, pady=20)
+            ).grid(column=0, row=3, padx=20, pady=20)
 
         #botao Relatórios
         ctk.CTkButton(self, 
@@ -204,7 +372,7 @@ class MenuPrincipal(ctk.CTkFrame):
             fg_color="orange",
             font=("Arial", 30, "bold"),
             command=lambda: self.escolher(5)
-            ).grid(column=1, row=1, padx=20, pady=20)
+            ).grid(column=1, row=2, padx=20, pady=20)
         
         #botao despesas
         ctk.CTkButton(self, 
@@ -219,7 +387,7 @@ class MenuPrincipal(ctk.CTkFrame):
             fg_color="orange",
             font=("Arial", 30, "bold"),
             command=lambda: self.escolher(4)
-            ).grid(column=1, row=2, padx=20, pady=20)
+            ).grid(column=1, row=3, padx=20, pady=20)
         
         #botao cadastro
         ctk.CTkButton(self, 
@@ -234,7 +402,7 @@ class MenuPrincipal(ctk.CTkFrame):
             fg_color="orange",
             font=("Arial", 30, "bold"),
             command=lambda: self.escolher(3)
-            ).grid(column=0, row=3, padx=20, pady=20)
+            ).grid(column=0, row=4, padx=20, pady=20)
 
         #botao sair
         ctk.CTkButton(self, 
@@ -249,7 +417,7 @@ class MenuPrincipal(ctk.CTkFrame):
             fg_color="orange",
             font=("Arial", 30, "bold"),
             command=lambda: self.escolher(6)
-            ).grid(column=1, row=3, padx=20, pady=20)
+            ).grid(column=1, row=4, padx=20, pady=20)
         
         if self.main.pode_usar_atalho == False:
             senha = StringVar()
@@ -292,11 +460,28 @@ class MenuPrincipal(ctk.CTkFrame):
 
             entry.bind("<Return>", lambda e: self.main.verificar_senha(senha, tela_senha))
 
-        estoque_baixo = self.main.estoque.estoque_baixo(self.main.configs.get("quantidade_repor", 4))
+        estoque_baixo = self.main.estoque.estoque_baixo(self.main.configs.get("Quantidade_aviso", 4))
         
         if estoque_baixo:
             PopupBaixoEstoque(self, estoque_baixo, self.main.configs)
             logger.info("Produtos com estoque baixo produtos=%s", estoque_baixo)
+
+    def abrir_submenu(self, menu):
+        self.main.pode_usar_atalho = False
+        if self.submenu_aberto is None:
+            menu.grid()
+            self.submenu_aberto = menu
+            return
+        
+        if self.submenu_aberto == menu:
+            menu.grid_remove()
+            self.submenu_aberto = None
+            pode_usar_atalho = True
+            return
+        
+        self.submenu_aberto.grid_remove()
+        menu.grid()
+        self.submenu_aberto = menu
 
     def escolher(self, opcao):
         """Recebe a opção escolhida,
@@ -358,11 +543,6 @@ class PopupBaixoEstoque(ctk.CTkToplevel):
         frame = ctk.CTkFrame(self, corner_radius=12)
         frame.pack(fill="both", expand=True, padx=8, pady=8)
 
-        ctk.CTkLabel(
-            frame,
-            text="⚠️ Estoque baixo",
-            font=("Arial", 16, "bold")
-        ).pack(pady=(10, 5))
 
         for i, produto in enumerate(produtos):
             nome = produto[2]
@@ -384,10 +564,177 @@ class PopupBaixoEstoque(ctk.CTkToplevel):
                     justify="left",
                     wraplength=280
                 ).pack(padx=10)
-                self.after(self.configs.get("tempo_fechar_popup", 4000), self.destroy)
+                self.after(self.configs.get("Tempo_popup", 4000), self.destroy)
                 return
 
-        self.after(self.configs.get("tempo_fechar_popup", 4000), self.destroy)
+        self.after(self.configs.get("Tempo_popup", 4000), self.destroy)
+
+class Configs(ctk.CTkToplevel):
+    def __init__(self, master, main, config):
+        super().__init__(master)
+
+        self.main = main
+        self.attributes("-topmost", True)
+        self.title("Configurações")
+        self.resizable(False, False)
+        self.main.pode_usar_atalho = False
+
+        # variáveis
+        self.tempo_popup = StringVar()
+        self.quantidade_aviso = StringVar()
+        self.dias_backup = StringVar()
+        self.config = config
+
+
+        self.protocol("WM_DELETE_WINDOW", self.fechar)
+
+        self.tempo_popup.set(self.config.get("Tempo_popup", 4000))
+        self.quantidade_aviso.set(self.config.get("Quantidade_aviso", 4))
+        self.dias_backup.set(self.config.get("Dias_backup", 7))
+
+
+        frame = ctk.CTkFrame(self, corner_radius=12)
+        frame.grid(row=0, column=0, padx=20, pady=20)
+
+        # título
+        ctk.CTkLabel(
+            frame,
+            text="Configurações",
+            font=("Arial", 20, "bold")
+        ).grid(row=0, column=0, columnspan=2, pady=(10, 20))
+
+        # TEMPO POPUP
+        ctk.CTkLabel(
+            frame,
+            text="Tempo para popup expirar (ms)",
+            anchor="w"
+        ).grid(row=1, column=0, columnspan=2, sticky="w")
+
+        ctk.CTkEntry(
+            frame,
+            textvariable=self.tempo_popup,
+            width=250
+        ).grid(row=2, column=0, columnspan=2, pady=(0, 15))
+
+        # QUANTIDADE AVISO 
+        ctk.CTkLabel(
+            frame,
+            text="Quantidade para aviso de estoque",
+            anchor="w"
+        ).grid(row=3, column=0, columnspan=2, sticky="w")
+
+        ctk.CTkEntry(
+            frame,
+            textvariable=self.quantidade_aviso,
+            width=250
+        ).grid(row=4, column=0, columnspan=2, pady=(0, 25))
+
+        # DIAS BACKUP
+        ctk.CTkLabel(
+            frame,
+            text="Manter backups por quantos dias?",
+            anchor="w"
+        ).grid(row=5, column=0, columnspan=2, sticky="w")
+
+        ctk.CTkEntry(
+            frame,
+            textvariable=self.dias_backup,
+            width=250
+        ).grid(row=6, column=0, columnspan=2, pady=(0, 20))
+
+        # FAZER BACKUP
+        ctk.CTkLabel(
+            frame,
+            text="Backup",
+            font=("Arial", 16, "bold")
+        ).grid(row=7, column=0, columnspan=2, pady=(10, 5))
+
+        ctk.CTkButton(
+            frame,
+            text="Fazer backup agora",
+            width=260,
+            fg_color="#1f6aa5",
+            hover_color="#144870",
+            command=self.fazer_backup
+        ).grid(row=8, column=0, columnspan=2, pady=(0, 25))
+
+        # ---------- BOTÕES ----------
+        ctk.CTkButton(
+            frame,
+            text="Salvar",
+            width=120,
+            command=self.salvar
+        ).grid(row=9, column=0, padx=10)
+
+        ctk.CTkButton(
+            frame,
+            text="Cancelar",
+            width=120,
+            fg_color="gray",
+            hover_color="#555555",
+            command=self.fechar
+        ).grid(row=9, column=1, padx=10)
+
+        # ---------- CENTRALIZAR ----------
+        self.update_idletasks()
+
+        largura = frame.winfo_width() + 40
+        altura = frame.winfo_height() + 40
+
+        screen_w = self.winfo_screenwidth()
+        screen_h = self.winfo_screenheight()
+
+        x = (screen_w // 2) - (largura // 2)
+        y = (screen_h // 2) - (altura // 2)
+
+        self.geometry(f"{largura}x{altura}+{x}+{y}")
+
+    def salvar(self):
+        try:
+            Tempo_popup = int(self.tempo_popup.get())
+            Quantidade_aviso = int(self.quantidade_aviso.get())
+            Dias_backup = int(self.dias_backup.get())
+        except ValueError:
+            messagebox.showinfo(
+                title="Erro",
+                message="Digite apenas números!",
+                parent=self
+            )
+            return
+
+        self.config = {
+            "Tempo_popup": Tempo_popup,
+            "Quantidade_aviso": Quantidade_aviso,
+            "Dias_backup": Dias_backup
+        }
+
+        self.main.configs.update(self.config)
+
+        with open("configs.json", "w", encoding="utf-8") as arquivo:
+            json.dump(self.config, arquivo, indent=4, ensure_ascii=False)
+
+        self.main.pode_usar_atalho = True
+        self.destroy()
+
+    def fechar(self):
+        self.main.pode_usar_atalho = True
+        self.destroy()
+
+    def fazer_backup(self):
+        sucesso = self.main.fazer_backup()
+
+        if sucesso:
+            messagebox.showinfo(
+                    title="Backup",
+                    message="Backup realizado com sucesso!",
+                    parent=self
+            )
+        else:
+            messagebox.showerror(
+                                title="Erro",
+                                message="Falha ao realizar backup.",
+                                parent=self
+                            )
 
 ctk.set_default_color_theme("blue")
 ctk.set_appearance_mode("dark")
@@ -406,9 +753,6 @@ logger = logging.getLogger(__name__)
 
 logging.basicConfig(filename="logs", level=logging.INFO, format="%(asctime)s [%(levelname)s] %(name)s - %(message)s")
 
-
 m = Main(root) #Instanciando a main
 
-
 root.mainloop() #Loop de eventos do customtkinter
-
