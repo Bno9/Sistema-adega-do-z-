@@ -103,6 +103,11 @@ class Main:
                 config = json.load(arquivo)
                 return config
         except FileNotFoundError:
+                logger.warning("configs.json não encontrado, usando configurações padrão")
+                return {}
+
+        except json.JSONDecodeError:
+            logger.error("configs.json está vazio ou inválido, recriando arquivo")
             return {}
 
     def tecla_apertada(self, tecla):
@@ -199,6 +204,8 @@ class MenuPrincipal(ctk.CTkFrame):
         super().__init__(master=root, fg_color="#1e1e1e") #instancia o root usando o init da classe pai
         self.main = main
         self.submenu_aberto = None
+        
+        root.protocol("WM_DELETE_WINDOW", lambda: self.escolher(5)) #bloqueia o X
 
         #texto
         self.status = StringVar()
@@ -511,7 +518,8 @@ class MenuPrincipal(ctk.CTkFrame):
                 self.main.despesa.excluir_despesa(i)
 
             with open("configs.json", "w", encoding="utf-8") as f:
-                json.dump(self.configs, f, indent=4, ensure_ascii=False)
+                json.dump(self.main.configs, f, indent=4, ensure_ascii=False)
+
             self.main.con.close()
             self.status.set("Finalizando programa...")
             self.master.after(2000, self.master.quit)
@@ -753,7 +761,6 @@ root = ctk.CTk()
 root.title("Adega do zé 2.1")
 root.configure(bg="#1e1e1e")
 root.attributes("-zoomed", True)
-#root.protocol("WM_DELETE_WINDOW", lambda: None) #bloqueia o X
 #root.state("zoomed") para windows
 
 root.columnconfigure(0, weight=1)
