@@ -65,15 +65,6 @@ class Main:
             with open("configs.json", "w", encoding="utf-8") as f:
                 json.dump(self.configs, f, indent=4, ensure_ascii=False)
 
-        #despesas criadas para teste
-        self.despesa.adicionar_despesa("contador", 100)
-        self.despesa.adicionar_despesa("aluguel", 1700, "10/12/2026", "Aluguel do imóvel")
-        self.despesa.adicionar_despesa("mercadoria", 10000, "15/8/2025")
-        self.despesa.adicionar_despesa("mercadoria", 1206, "15/8/2025", "Red label, Black label, Ballena")
-        self.despesa.adicionar_despesa("mercadoria", 600, "15/8/2025", "Fardos energetico")
-        self.despesa.adicionar_despesa("funcionario", 5000, "5/2/2026", "Salário e décimo terceiro")
-
-
         #mapa das classes
         self.mapa = {
             1:CaixaMenu,
@@ -204,8 +195,6 @@ class MenuPrincipal(ctk.CTkFrame):
         super().__init__(master=root, fg_color="#1e1e1e") #instancia o root usando o init da classe pai
         self.main = main
         self.submenu_aberto = None
-        
-        root.protocol("WM_DELETE_WINDOW", lambda: self.escolher(5)) #bloqueia o X
 
         #texto
         self.status = StringVar()
@@ -347,6 +336,12 @@ class MenuPrincipal(ctk.CTkFrame):
 
         except (FileNotFoundError, UnidentifiedImageError, OSError) as e:
             logger.error("Erro ao carregar logo | erro=%s", e)
+
+            ctk.CTkLabel(
+            logo_frame, 
+            text="",
+            fg_color="#1e1e1e"
+            ).pack(pady=(10, 20))
 
         #label status
         ctk.CTkLabel(

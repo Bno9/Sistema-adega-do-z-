@@ -30,7 +30,7 @@ class DespesasMenu(ctk.CTkFrame):
 
         self.campos = [("Nome", self.nome),
                        ("Valor", self.valor),
-                       ("Data", self.data),
+                       ("Data dd/mm/aa", self.data),
                        ("Observação", self.observacao)]
         
         self.values = ["Tudo"]
