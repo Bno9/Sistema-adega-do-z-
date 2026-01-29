@@ -145,7 +145,7 @@ class ProdutoMenu(ctk.CTkFrame):
             #label filtro estoque
             ctk.CTkLabel(estoque, 
                         text="Digite o nome do produto", 
-                        text_color="blue",
+                        text_color="white",
                         font=("Arial", 30, "bold"),
                         fg_color="#1e1e1e",
                         anchor="center",
@@ -297,7 +297,6 @@ class ProdutoMenu(ctk.CTkFrame):
             self.entries.append(entry_preco_custo)
             self.entries.append(entry_preco_venda)
             self.entries.append(self.entry_tipo)
-            self.entries.append(combobox_tipo)
 
             #teclas para mudar campo
             for i, entry in enumerate(self.entries):
@@ -576,8 +575,8 @@ class ProdutoController:
         return resultado
         
     def mudar_conteudo(self, valor):
-        self.tela.tipo = valor
-        if self.tela.tipo == "fardo":
+        self.tela.tipo.set(valor)
+        if self.tela.tipo.get() == "fardo":
             self.tela.label_tipo.configure(text="Quantidade no fardo")
             self.tela.entry_tipo.configure(textvariable=self.tela.qtd_fardo)
             self.tela.referencia_codigo_fardo.set("")
@@ -640,7 +639,7 @@ class ProdutoController:
                 "preco_custo": float(self.tela.preco_custo.get()),
                 "preco_venda": float(self.tela.preco_venda.get()),
                 "quantidade": int(self.tela.quantidade.get()),
-                "tipo": self.tela.tipo,
+                "tipo": self.tela.tipo.get(),
                 "id_produto_pai": self.tela.referencia_codigo_fardo.get()
                     if self.tela.referencia_codigo_fardo.get().strip() else None,
                 "quantidade_fardo": int(self.tela.qtd_fardo.get())
