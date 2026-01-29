@@ -80,7 +80,8 @@ class Main:
             2:EstoqueMenu,
             3:ProdutoMenu,
             4:DespesasMenu,
-            5:None
+            5:CaixaMenu,
+            6:None
         }
 
         #inicia o frame menu principal
@@ -257,6 +258,7 @@ class MenuPrincipal(ctk.CTkFrame):
                     height=30,
                     font=("arial", 22, "bold"),
                     fg_color="#313030",
+                    state="disabled",
                     command=lambda: self.abrir_submenu(self.submenu_admin)
                     ).grid(column=1, row=0, padx=50, pady=20, sticky="ns")
         
@@ -300,6 +302,7 @@ class MenuPrincipal(ctk.CTkFrame):
                     height=30,
                     font=("arial", 22, "bold"),
                     fg_color="#313030",
+                    state="disabled",
                     command=lambda: self.abrir_submenu(self.submenu_ajuda)
                     ).grid(column=2, row=0, padx=50, pady=20, sticky="ns")
         
@@ -589,7 +592,7 @@ class PopupBaixoEstoque(ctk.CTkToplevel):
             ).pack(padx=10)
 
 
-            if i >= 2:
+            if i >= 3:
                 ctk.CTkLabel(
                     frame,
                     text="E mais...",
