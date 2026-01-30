@@ -4,10 +4,11 @@ import customtkinter as ctk
 
 class CaixaMenu(ctk.CTkFrame):
 
-    def __init__(self, root, referencia_main):
+    def __init__(self, root, referencia_main, usuario):
         super().__init__(master=root, fg_color="#1e1e1e")
         self.referencia_main = referencia_main
         self.controller = CaixaController(self, self.referencia_main.caixa)
+        self.usuario = usuario
         
         #textos
         self.status = StringVar()

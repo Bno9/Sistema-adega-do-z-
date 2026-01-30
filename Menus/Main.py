@@ -17,6 +17,7 @@ from Utils.Estoque import Estoque
 from Utils.Despesa import Despesas
 from Utils.Recibo import Recibo, ImpressoraBase, ImpressoraTxt, ImpressoraWindows
 from Utils.Produto import Produto
+from Utils.Usuarios import Usuario
 
 from Menus.CaixaMenu import CaixaMenu
 from Menus.DespesasMenu import DespesasMenu
@@ -43,12 +44,15 @@ class Main:
         self.con = sqlite3.connect("adega.db", timeout=10, check_same_thread=False)
         self.impressora =  None
         self.frame_atual = None
-        self.pode_usar_atalho = False
+        self.pode_usar_atalho = True
         self.configs = self.carregar_config()
         self.estoque = Estoque(self.con)
         self.caixa = Caixa(self.estoque, self.iniciar_impressora, self.con)
         self.despesa = Despesas(self.con)
         self.root.bind_all("<Key>", self.tecla_apertada)
+        self.usuario = Usuario(self.con)
+
+        self.usuario_atual = None #Passar sempre o usuario que esta utilizando programa para salvar nos relatorios
 
         ultimo = self.configs.get("ultimo_dia_backup")
         if ultimo:
@@ -76,7 +80,7 @@ class Main:
         }
 
         #inicia o frame menu principal
-        self.trocar_frame(MenuPrincipal(self.root, self))
+        ModalSenha(self.root, self)
 
     def iniciar_impressora(self):
         if self.impressora is None:
@@ -117,7 +121,7 @@ class Main:
     def verificar_senha(self, senha, modal):
         if senha.get() == "123":
             modal.destroy()
-            self.pode_usar_atalho = True
+            self.trocar_frame(MenuPrincipal(self.root, self))
         
     def fazer_backup(self):
         try:
@@ -179,6 +183,49 @@ class Main:
 
     def voltar_menu_principal(self):
         self.trocar_frame(MenuPrincipal(self.root, self))
+
+class ModalSenha(ctk.CTkToplevel):
+    def __init__(self, master, main):
+        self.main = main
+        super().__init__(master=master, fg_color="#1e1e1e")
+
+        senha = StringVar()
+
+        self.title("Consultar produto")
+        self.geometry("300x300")
+
+        self.transient(master)
+        self.update_idletasks()
+        self.grab_set()   
+
+        self.columnconfigure(0, weight=1)
+        self.rowconfigure((0,1), weight=1)
+        header =  ctk.CTkFrame(self, fg_color="#1e1e1e")
+        entrys =  ctk.CTkFrame(self, fg_color="#1e1e1e")
+
+        header.grid(row=0, column=0)
+
+        entrys.rowconfigure(0, weight=1)
+        entrys.columnconfigure(0, weight=1)
+        entrys.grid(row=1, column=0)
+
+        ctk.CTkLabel(header, 
+                    text="Digite a senha",
+                    font=("arial", 32, "bold")
+                    ).grid(row=0, column=0, columnspan=2)
+        
+        entry = ctk.CTkEntry(entrys,
+                        textvariable=senha,
+                        font=("Arial", 20, "bold"),
+                        width=400,
+                        height=50)
+        entry.grid(row=0, column=0)
+        entry.after(1000, entry.focus_set)
+
+
+        self.protocol("WM_DELETE_WINDOW", self.master.quit) #Fecha o programa caso o modal seja fechado
+
+        entry.bind("<Return>", lambda e: self.main.verificar_senha(senha, self))
 
 class MenuPrincipal(ctk.CTkFrame):
     """Classe principal que controla toda interface e herda da classe ctk.Frame"""
@@ -446,47 +493,6 @@ class MenuPrincipal(ctk.CTkFrame):
             font=("Arial", 30, "bold"),
             command=lambda: self.escolher(6)
             ).grid(column=1, row=2, pady=20, sticky="ns", padx=40)
-        
-        if self.main.pode_usar_atalho == False:
-            senha = StringVar()
-
-            tela_senha = ctk.CTkToplevel(self, fg_color="#1e1e1e")
-
-            tela_senha.title("Consultar produto")
-            tela_senha.geometry("300x300")
-
-            tela_senha.transient(self)
-            tela_senha.update_idletasks()
-            tela_senha.grab_set()   
-
-            tela_senha.columnconfigure(0, weight=1)
-            tela_senha.rowconfigure((0,1), weight=1)
-            header =  ctk.CTkFrame(tela_senha, fg_color="#1e1e1e")
-            entrys =  ctk.CTkFrame(tela_senha, fg_color="#1e1e1e")
-
-            header.grid(row=0, column=0)
-
-            entrys.rowconfigure(0, weight=1)
-            entrys.columnconfigure(0, weight=1)
-            entrys.grid(row=1, column=0)
-
-            ctk.CTkLabel(header, 
-                        text="Digite a senha",
-                        font=("arial", 32, "bold")
-                        ).grid(row=0, column=0, columnspan=2)
-            
-            entry = ctk.CTkEntry(entrys,
-                            textvariable=senha,
-                            font=("Arial", 20, "bold"),
-                            width=400,
-                            height=50)
-            entry.grid(row=0, column=0)
-            entry.after(1000, entry.focus_set)
-
-
-            tela_senha.protocol("WM_DELETE_WINDOW", self.master.quit) #Fecha o programa caso o modal seja fechado
-
-            entry.bind("<Return>", lambda e: self.main.verificar_senha(senha, tela_senha))
 
         estoque_baixo = self.main.estoque.estoque_baixo(self.main.configs.get("Quantidade_aviso", 4))
         
@@ -772,8 +778,8 @@ ctk.set_appearance_mode("dark")
 root = ctk.CTk()
 root.title("Adega do zé 2.1")
 root.configure(bg="#1e1e1e")
-#root.attributes("-zoomed", True)
-root.state("zoomed") #para windows
+root.attributes("-zoomed", True)
+#root.state("zoomed") #para windows
 
 root.columnconfigure(0, weight=1)
 root.rowconfigure(0, weight=1)
