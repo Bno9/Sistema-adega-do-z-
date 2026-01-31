@@ -316,12 +316,21 @@ class ModalAlterarSenha(ctk.CTkToplevel):
         entry.after(1000, entry.focus_set)
 
         entry.bind("<Escape>", lambda e: self.destroy())
-        entry.bind("<Return>", lambda e: self.main.usuario.alterar_senha(self.usuario_atual.get(), senha.get()))
-
-        #colocar uma messagebox pra informar que deu certo a troca de senha
-
+        entry.bind("<Return>", lambda e: self.alterar(self.usuario_atual.get(), senha.get()))
+        
     def mudar_usuario(self, usuario):
         self.usuario_atual.set(usuario)
+
+    def alterar(self, usuario, senha):
+        resultado = self.main.usuario.alterar_senha(usuario, senha)
+
+        if resultado.sucesso:
+            messagebox.showinfo("Sucesso", resultado.mensagem)
+            self.destroy()
+            return
+
+        messagebox.showerror("Erro", resultado.mensagem)
+        return
 
 class ModalCadastrarUsuario(ctk.CTkToplevel):
     def __init__(self, master, main):
@@ -398,17 +407,132 @@ class ModalCadastrarUsuario(ctk.CTkToplevel):
 
         self.after(1000, entry_nome.focus_set)
         self.bind("<Escape>", lambda e: self.destroy())
-        self.bind("<Return>", lambda e: self.main.usuario.cadastrar_usuario(usuario.get(), senha.get(), self.cargo_atual.get()))
+        self.bind("<Return>", lambda e: self.cadastrar(usuario.get(), senha.get(), self.cargo_atual.get()))
     
     def mudar_cargo(self, valor):
         self.cargo_atual.set(valor)
 
+    def cadastrar(self, usuario, senha, cargo):
+        resultado = self.main.usuario.cadastrar_usuario(usuario, senha, cargo)
+
+        if resultado.sucesso:
+            messagebox.showinfo("Sucesso", resultado.mensagem)
+            self.destroy()
+            return
+
+        messagebox.showerror("Erro", resultado.mensagem)
+        return
+
 class ListarUsuarios(ctk.CTkToplevel):
     def __init__(self, master, main):
         self.main = main
+        self.usuario_selecionado = None
+        self.linhas = {}
+
         super().__init__(master=master, fg_color="#1e1e1e")
 
+        self.title("Usuários cadastrados")
+        self.geometry("300x400")
+        self.transient(master)
+        self.update_idletasks()
+        self.grab_set()
+
         self.bind("<Escape>", lambda e: self.destroy())
+        self.bind("<Delete>", lambda e: self._excluir_selecionado())
+
+        self.frame = ctk.CTkFrame(self, fg_color="#1e1e1e")
+        self.frame.pack(fill="both", expand=True, padx=20, pady=20)
+
+        self.tabela = ctk.CTkScrollableFrame(self.frame)
+        self.tabela.pack(fill="both", expand=True)
+
+        self.btn_excluir = ctk.CTkButton(
+            self.frame,
+            text="Excluir selecionado",
+            fg_color="#b00020",
+            hover_color="#8e001a",
+            command=self._excluir_selecionado
+        )
+        self.btn_excluir.pack(pady=10)
+
+        self._criar_tabela()
+
+    def _criar_tabela(self):
+        usuarios = self.main.usuario.listar_usuarios()
+
+        headers = ["Usuário", "Cargo"]
+        for col, texto in enumerate(headers):
+            ctk.CTkLabel(
+                self.tabela,
+                text=texto,
+                font=("Arial", 16, "bold")
+            ).grid(row=0, column=col, padx=15, pady=(0, 10))
+
+        for row, (usuario, cargo) in enumerate(usuarios, start=1):
+            lbl_usuario = ctk.CTkLabel(
+                self.tabela,
+                text=usuario,
+                font=("Arial", 14)
+            )
+            lbl_usuario.grid(row=row, column=0, padx=15, pady=5, sticky="w")
+
+            lbl_cargo = ctk.CTkLabel(
+                self.tabela,
+                text=cargo,
+                font=("Arial", 14)
+            )
+            lbl_cargo.grid(row=row, column=1, padx=15, pady=5, sticky="w")
+
+            for widget in (lbl_usuario, lbl_cargo):
+                widget.bind(
+                    "<Button-1>",
+                    lambda e, u=usuario: self._selecionar_usuario(u)
+                )
+
+            self.linhas[usuario] = (lbl_usuario, lbl_cargo)
+
+    def _selecionar_usuario(self, usuario):
+        for labels in self.linhas.values():
+            for lbl in labels:
+                lbl.configure(text_color="white")
+
+        for lbl in self.linhas[usuario]:
+            lbl.configure(text_color="#00bcd4")
+
+        self.usuario_selecionado = usuario
+
+    def _excluir_selecionado(self):
+        if not self.usuario_selecionado:
+            messagebox.showwarning(
+                "Aviso",
+                "Nenhum usuário selecionado."
+            )
+            return
+        
+        confirmar = messagebox.askyesno(
+            "Confirmar exclusão",
+            f"Tem certeza que deseja excluir o usuário '{self.usuario_selecionado}'?"
+        )
+
+        if not confirmar:
+            return
+
+        resultado = self.main.usuario.excluir_usuario(self.usuario_selecionado)
+
+        if not resultado.sucesso:
+            messagebox.showerror("Erro", resultado.mensagem)
+            return
+
+        messagebox.showinfo("Sucesso", resultado.mensagem)
+        self._atualizar()
+
+    def _atualizar(self):
+        for widget in self.tabela.winfo_children():
+            widget.destroy()
+
+        self.usuario_selecionado = None
+        self.linhas.clear()
+        self._criar_tabela()
 
 class MenuPrincipal(ctk.CTkFrame):
     """Classe principal que controla toda interface e herda da classe ctk.Frame"""

@@ -50,6 +50,9 @@ class Usuario:
     def cadastrar_usuario(self, usuario, senha, cargo):
         hash_senha = self._gerar_hash(senha)
 
+        if len(senha) < 3:
+            return Resultado(False, "Senha precisa de no minimo 3 caracteres")
+
         try:
             self.cur.execute(
                 "INSERT INTO usuarios (usuario, senha, cargo) VALUES (?, ?, ?)",
@@ -98,6 +101,30 @@ class Usuario:
 
         return Resultado(True, "Senha alterada com sucesso", "sucesso")
 
+    def excluir_usuario(self, nome: str) -> Resultado:
+        """
+        Exclui um usuário pelo nome.
+        Retorna um objeto Resultado.
+        """
+
+        if nome.lower() == "sistema":
+            return Resultado(
+                sucesso=False,
+                mensagem="Não é permitido excluir o usuário sistema.",
+                tipo="erro"
+            )
+
+        self.cur.execute(
+            "DELETE FROM usuarios WHERE usuario = ?",
+            (nome,)
+        )
+        self.con.commit()
+
+        return Resultado(
+            sucesso=True,
+            mensagem="Usuário excluído com sucesso.",
+            tipo="sucesso"
+        )
 
     def listar_usuarios(self):
         self.cur.execute(
