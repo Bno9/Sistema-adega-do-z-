@@ -214,7 +214,7 @@ class ModalSenha(ctk.CTkToplevel):
         self.usuario_atual = ctk.StringVar()
         self.usuario_atual.set("Sistema")
 
-        self.title("Consultar produto")
+        self.title("Login")
         self.geometry("400x400")
 
         self.transient(master)
@@ -262,6 +262,153 @@ class ModalSenha(ctk.CTkToplevel):
 
     def mudar_usuario(self, usuario):
         self.usuario_atual.set(usuario)
+
+class ModalAlterarSenha(ctk.CTkToplevel):
+    def __init__(self, master, main):
+        self.main = main
+        super().__init__(master=master, fg_color="#1e1e1e")
+
+        senha = StringVar()
+        usuarios = self.main.get_usuarios()
+        self.usuario_atual = ctk.StringVar()
+        self.usuario_atual.set("Sistema")
+
+        self.title("Alterar senha")
+        self.geometry("400x400")
+
+        self.transient(master)
+        self.update_idletasks()
+        self.grab_set()   
+
+        self.columnconfigure(0, weight=1)
+        self.rowconfigure((0,1), weight=1)
+        header =  ctk.CTkFrame(self, fg_color="#1e1e1e")
+        entrys =  ctk.CTkFrame(self, fg_color="#1e1e1e")
+
+        header.grid(row=0, column=0)
+        header.rowconfigure(0, weight=1)
+
+        entrys.rowconfigure((0,1), weight=1)
+        entrys.columnconfigure(0, weight=1)
+        entrys.grid(row=1, column=0, sticky="nsew")
+
+        ctk.CTkLabel(header, 
+                    text="Escolha um usuario e digite a nova senha",
+                    width=300,
+                    wraplength=300,
+                    font=("arial", 32, "bold")
+                    ).grid(row=0, column=0)
+        
+        ctk.CTkComboBox(entrys,
+                        values=usuarios,
+                        variable=self.usuario_atual,
+                        font=("arial", 32, "bold"),
+                        command=self.mudar_usuario,
+                        width=200
+                        ).grid(row=0, column=0)
+        
+        entry = ctk.CTkEntry(entrys,    
+                        textvariable=senha,
+                        font=("Arial", 20, "bold"),
+                        width=400,
+                        height=50)
+        entry.grid(row=1, column=0)
+        entry.after(1000, entry.focus_set)
+
+        entry.bind("<Escape>", lambda e: self.destroy())
+        entry.bind("<Return>", lambda e: self.main.usuario.alterar_senha(self.usuario_atual.get(), senha.get()))
+
+        #colocar uma messagebox pra informar que deu certo a troca de senha
+
+    def mudar_usuario(self, usuario):
+        self.usuario_atual.set(usuario)
+
+class ModalCadastrarUsuario(ctk.CTkToplevel):
+    def __init__(self, master, main):
+        self.main = main
+        super().__init__(master=master, fg_color="#1e1e1e")
+
+        senha = StringVar()
+        usuario = StringVar()
+        self.cargo_atual = StringVar()
+        self.cargo_atual.set("funcionario")
+        cargos = ["funcionario", "admin"]
+
+        self.title("Cadastrar usuario")
+        self.geometry("500x500")
+
+        self.transient(master)
+        self.update_idletasks()
+        self.grab_set()   
+
+        self.columnconfigure(0, weight=1)
+        self.rowconfigure((0,1), weight=1)
+        header =  ctk.CTkFrame(self, fg_color="#1e1e1e")
+        entrys =  ctk.CTkFrame(self, fg_color="#1e1e1e")
+
+        header.grid(row=0, column=0)
+        header.rowconfigure(0, weight=1)
+
+        entrys.rowconfigure((0,1,2,3,4), weight=1)
+        entrys.columnconfigure(0, weight=1)
+        entrys.grid(row=1, column=0, sticky="nsew")
+
+        ctk.CTkLabel(header, 
+                    text="Digite o nome e a senha do usuario",
+                    width=300,
+                    wraplength=300,
+                    font=("arial", 32, "bold")
+                    ).grid(row=0, column=0)
+
+        ctk.CTkComboBox(entrys,
+                values=cargos,
+                variable=self.cargo_atual,
+                font=("arial", 32, "bold"),
+                command=self.mudar_cargo,
+                width=300
+                ).grid(row=0, column=0)
+
+        ctk.CTkLabel(entrys, 
+                    text="Nome",
+                    width=300,
+                    wraplength=300,
+                    font=("arial", 32, "bold")
+                    ).grid(row=1, column=0, sticky="s")
+                
+        entry_nome = ctk.CTkEntry(entrys,    
+                        textvariable=usuario,
+                        font=("Arial", 20, "bold"),
+                        width=400,
+                        height=50)
+        entry_nome.grid(row=2, column=0, sticky="n")
+
+        ctk.CTkLabel(entrys, 
+                    text="Senha",
+                    width=300,
+                    wraplength=300,
+                    font=("arial", 32, "bold")
+                    ).grid(row=3, column=0, sticky="s")
+        
+        entry_senha = ctk.CTkEntry(entrys,    
+                        textvariable=senha,
+                        font=("Arial", 20, "bold"),
+                        width=400,
+                        height=50)
+        entry_senha.grid(row=4, column=0)
+
+        self.after(1000, entry_nome.focus_set)
+        self.bind("<Escape>", lambda e: self.destroy())
+        self.bind("<Return>", lambda e: self.main.usuario.cadastrar_usuario(usuario.get(), senha.get(), self.cargo_atual.get()))
+    
+    def mudar_cargo(self, valor):
+        self.cargo_atual.set(valor)
+
+class ListarUsuarios(ctk.CTkToplevel):
+    def __init__(self, master, main):
+        self.main = main
+        super().__init__(master=master, fg_color="#1e1e1e")
+
+        self.bind("<Escape>", lambda e: self.destroy())
 
 class MenuPrincipal(ctk.CTkFrame):
     """Classe principal que controla toda interface e herda da classe ctk.Frame"""
@@ -330,7 +477,6 @@ class MenuPrincipal(ctk.CTkFrame):
                     height=30,
                     font=("arial", 22, "bold"),
                     fg_color="#313030",
-                    state="disabled",
                     command=lambda: self.abrir_submenu(self.submenu_admin)
                     ).grid(column=1, row=0, padx=50, pady=20, sticky="ns")
         
@@ -352,7 +498,8 @@ class MenuPrincipal(ctk.CTkFrame):
             fg_color="#313030",
             hover_color="gray",
             font=("Arial", 16),
-            width=180
+            width=180,
+            command=lambda: ModalCadastrarUsuario(self.master, self.main)
         ).pack(padx=10, pady=5)
 
         #submenu botao alterar senha
@@ -362,7 +509,19 @@ class MenuPrincipal(ctk.CTkFrame):
             fg_color="#313030",
             hover_color="gray",
             font=("Arial", 16),
-            width=180
+            width=180,
+            command=lambda: ModalAlterarSenha(self.master, self.main)
+        ).pack(padx=10, pady=5)
+
+        #submenu botao listar usuarios
+        ctk.CTkButton(
+            self.submenu_admin,
+            text="Ver funcionarios",
+            fg_color="#313030",
+            hover_color="gray",
+            font=("Arial", 16),
+            width=180,
+            command=lambda: ListarUsuarios(self.master, self.main)
         ).pack(padx=10, pady=5)
         
         #botao ajuda

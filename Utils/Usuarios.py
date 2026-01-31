@@ -9,10 +9,6 @@ class Usuario:
         self.cur = self.con.cursor()
         self._criar_tabela()
 
-        self.cadastrar_usuario("Joao", "1") #teste
-        self.cadastrar_usuario("Lucas", "1") #teste
-        self.cadastrar_usuario("Pedro", "1") #teste
-
     def _criar_tabela(self):
         """Cria a tabela usuarios e adiciona o usuario "sistema" caso ainda nao exista"""
 
@@ -51,7 +47,7 @@ class Usuario:
             hash_salvo.encode("utf-8")
         )
 
-    def cadastrar_usuario(self, usuario, senha, cargo="funcionario"):
+    def cadastrar_usuario(self, usuario, senha, cargo):
         hash_senha = self._gerar_hash(senha)
 
         try:
@@ -81,7 +77,7 @@ class Usuario:
 
         return Resultado(False, "")
     
-    def alterar_senha(self, usuario: str, senha_atual: str, nova_senha: str):
+    def alterar_senha(self, usuario: str, nova_senha: str):
         self.cur.execute(
             "SELECT senha FROM usuarios WHERE usuario = ?",
             (usuario,)
@@ -93,9 +89,6 @@ class Usuario:
 
         hash_atual = resultado[0]
 
-        if not self._verificar_senha(senha_atual, hash_atual):
-            return Resultado(False, "Senha atual incorreta", "aviso")
-        
         novo_hash = self._gerar_hash(nova_senha)
         self.cur.execute(
             "UPDATE usuarios SET senha = ? WHERE usuario = ?",
