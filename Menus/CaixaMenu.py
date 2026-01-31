@@ -4,11 +4,12 @@ import customtkinter as ctk
 
 class CaixaMenu(ctk.CTkFrame):
 
-    def __init__(self, root, referencia_main, usuario):
+    def __init__(self, root, referencia_main, usuario, on_sair=None):
         super().__init__(master=root, fg_color="#1e1e1e")
         self.referencia_main = referencia_main
         self.controller = CaixaController(self, self.referencia_main.caixa)
         self.usuario = usuario
+        self.on_sair = on_sair if on_sair is not None else self.referencia_main.voltar_menu_principal
         
         #textos
         self.status = StringVar()
@@ -850,7 +851,11 @@ Esc - Voltar""",
             return
             
         self.master.unbind("<Escape>")
-        self.referencia_main.voltar_menu_principal()
+
+        if self.on_sair == self.referencia_main.fechar_app:
+            self.status.set("Fechando aplicativo")
+
+        self.on_sair()
 
     def limpar_campos(self):
         campos = [

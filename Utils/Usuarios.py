@@ -9,6 +9,10 @@ class Usuario:
         self.cur = self.con.cursor()
         self._criar_tabela()
 
+        self.cadastrar_usuario("Joao", "1") #teste
+        self.cadastrar_usuario("Lucas", "1") #teste
+        self.cadastrar_usuario("Pedro", "1") #teste
+
     def _criar_tabela(self):
         """Cria a tabela usuarios e adiciona o usuario "sistema" caso ainda nao exista"""
 
@@ -29,7 +33,7 @@ class Usuario:
         existe = self.cur.fetchone()
 
         if not existe:
-            hash_senha = self._gerar_hash("sistema")
+            hash_senha = self._gerar_hash("123")
             self.cur.execute(
                 "INSERT INTO usuarios (usuario, senha, cargo) VALUES (?, ?, ?)",
                 ("Sistema", hash_senha, "admin")
@@ -62,7 +66,7 @@ class Usuario:
 
     def verificar_login(self, usuario:str, senha:str) -> tuple:
         self.cur.execute(
-            "SELECT senha, cargo FROM usuarios WHERE usuario = ?",
+            "SELECT * FROM usuarios WHERE usuario = ?",
             (usuario,)
         )
         resultado = self.cur.fetchone()
@@ -70,10 +74,10 @@ class Usuario:
         if not resultado:
             return Resultado(False, "Usuario nao encontrado", "info")
 
-        hash_salvo, cargo = resultado
+        _, nome, hash_salvo, cargo = resultado
 
         if self._verificar_senha(senha, hash_salvo):
-            return True, cargo # retorno inconsistente que vou precisar arrumar dps de definir como vai ser a interface
+            return True, nome, cargo # retorno inconsistente que vou precisar arrumar dps de definir como vai ser a interface
 
         return Resultado(False, "")
     

@@ -75,8 +75,7 @@ class Main:
             2:EstoqueMenu,
             3:ProdutoMenu,
             4:DespesasMenu,
-            5:CaixaMenu,
-            6:None
+            5:CaixaMenu
         }
 
         #inicia o frame menu principal
@@ -118,10 +117,17 @@ class Main:
         self.frame_atual = novo_frame
         self.frame_atual.grid(column=0, row=0, sticky="nsew")
 
-    def verificar_senha(self, senha, modal):
-        if senha.get() == "123":
+    def verificar_senha(self, senha, usuario, modal):
+        senha = senha.get()
+        resultado = self.usuario.verificar_login(usuario, senha)
+
+        if resultado[0] == True and resultado[2] == "admin":
             modal.destroy()
             self.trocar_frame(MenuPrincipal(self.root, self))
+        
+        elif resultado[0] == True and resultado[2] == "funcionario":
+            modal.destroy()
+            self.trocar_frame(CaixaMenu(self.root, self, usuario, on_sair=self.fechar_app))
         
     def fazer_backup(self):
         try:
@@ -181,8 +187,22 @@ class Main:
             os.remove(caminho)
             logger.info("Backup removido por excesso | arquivo=%s", nome)
 
+    def get_usuarios(self):
+        usuarios = self.usuario.listar_usuarios()
+        return [nome for nome, _ in usuarios]
+
     def voltar_menu_principal(self):
         self.trocar_frame(MenuPrincipal(self.root, self))
+
+    def fechar_app(self):
+        with open("configs.json", "w", encoding="utf-8") as f:
+            json.dump(self.configs, f, indent=4, ensure_ascii=False)
+
+        self.con.close()
+        #self.status.set("Finalizando programa...") #mudar aqui depois (talvez pra uma messagebox do ttk)
+        self.root.after(2000, self.root.quit)
+        logger.info("Programa finalizado")
+        return
 
 class ModalSenha(ctk.CTkToplevel):
     def __init__(self, master, main):
@@ -190,9 +210,12 @@ class ModalSenha(ctk.CTkToplevel):
         super().__init__(master=master, fg_color="#1e1e1e")
 
         senha = StringVar()
+        usuarios = self.main.get_usuarios()
+        self.usuario_atual = ctk.StringVar()
+        self.usuario_atual.set("Sistema")
 
         self.title("Consultar produto")
-        self.geometry("300x300")
+        self.geometry("400x400")
 
         self.transient(master)
         self.update_idletasks()
@@ -204,28 +227,41 @@ class ModalSenha(ctk.CTkToplevel):
         entrys =  ctk.CTkFrame(self, fg_color="#1e1e1e")
 
         header.grid(row=0, column=0)
+        header.rowconfigure(0, weight=1)
 
-        entrys.rowconfigure(0, weight=1)
+        entrys.rowconfigure((0,1), weight=1)
         entrys.columnconfigure(0, weight=1)
-        entrys.grid(row=1, column=0)
+        entrys.grid(row=1, column=0, sticky="nsew")
 
         ctk.CTkLabel(header, 
                     text="Digite a senha",
+                    width=300,
                     font=("arial", 32, "bold")
-                    ).grid(row=0, column=0, columnspan=2)
+                    ).grid(row=0, column=0)
         
-        entry = ctk.CTkEntry(entrys,
+        ctk.CTkComboBox(entrys,
+                        values=usuarios,
+                        variable=self.usuario_atual,
+                        font=("arial", 32, "bold"),
+                        command=self.mudar_usuario,
+                        width=200
+                        ).grid(row=0, column=0)
+        
+        entry = ctk.CTkEntry(entrys,    
                         textvariable=senha,
                         font=("Arial", 20, "bold"),
                         width=400,
                         height=50)
-        entry.grid(row=0, column=0)
+        entry.grid(row=1, column=0)
         entry.after(1000, entry.focus_set)
 
 
         self.protocol("WM_DELETE_WINDOW", self.master.quit) #Fecha o programa caso o modal seja fechado
 
-        entry.bind("<Return>", lambda e: self.main.verificar_senha(senha, self))
+        entry.bind("<Return>", lambda e: self.main.verificar_senha(senha, self.usuario_atual.get(), self))
+
+    def mudar_usuario(self, usuario):
+        self.usuario_atual.set(usuario)
 
 class MenuPrincipal(ctk.CTkFrame):
     """Classe principal que controla toda interface e herda da classe ctk.Frame"""
@@ -530,18 +566,8 @@ class MenuPrincipal(ctk.CTkFrame):
 
         escolhido = self.main.mapa.get(opcao)
 
-        if escolhido is None:
-            #Apagando os testes para nao acumular
-            for i in range(10000):
-                self.main.despesa.excluir_despesa(i)
-
-            with open("configs.json", "w", encoding="utf-8") as f:
-                json.dump(self.main.configs, f, indent=4, ensure_ascii=False)
-
-            self.main.con.close()
-            self.status.set("Finalizando programa...")
-            self.master.after(2000, self.master.quit)
-            logger.info("Programa finalizado")
+        if opcao == 6:
+            self.main.fechar_app()
             return
             
         self.main.trocar_frame(escolhido(self.master, self.main))
