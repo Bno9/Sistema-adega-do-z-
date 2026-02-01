@@ -46,6 +46,7 @@ class Main:
         self.frame_atual = None
         self.pode_usar_atalho = True
         self.configs = self.carregar_config()
+        self.configs_window = None
         self.estoque = Estoque(self.con)
         self.caixa = Caixa(self.estoque, self.iniciar_impressora, self.con)
         self.despesa = Despesas(self.con)
@@ -190,6 +191,21 @@ class Main:
     def get_usuarios(self):
         usuarios = self.usuario.listar_usuarios()
         return [nome for nome, _ in usuarios]
+    
+    def abrir_configs(self):
+        if self.configs_window and self.configs_window.winfo_exists():
+            self.configs_window.lift()
+            self.configs_window.focus_force()
+            return
+
+        self.configs_window = Configs(
+            self.root,
+            self,
+            on_close=self._fechar_configs
+        )
+
+    def _fechar_configs(self):
+        self.configs_window = None
 
     def voltar_menu_principal(self):
         self.trocar_frame(MenuPrincipal(self.root, self))
@@ -588,7 +604,7 @@ class MenuPrincipal(ctk.CTkFrame):
                     height=30,
                     font=("arial", 22, "bold"),
                     fg_color="#313030",
-                    command=lambda: Configs(root, self.main, self.main.configs)
+                    command=self.main.abrir_configs
                     ).grid(column=0, row=0, padx=50, pady=20, sticky="ns")
         
         #botao admin
@@ -938,7 +954,7 @@ class PopupBaixoEstoque(ctk.CTkToplevel):
         self.after(self.configs.get("Tempo_popup", 4000), self.destroy)
 
 class Configs(ctk.CTkToplevel):
-    def __init__(self, master, main, config):
+    def __init__(self, master, main, on_close=None):
         super().__init__(master)
 
         self.main = main
@@ -951,7 +967,8 @@ class Configs(ctk.CTkToplevel):
         self.tempo_popup = StringVar()
         self.quantidade_aviso = StringVar()
         self.dias_backup = StringVar()
-        self.config = config
+        self.on_close = on_close
+        self.config = self.main.configs
 
 
         self.protocol("WM_DELETE_WINDOW", self.fechar)
@@ -1086,6 +1103,10 @@ class Configs(ctk.CTkToplevel):
 
     def fechar(self):
         self.main.pode_usar_atalho = True
+
+        if self.on_close:
+            self.on_close()
+
         self.destroy()
 
     def fazer_backup(self):
