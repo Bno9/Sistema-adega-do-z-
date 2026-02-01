@@ -576,8 +576,7 @@ class MenuPrincipal(ctk.CTkFrame):
         for i in range(3):
             botoes_frame.rowconfigure(i, weight=1)
 
-        botoes_frame.columnconfigure(0, weight=1)
-        botoes_frame.columnconfigure(1, weight=1)
+        botoes_frame.columnconfigure((0,1), weight=1)
         botoes_frame.grid_propagate(False)
 
         #botao configurações
@@ -593,7 +592,7 @@ class MenuPrincipal(ctk.CTkFrame):
                     ).grid(column=0, row=0, padx=50, pady=20, sticky="ns")
         
         #botao admin
-        ctk.CTkButton(header_menubar, 
+        self.botao_admin = ctk.CTkButton(header_menubar, 
                     text="Admin",
                     text_color="white", 
                     hover_color="gray",
@@ -601,12 +600,13 @@ class MenuPrincipal(ctk.CTkFrame):
                     height=30,
                     font=("arial", 22, "bold"),
                     fg_color="#313030",
-                    command=lambda: self.abrir_submenu(self.submenu_admin)
-                    ).grid(column=1, row=0, padx=50, pady=20, sticky="ns")
+                    command=lambda: self.abrir_submenu(self.submenu_admin, self.botao_admin)
+                    )
+        self.botao_admin.grid(column=1, row=0, padx=50, pady=20, sticky="ns")
         
         #submenu
         self.submenu_admin = ctk.CTkFrame(
-            header_menubar,
+            self,
             fg_color="#313030",
             corner_radius=10
         )
@@ -649,7 +649,7 @@ class MenuPrincipal(ctk.CTkFrame):
         ).pack(padx=10, pady=5)
         
         #botao ajuda
-        ctk.CTkButton(header_menubar, 
+        self.botao_ajuda = ctk.CTkButton(header_menubar, 
                     text="Ajuda",
                     text_color="white", 
                     hover_color="gray",
@@ -657,12 +657,12 @@ class MenuPrincipal(ctk.CTkFrame):
                     height=30,
                     font=("arial", 22, "bold"),
                     fg_color="#313030",
-                    state="disabled",
-                    command=lambda: self.abrir_submenu(self.submenu_ajuda)
-                    ).grid(column=2, row=0, padx=50, pady=20, sticky="ns")
+                    command=lambda: self.abrir_submenu(self.submenu_ajuda, self.botao_ajuda)
+                    )
+        self.botao_ajuda.grid(column=2, row=0, padx=50, pady=20, sticky="ns")
         
         self.submenu_ajuda = ctk.CTkFrame(
-            header_menubar,
+            self,
             fg_color="#313030",
             corner_radius=10
         )
@@ -819,22 +819,45 @@ class MenuPrincipal(ctk.CTkFrame):
             PopupBaixoEstoque(self, estoque_baixo, self.main.configs)
             logger.info("Produtos com estoque baixo produtos=%s", estoque_baixo)
 
-    def abrir_submenu(self, menu):
+    def abrir_submenu(self, submenu, botao):
         self.main.pode_usar_atalho = False
+
+        # se não tem nenhum submenu aberto
         if self.submenu_aberto is None:
-            menu.grid()
-            self.submenu_aberto = menu
+            self._posicionar_submenu(submenu, botao)
+            self.submenu_aberto = submenu
             return
-        
-        if self.submenu_aberto == menu:
-            menu.grid_remove()
+
+        # se clicou no mesmo submenu → fecha
+        if self.submenu_aberto == submenu:
+            submenu.place_forget()
             self.submenu_aberto = None
-            pode_usar_atalho = True
+            self.main.pode_usar_atalho = True
             return
-        
-        self.submenu_aberto.grid_remove()
-        menu.grid()
-        self.submenu_aberto = menu
+
+        # se clicou em outro submenu → troca
+        self.submenu_aberto.place_forget()
+        self._posicionar_submenu(submenu, botao)
+        self.submenu_aberto = submenu
+
+    def _posicionar_submenu(self, submenu, botao):
+        OFFSET_Y = 18 
+        OFFSET_X = -50 
+
+        x = (
+            botao.winfo_rootx()
+            - self.master.winfo_rootx()
+            + OFFSET_X
+        )
+
+        y = (
+            botao.winfo_rooty()
+            - self.master.winfo_rooty()
+            + botao.winfo_height()
+            + OFFSET_Y
+        )
+
+        submenu.place(x=x, y=y)
 
     def escolher(self, opcao):
         """Recebe a opção escolhida,
