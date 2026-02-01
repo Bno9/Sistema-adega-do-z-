@@ -17,6 +17,7 @@ from Utils.Estoque import Estoque
 from Utils.Despesa import Despesas
 from Utils.Recibo import Recibo, ImpressoraBase, ImpressoraTxt, ImpressoraWindows
 from Utils.Produto import Produto
+from RelatoriosMenu import RelatoriosMenu
 from Utils.Usuarios import Usuario
 
 from Menus.CaixaMenu import CaixaMenu
@@ -104,7 +105,7 @@ class Main:
 
     def abrir_relatorio(self):
         self.trocar_frame(
-            CaixaMenu(self.root, self)
+            RelatoriosMenu(self.root, self)
         )
 
     def iniciar_impressora(self):
