@@ -53,7 +53,7 @@ class Main:
         self.root.bind_all("<Key>", self.tecla_apertada)
         self.usuario = Usuario(self.con)
 
-        self.usuario_atual = None #Passar sempre o usuario que esta utilizando programa para salvar nos relatorios
+        self.usuario_atual = None
 
         ultimo = self.configs.get("ultimo_dia_backup")
         if ultimo:
@@ -72,15 +72,40 @@ class Main:
 
         #mapa das classes
         self.mapa = {
-            1:CaixaMenu,
-            2:EstoqueMenu,
-            3:ProdutoMenu,
-            4:DespesasMenu,
-            5:CaixaMenu
+            1:self.abrir_caixa,
+            2:self.abrir_estoque,
+            3:self.abrir_produto,
+            4:self.abrir_despesa,
+            5:self.abrir_relatorio
         }
 
         #inicia o frame menu principal
         ModalSenha(self.root, self)
+
+    def abrir_caixa(self):
+        self.trocar_frame(
+            CaixaMenu(self.root, self, self.usuario_atual)
+        )
+
+    def abrir_estoque(self):
+        self.trocar_frame(
+            EstoqueMenu(self.root, self)
+        )
+
+    def abrir_produto(self):
+        self.trocar_frame(
+            ProdutoMenu(self.root, self)
+        )
+
+    def abrir_despesa(self):
+        self.trocar_frame(
+            DespesasMenu(self.root, self)
+        )
+
+    def abrir_relatorio(self):
+        self.trocar_frame(
+            CaixaMenu(self.root, self)
+        )
 
     def iniciar_impressora(self):
         if self.impressora is None:
@@ -122,13 +147,18 @@ class Main:
         senha = senha.get()
         resultado = self.usuario.verificar_login(usuario, senha)
 
-        if resultado[0] == True and resultado[2] == "admin":
+        if resultado[0] and resultado[2] == "admin":
+            self.usuario_atual = resultado[1]
             modal.destroy()
             self.trocar_frame(MenuPrincipal(self.root, self))
         
-        elif resultado[0] == True and resultado[2] == "funcionario":
+        elif resultado[0] and resultado[2] == "funcionario":
+            self.usuario_atual = resultado[1]
             modal.destroy()
-            self.trocar_frame(CaixaMenu(self.root, self, usuario, on_sair=self.fechar_app))
+            self.trocar_frame(CaixaMenu(self.root, self, self.usuario_atual, on_sair=self.fechar_app))
+
+        else:
+            messagebox.showerror("Senha inválida") #nao funciona
         
     def fazer_backup(self):
         try:
@@ -887,18 +917,12 @@ class MenuPrincipal(ctk.CTkFrame):
             return
 
         escolhido = self.main.mapa.get(opcao)
-
-        if opcao == 6:
-            self.main.fechar_app()
-            return
             
-        self.main.trocar_frame(escolhido(self.master, self.main))
+        escolhido()
 
     def teclas_menu(self, tecla):
         if tecla.char in ["1", "2", "3", "4", "5"] and self.main.pode_usar_atalho:
             self.escolher(int(tecla.char))
-
-import customtkinter as ctk
 
 class PopupBaixoEstoque(ctk.CTkToplevel):
     #fiz essa classe pra nao deixar tao poluido e ilegivel  o código (inclusive acho que vou fazer nas outras telas tambem com as coisas repetidas)
