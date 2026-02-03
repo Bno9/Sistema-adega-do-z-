@@ -1,6 +1,7 @@
-from tkinter import ttk
+from tkinter import ttk, messagebox
 from tkinter import *
 import customtkinter as ctk
+from datetime import datetime, date
 
 class CaixaMenu(ctk.CTkFrame):
 
@@ -10,6 +11,17 @@ class CaixaMenu(ctk.CTkFrame):
         self.controller = CaixaController(self, self.referencia_main.caixa)
         self.usuario = usuario
         self.on_sair = on_sair if on_sair is not None else self.referencia_main.voltar_menu_principal
+        self.caixa_id = None
+
+        #abertura caixa
+        caixa_aberto = self.referencia_main.caixa.conferir_abertura_caixa(self.usuario)
+        if caixa_aberto:
+            caixa_id = self.referencia_main.caixa.carregar_caixa_aberto(self.usuario)
+            self.caixa_id = caixa_id
+            if self.referencia_main.caixa.finalizar_caixa(date.today(), self.caixa_id, datetime.now()): #da pra melhorar o codigo dps, por enquanto quero ver se funciona
+                AberturaCaixa(root, ref_caixa=self.referencia_main.caixa, usuario=self.usuario)
+        else:
+            AberturaCaixa(root, ref_caixa=self.referencia_main.caixa, usuario=self.usuario)
         
         #textos
         self.status = StringVar()
@@ -864,6 +876,91 @@ Esc - Voltar""",
 
         for var in campos:
             var.set("")
+
+class AberturaCaixa(ctk.CTkToplevel):
+    def __init__(self, root, ref_caixa, usuario):
+        super().__init__(master=root)
+
+        self.ref_caixa = ref_caixa
+        self.usuario = usuario
+
+        self.title("Abertura de Caixa")
+        self.geometry("400x300")
+        self.resizable(False, False)
+
+        self.transient(root)
+        self.grab_set()
+
+        self._criar_widgets()
+
+    def _criar_widgets(self):
+        frame = ctk.CTkFrame(self)
+        frame.grid(row=0, column=0, padx=20, pady=20, sticky="nsew")
+
+        self.grid_rowconfigure(0, weight=1)
+        self.grid_columnconfigure(0, weight=1)
+
+        frame.grid_columnconfigure(0, weight=1)
+        frame.grid_columnconfigure(1, weight=1)
+
+        ctk.CTkLabel(
+            frame,
+            text=f"Funcionario: {self.usuario}",
+            font=ctk.CTkFont(size=14, weight="bold")
+        ).grid(row=0, column=0, columnspan=2, sticky="w", pady=(0, 5))
+
+        agora = datetime.now().strftime("%d/%m/%Y %H:%M")
+        ctk.CTkLabel(
+            frame,
+            text=f"Data/Hora: {agora}",
+            text_color="gray"
+        ).grid(row=1, column=0, columnspan=2, sticky="w", pady=(0, 20))
+
+        ctk.CTkLabel(
+            frame,
+            text="Valor inicial do caixa:"
+        ).grid(row=2, column=0, columnspan=2, sticky="w")
+
+        self.entry_valor = ctk.CTkEntry(
+            frame,
+            placeholder_text="0,00"
+        )
+        self.entry_valor.grid(row=3, column=0, columnspan=2, sticky="ew", pady=(5, 20))
+
+        btn_abrir = ctk.CTkButton(
+            frame,
+            text="Abrir Caixa",
+            command=self._abrir_caixa
+        )
+        btn_abrir.grid(row=4, column=0, sticky="ew", padx=(0, 5))
+
+        btn_cancelar = ctk.CTkButton(
+            frame,
+            text="Cancelar",
+            fg_color="gray",
+            command=self.destroy
+        )
+        btn_cancelar.grid(row=4, column=1, sticky="ew", padx=(5, 0))
+
+    def _abrir_caixa(self):
+        valor = self.entry_valor.get().replace(",", ".")
+
+        if not valor:
+            messagebox.showwarning("Erro", "Insira um valor")
+            return
+
+        try:
+            valor = float(valor)
+        except ValueError:
+            messagebox.showerror("Erro", "Valor invalido")
+            return
+        
+        if valor < 1:
+            messagebox.showwarning("Erro", "Valor nao pode ser menor que 1")
+            return
+
+        self.ref_caixa.abrir_caixa(date.today(), datetime.now(), self.usuario, valor)
+        self.destroy()
 
 class CaixaController:
     def __init__(self, tela, ref_caixa):

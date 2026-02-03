@@ -1,6 +1,7 @@
 from Utils.Recibo import Recibo, ImpressoraBase, ImpressoraTxt, ImpressoraWindows
 from Utils.Resultado import Resultado
 import logging
+from datetime import date
 
 logger = logging.getLogger(__name__)
 
@@ -11,10 +12,92 @@ class Caixa:
         self.iniciar_impressora = iniciar_impressora
         self.estoque = estoque
         self.con = con
+        self.cur = self.con.cursor()
         self.vendas = []
         self.itens_no_carrinho = []
         self.itens_passados = []
         self.desconto = 0
+        self.caixa_atual_id = None
+
+        self.cur.execute("""CREATE TABLE IF NOT EXISTS caixa (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        data DATE NOT NULL,
+        hora_abertura TIME NOT NULL,
+        hora_fechamento TIME,
+        funcionario TEXT NOT NULL,
+        valor_inicial REAL NOT NULL,
+        status INT NOT NULL
+    )""")
+        
+    def carregar_caixa_aberto(self, funcionario):
+        self.cur.execute("""
+            SELECT id
+            FROM caixa
+            WHERE funcionario = ?
+            AND status = 1
+            ORDER BY data DESC, hora_abertura DESC
+            LIMIT 1
+        """, (funcionario,))
+
+        row = self.cur.fetchone()
+
+        if row:
+            self.caixa_atual_id = row[0]
+            logger.info("caixa carregado | usuario=%s ID do caixa=%s", funcionario, self.caixa_atual_id)
+            return self.caixa_atual_id
+
+        return False
+        
+    def conferir_abertura_caixa(self, funcionario):
+        hoje = date.today().isoformat()
+        # testes hoje = "2026-02-03"
+
+        self.cur.execute("""
+            SELECT 1
+            FROM caixa
+            WHERE funcionario = ?
+            AND data = ?
+            AND status = 1
+            LIMIT 1
+        """, (funcionario, hoje))
+
+        return self.cur.fetchone() is not None #retorna bool
+
+    def abrir_caixa(self, data, hora_abertura, funcionario, valor_inicial, hora_fechamento=None, status=1):
+        logger.info("dados da abertura de caixa data=%s, hora=%s, usuario=%s", data, hora_abertura, funcionario)
+        self.cur.execute("""INSERT INTO caixa (data, hora_abertura, hora_fechamento, funcionario, valor_inicial, status) VALUES(?,?,?,?,?,?)""", 
+                         (data, hora_abertura, hora_fechamento, funcionario, valor_inicial, status))
+        self.con.commit()
+        
+        self.caixa_atual_id = self.cur.lastrowid
+        logger.info("Caixa aberto | Usuario=%s ID do caixa=%s", funcionario, self.caixa_atual_id)
+        return self.caixa_atual_id
+            
+    def finalizar_caixa(self, hoje, caixa_id, hora_fechamento):
+        self.cur.execute("""
+            SELECT data
+            FROM caixa
+            WHERE id = ?
+            AND status = 1
+            LIMIT 1
+        """, (caixa_id,))
+        row = self.cur.fetchone()
+        data_abertura = date.fromisoformat(row[0])
+        # teste hoje = date.fromisoformat("2026-02-03")
+    
+        if data_abertura < hoje:
+            self.cur.execute("""
+                UPDATE caixa
+                SET hora_fechamento = ?,
+                    status = 0
+                WHERE id = ?
+                AND status = 1
+            """, (hora_fechamento, caixa_id))
+            self.con.commit()
+
+            return True
+        
+        return False
 
     def carrinho_caixa(self, produto, quantidade=1):
         """Método que adiciona os produtos a tela de soma do caixa"""
@@ -108,10 +191,6 @@ class Caixa:
             return sum(item.preco_venda * quantidade for item, quantidade in self.itens_no_carrinho) - self.desconto
     
         return sum(item.preco_venda * quantidade for item, quantidade in self.itens_no_carrinho)
-    
-    def listar_vendas(self): 
-        for venda in self.vendas:
-            print(venda) #ainda incompleto (pretendo fazer uma tela ou um bloco de notas para exibir essa parte)
 
     def validar_compra_existente(self):
         """Método para validar se existe uma compra pendente
@@ -176,7 +255,6 @@ class Caixa:
             self.desconto = 0
             logger.debug(self.itens_no_carrinho)
             if not self.itens_passados:
-                print("retomou")
                 return "Retomou"
 
             return "Pendente"

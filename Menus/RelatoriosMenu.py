@@ -1,33 +1,70 @@
 import customtkinter as ctk
 
-class RelatoriosMenu(ctk.CTkToplevel):
+
+class RelatoriosMenu(ctk.CTkFrame):
     def __init__(self, master, main):
-        self.main = main
         super().__init__(master=master, fg_color="#1e1e1e")
-
-        self.title("Relatórios")
-        self.geometry("400x400")
-
-        self.transient(master)
-        self.update_idletasks()
-        self.grab_set()   
+        self.main = main
 
         self.columnconfigure(0, weight=1)
-        self.rowconfigure((0,1), weight=1)
-        header =  ctk.CTkFrame(self, fg_color="#1e1e1e")
-        checks =  ctk.CTkFrame(self, fg_color="#1e1e1e")
+        self.rowconfigure(1, weight=1)
 
-        header.grid(row=0, column=0)
-        header.rowconfigure(0, weight=1)
+        self._criar_header()
+        self._criar_tabs()
 
-        checks.rowconfigure((0,1), weight=1)
-        checks.columnconfigure(0, weight=1)
-        checks.grid(row=1, column=0, sticky="nsew")
+    def _criar_header(self):
+        header = ctk.CTkFrame(self, fg_color="#1e1e1e")
+        header.grid(row=0, column=0, sticky="w", padx=20, pady=(20, 10))
 
-        ctk.CTkLabel(header, 
-                    text="Escolha um relatorio",
-                    width=300,
-                    font=("arial", 32, "bold")
-                    ).grid(row=0, column=0)
-        
-        self.protocol("WM_DELETE_WINDOW", self.master.quit)
+        header.columnconfigure((0, 1, 2), weight=1)
+
+        ctk.CTkLabel(
+            header,
+            text="Relatórios",
+            font=("Arial", 32, "bold")
+        ).grid(row=0, column=0, sticky="w")
+
+    def _criar_tabs(self):
+        container = ctk.CTkFrame(self, fg_color="#1e1e1e")
+        container.grid(row=1, column=0, sticky="nsew", padx=20, pady=10)
+
+        container.columnconfigure(0, weight=1)
+        container.rowconfigure(0, weight=1)
+
+        self.tabs = ctk.CTkTabview(container)
+        self.tabs.grid(row=0, column=0, sticky="nsew")
+
+        self.tab_caixa = self.tabs.add("Caixa")
+        self.tab_estoque = self.tabs.add("Estoque")
+        self.tab_produtos = self.tabs.add("Produtos mais vendidos")
+
+        self._aba_caixa()
+        self._aba_estoque()
+        self._aba_produtos()
+
+    def _aba_caixa(self):
+        self.tab_caixa.columnconfigure(0, weight=1)
+
+        ctk.CTkLabel(
+            self.tab_caixa,
+            text="Relatório de movimentação de caixa",
+            font=("Arial", 20, "bold")
+        ).grid(row=0, column=0)
+
+    def _aba_estoque(self):
+        self.tab_estoque.columnconfigure(0, weight=1)
+
+        ctk.CTkLabel(
+            self.tab_estoque,
+            text="Relatório de movimentação de estoque",
+            font=("Arial", 20, "bold")
+        ).grid(row=0, column=0)
+
+    def _aba_produtos(self):
+        self.tab_produtos.columnconfigure(0, weight=1)
+
+        ctk.CTkLabel(
+            self.tab_produtos,
+            text="Produtos mais vendidos",
+            font=("Arial", 20, "bold")
+        ).grid(row=0, column=0)
