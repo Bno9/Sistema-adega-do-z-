@@ -448,7 +448,7 @@ Esc - Voltar""",
     def finalizar_compra(self):
         """chama o metodo da classe caixa que finaliza a compra"""
 
-        resultado = self.referencia_main.caixa.finalizar_compra(self.valor_pago.get(), self.metodo_pagamento)
+        resultado = self.referencia_main.caixa.finalizar_compra(self.valor_pago.get(), self.metodo_pagamento, self.usuario, self.caixa_id)
 
         if resultado.sucesso == False:
             return resultado
