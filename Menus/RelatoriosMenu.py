@@ -1,4 +1,6 @@
 import customtkinter as ctk
+from tkinter import ttk
+from datetime import date
 
 
 class RelatoriosMenu(ctk.CTkFrame):
@@ -6,8 +8,35 @@ class RelatoriosMenu(ctk.CTkFrame):
         super().__init__(master=master, fg_color="#1e1e1e")
         self.main = main
 
+        self.controller = RelatorioController(self, self.main.relatorios)
+
         self.columnconfigure(0, weight=1)
         self.rowconfigure(1, weight=1)
+
+        style = ttk.Style()
+        style.theme_use("clam")
+
+        style.configure(
+            "Custom.Treeview",
+            background="#1e1e1e",      
+            foreground="white",        
+            fieldbackground="#1e1e1e",
+            rowheight=30,
+            font=("Arial", 16, "bold")
+        )
+
+        style.map(
+            "Custom.Treeview",
+            background=[("selected", "#ff9800")],
+            foreground=[("selected", "black")]
+        )
+                
+        style.configure(
+            "Custom.Treeview.Heading",
+            background="#333333",
+            foreground="white",
+            font=("Arial", 14, "bold")
+        )
 
         self._criar_header()
         self._criar_tabs()
@@ -43,13 +72,223 @@ class RelatoriosMenu(ctk.CTkFrame):
         self._aba_produtos()
 
     def _aba_caixa(self):
-        self.tab_caixa.columnconfigure(0, weight=1)
+        self.filtro_data = ctk.StringVar()
+        self.forma_pgt = ctk.StringVar()
+        self.forma_pgt.set("Tudo")
+        self.usuario = ctk.StringVar()
+        self.usuario.set(self.main.usuario_atual)
+        usuarios = self.main.get_usuarios()
+        forma_pgt = ["Tudo", "Dinheiro", "Cartão", "Pix", "Sangria"]
 
+        hoje = date.today().strftime("%d/%m/%Y")
+        self.filtro_data.set(hoje)
+
+        self.tab_caixa.columnconfigure((0,1), weight=1)
+        self.tab_caixa.rowconfigure(0, weight=1)
+
+        frame_filtros = ctk.CTkFrame(self.tab_caixa)
+        frame_filtros.grid(row=0, column=0, sticky="nsew", padx=10, pady=10)
+        frame_filtros.rowconfigure((0,1,2,3), weight=1)
+        frame_filtros.columnconfigure((0,1), weight=1)
+
+
+        self.frame_tabela = ctk.CTkFrame(self.tab_caixa)
+        self.frame_tabela.rowconfigure(1, weight=1)
+        self.frame_tabela.rowconfigure((0, 2), weight=0)
+        self.frame_tabela.columnconfigure(0, weight=1)
+        self.frame_tabela.grid(row=0, column=1, sticky="nsew", padx=10, pady=10)
+
+        self.carregar_header()
+        self.carregar_relatorio_caixa()
+        self.carregar_bottom()
+
+        botao_filtrar = ctk.CTkButton(frame_filtros,
+            text="Filtrar", 
+            text_color="black", 
+            corner_radius=40,
+            border_color="black",
+            hover_color="white",
+            border_width=5,
+            width=150,  
+            height=100,
+            fg_color="orange",
+            font=("Arial", 30, "bold"),
+            command=lambda: self.controller.filtrar_relatorio_caixa(usuario=self.usuario.get(), data=self.filtro_data.get(), forma_pgt=self.forma_pgt.get())
+            )
+        botao_filtrar.grid(row=4, column=0, sticky="nsew")
+
+        botao_voltar = ctk.CTkButton(frame_filtros,
+            text="Sair", 
+            text_color="black", 
+            corner_radius=40,
+            border_color="black",
+            hover_color="red",
+            border_width=5,
+            width=150,  
+            height=100,
+            fg_color="orange",
+            font=("Arial", 30, "bold"),
+            command=self.main.voltar_menu_principal
+            )
+        botao_voltar.grid(row=4, column=1, sticky="nsew")
+
+        label_filtros = ctk.CTkLabel(frame_filtros,
+                    text="Filtros",
+                    font=("arial", 60, "bold")
+                    )
+        label_filtros.grid(row=0, column=0, columnspan=2, sticky="n")
+
+        label_data = ctk.CTkLabel(frame_filtros,
+                    text="Digite a data",
+                    font=("arial", 40, "bold")
+                    )
+        label_data.grid(row=0, column=0, sticky="s")
+
+        entry_data = ctk.CTkEntry(frame_filtros, width=300, height=50, textvariable=self.filtro_data, font=("arial",32))
+        entry_data.grid(row=1, column=0, sticky="n")
+
+        label_usuario = ctk.CTkLabel(frame_filtros,
+                    text="Escolha um usuario",
+                    font=("arial", 40, "bold")
+                    )
+        label_usuario.grid(row=0, column=1, sticky="s")
+        combobox_usuario = ctk.CTkComboBox(frame_filtros, height=50, width=300, fg_color="#1e1e1e", font=("arial", 32, "bold"), variable=self.usuario, values=usuarios, command=self.mudar_usuario)
+        combobox_usuario.grid(row=1, column=1, sticky="n")
+
+        label_pgt = ctk.CTkLabel(frame_filtros,
+                    text="Pagamento",
+                    font=("arial", 40, "bold")
+                    )
+        label_pgt.grid(row=2, column=0, sticky="s")
+        combobox_pgt = ctk.CTkComboBox(frame_filtros, height=50, width=300, fg_color="#1e1e1e", font=("arial", 32, "bold"), variable=self.forma_pgt, values=forma_pgt, command=self.mudar_forma_pgt)
+        combobox_pgt.grid(row=3, column=0, sticky="n")
+
+
+    def carregar_relatorio_caixa(self, vendas=None):
+        colunas = ("caixa_id", "data/hora", "funcionario", "pagamento", "total")
+
+        tabela = ttk.Treeview(
+            self.frame_tabela,
+            columns=colunas,
+            show="headings"
+        )
+
+        tabela.heading("caixa_id", text="ID")
+        tabela.heading("data/hora", text="Data/Hora")
+        tabela.heading("funcionario", text="Funcionário")
+        tabela.heading("pagamento", text="Pagamento")
+        tabela.heading("total", text="Total")
+
+        tabela.column("caixa_id", anchor="center", width=60)
+        tabela.column("data/hora", anchor="center", width=200)
+        tabela.column("funcionario", anchor="center", width=180)
+        tabela.column("pagamento", anchor="center", width=120)
+        tabela.column("total", anchor="e", width=100)
+
+        tabela.grid(row=1, column=0, sticky="nsew")
+
+        for widget in tabela.get_children():
+            widget.destroy()
+
+        if vendas is None:
+            vendas = self.main.relatorios.mostrar_vendas()
+
+        for venda in vendas:
+            print(venda)
+            tabela.insert(
+                "",
+                "end",
+                iid=venda[0],
+                values=(
+                    venda[1],
+                    str(venda[2]) + " / " + str(venda[3]),
+                    venda[4],
+                    venda[5],
+                    f"R$ {venda[6]:.2f}"
+                )
+            )
+
+    def carregar_header(self):
+        self.dados = self.main.caixa.retornar_dados_caixa(self.filtro_data.get(), self.usuario.get())
+        if self.dados is None:
+            return
+        
+        frame_header = ctk.CTkFrame(self.frame_tabela, fg_color="#1e1e1e")
+        frame_header.grid(row=0, column=0, sticky="nsew", padx=10, pady=10)
+
+        frame_header.rowconfigure((0,1), weight=1)
+        frame_header.columnconfigure((0,1,2), weight=1)
+
+        caixa_id_label = ctk.CTkLabel(frame_header, fg_color="#1e1e1e", font=("arial", 20), text=f"CAIXA ID: {self.dados[0]}")
+        caixa_id_label.grid(row=0, column=0, sticky="nsew")
+
+        data = self.dados[1]
+        data_label = ctk.CTkLabel(frame_header, fg_color="#1e1e1e", font=("arial", 20), text=f"Data: {data}")
+        data_label.grid(row=0, column=1, sticky="nsew")
+
+        hora_label = ctk.CTkLabel(frame_header, fg_color="#1e1e1e", font=("arial", 20), text=f"Hora: {self.dados[2]}")
+        hora_label.grid(row=0, column=2, sticky="nsew")
+
+        funcionario_label = ctk.CTkLabel(frame_header, fg_color="#1e1e1e", font=("arial", 20), text=f"Funcionario: {self.dados[4]}")
+        funcionario_label.grid(row=1, column=1, sticky="nsew")
+
+        abertura_caixa_label = ctk.CTkLabel(frame_header, fg_color="#1e1e1e", font=("arial", 20), text=f"Abertura de caixa: R${self.dados[5]:.2f}")
+        abertura_caixa_label.grid(row=1, column=2, sticky="nsew")
+
+    def carregar_bottom(self):
+        frame_bottom = ctk.CTkFrame(self.frame_tabela)
+        frame_bottom.grid(row=2, column=0, sticky="nsew", padx=10, pady=10)
+
+        frame_bottom.columnconfigure((0, 1), weight=1)
+
+        self.total_vendas = ctk.StringVar()
+        self.total_vendas.set(self.main.relatorios.total_vendas(self.usuario.get(), self.filtro_data.get()))
+
+        # Linha 0
+        ctk.CTkLabel(frame_bottom, text="Total vendas:").grid(
+            row=0, column=0, sticky="w", padx=10, pady=5
+        )
+        self.lbl_total_vendas = ctk.CTkLabel(frame_bottom, textvariable=self.total_vendas)
+        self.lbl_total_vendas.grid(
+            row=0, column=1, sticky="e", padx=10, pady=5
+        )
+
+        # Linha 1
+        ctk.CTkLabel(frame_bottom, text="Total sangrias:").grid(
+            row=1, column=0, sticky="w", padx=10, pady=5
+        )
+        self.lbl_total_sangrias = ctk.CTkLabel(frame_bottom, text="R$ 0,00")
+        self.lbl_total_sangrias.grid(
+            row=1, column=1, sticky="e", padx=10, pady=5
+        )
+
+        # Linha 2
+        ctk.CTkLabel(frame_bottom, text="Total descontos:").grid(
+            row=2, column=0, sticky="w", padx=10, pady=5
+        )
+        self.lbl_total_descontos = ctk.CTkLabel(frame_bottom, text="R$ 0,00")
+        self.lbl_total_descontos.grid(
+            row=2, column=1, sticky="e", padx=10, pady=5
+        )
+
+        # Linha 3 (valor esperado)
         ctk.CTkLabel(
-            self.tab_caixa,
-            text="Relatório de movimentação de caixa",
-            font=("Arial", 20, "bold")
-        ).grid(row=0, column=0)
+            frame_bottom,
+            text="Valor esperado em caixa:",
+            font=("Arial", 14, "bold")
+        ).grid(
+            row=3, column=0, sticky="w", padx=10, pady=(10, 5)
+        )
+
+        self.lbl_valor_esperado = ctk.CTkLabel(
+            frame_bottom,
+            text="R$ 0,00",
+            font=("Arial", 14, "bold")
+        )
+        self.lbl_valor_esperado.grid(
+            row=3, column=1, sticky="e", padx=10, pady=(10, 5)
+        )
+
 
     def _aba_estoque(self):
         self.tab_estoque.columnconfigure(0, weight=1)
@@ -68,3 +307,23 @@ class RelatoriosMenu(ctk.CTkFrame):
             text="Produtos mais vendidos",
             font=("Arial", 20, "bold")
         ).grid(row=0, column=0)
+
+
+    def mudar_usuario(self, usuario):
+        self.usuario.set(usuario)
+
+    def mudar_forma_pgt(self, forma):
+        self.forma_pgt.set(forma)
+
+class RelatorioController:
+    def __init__(self, tela, relatorios):
+        self.tela = tela
+        self.relatorios = relatorios
+
+    def filtrar_relatorio_caixa(self, **dados):
+        if dados:
+            resultado = self.relatorios.filtrar_vendas(dados.get("usuario"), dados.get("data"), dados.get("forma_pgt"))
+            print(resultado)
+            self.tela.carregar_relatorio_caixa(resultado)
+            self.tela.carregar_header()
+            self.tela.carregar_bottom()

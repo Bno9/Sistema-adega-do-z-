@@ -1,7 +1,7 @@
 from Utils.Recibo import Recibo, ImpressoraBase, ImpressoraTxt, ImpressoraWindows
 from Utils.Resultado import Resultado
 import logging
-from datetime import date
+from datetime import date, datetime
 
 logger = logging.getLogger(__name__)
 
@@ -28,7 +28,18 @@ class Caixa:
         funcionario TEXT NOT NULL,
         valor_inicial REAL NOT NULL,
         status INT NOT NULL
-    )""") #status 1 = aberto 0 = fechado
+    )""") #status 1 = aberto 0 = fechado  #data salva  dd/mm/yy
+        
+    def retornar_dados_caixa(self, data, usuario):
+        self.cur.execute("""
+            SELECT *
+            FROM caixa
+            WHERE funcionario = ?
+            AND data = ?
+        """, (usuario, data))
+        row = self.cur.fetchone()
+        logger.debug("dados caixa=%s", row)
+        return row
         
     def carregar_caixa_aberto(self, funcionario):
         self.cur.execute("""
@@ -50,8 +61,7 @@ class Caixa:
         return False
         
     def conferir_abertura_caixa(self, funcionario):
-        hoje = date.today().isoformat()
-        # testes hoje = "2026-02-03"
+        hoje = date.today().strftime("%d/%m/%Y")
 
         self.cur.execute("""
             SELECT 1
@@ -65,6 +75,7 @@ class Caixa:
         return self.cur.fetchone() is not None #retorna bool
 
     def abrir_caixa(self, data, hora_abertura, funcionario, valor_inicial, hora_fechamento=None, status=1):
+        data = data.strftime("%d/%m/%Y")
         logger.info("dados da abertura de caixa data=%s, hora=%s, usuario=%s", data, hora_abertura, funcionario)
         self.cur.execute("""INSERT INTO caixa (data, hora_abertura, hora_fechamento, funcionario, valor_inicial, status) VALUES(?,?,?,?,?,?)""", 
                          (data, hora_abertura, hora_fechamento, funcionario, valor_inicial, status))
@@ -83,8 +94,8 @@ class Caixa:
             LIMIT 1
         """, (caixa_id,))
         row = self.cur.fetchone()
-        data_abertura = date.fromisoformat(row[0])
-        # teste hoje = date.fromisoformat("2026-02-03")
+        data_abertura_str = row[0]
+        data_abertura = datetime.strptime(data_abertura_str, "%d/%m/%Y").date()
     
         if data_abertura < hoje:
             self.cur.execute("""

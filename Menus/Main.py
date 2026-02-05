@@ -1167,7 +1167,7 @@ root.rowconfigure(0, weight=1)
 
 logger = logging.getLogger(__name__)
 
-logging.basicConfig(filename="logs", level=logging.INFO, format="%(asctime)s [%(levelname)s] %(name)s - %(message)s")
+logging.basicConfig(filename="logs", level=logging.DEBUG, format="%(asctime)s [%(levelname)s] %(name)s - %(message)s")
 
 m = Main(root) #Instanciando a main
 

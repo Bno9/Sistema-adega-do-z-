@@ -35,7 +35,7 @@ class Relatorios:
 
     def registrar_venda(self, produtos, valor_pago, desconto, metodo_pagamento, usuario, caixa_id):
         agora = datetime.now()
-        data = date.today().isoformat()
+        data = date.today().strftime("%d/%m/%Y")
         hora = agora.strftime("%H:%M:%S")
 
         total_venda = 0
@@ -92,3 +92,54 @@ class Relatorios:
         except (sqlite3.IntegrityError, sqlite3.DatabaseError) as e:
             self.con.rollback()
             logger.error("Erro ao registrar venda no banco de dados | erro=%s", e)
+
+    def mostrar_vendas(self, data=None):
+        self.cur.execute("""SELECT id, caixa_id, data, hora, funcionario, tipo, total FROM movimentacao_caixa""")
+        return self.cur.fetchall()
+    
+    def total_vendas(self, usuario, data):
+        self.cur.execute("""SELECT id FROM caixa WHERE funcionario=? AND data=?""", (usuario, data))
+        row = self.cur.fetchone()
+        if not row:
+            return 0  # não teve vendas
+
+        caixa_id = row[0]
+        logger.debug("caixa id=%s ",caixa_id)
+
+        self.cur.execute("""
+    SELECT COALESCE(SUM(i.valor_unitario * i.quantidade), 0)
+    FROM itens_movimentacao i
+    JOIN movimentacao_caixa m ON m.id = i.movimentacao_id
+    WHERE m.caixa_id = ?
+""", (caixa_id,))
+        row = self.cur.fetchone()
+
+        logger.debug("total vendas=%s", row[0])
+
+        return f"R$ {row[0]:.2f}"
+    
+    def filtrar_vendas(self, usuario=None, data=None, forma_pagamento=None):
+        if not data:
+            data = date.today().strftime("%d/%m/%Y")
+
+        sql = """
+            SELECT *
+            FROM movimentacao_caixa
+            WHERE 1=1 AND data = ?
+        """
+        params = [data]
+
+        if data:
+            data_formatada = datetime.strptime(data, "%d/%m/%Y").date().strftime("%d/%m/%Y")
+            params[0] = data_formatada
+
+        if usuario:
+            sql += " AND funcionario = ?"
+            params.append(usuario)
+
+        if forma_pagamento and forma_pagamento != "Tudo":
+            sql += " AND tipo = ?"
+            params.append(forma_pagamento)
+
+        self.cur.execute(sql, params)
+        return self.cur.fetchall()

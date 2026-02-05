@@ -959,7 +959,7 @@ class AberturaCaixa(ctk.CTkToplevel):
             messagebox.showwarning("Erro", "Valor nao pode ser menor que 1")
             return
 
-        self.ref_caixa.abrir_caixa(date.today(), datetime.now(), self.usuario, valor)
+        self.ref_caixa.abrir_caixa(date.today(), datetime.now().strftime("%H:%M:%S"), self.usuario, valor)
         self.destroy()
 
 class CaixaController:
