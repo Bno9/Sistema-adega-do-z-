@@ -95,9 +95,10 @@ class Caixa:
         """, (caixa_id,))
         row = self.cur.fetchone()
         data_abertura_str = row[0]
-        data_abertura = datetime.strptime(data_abertura_str, "%d/%m/%Y").date()
+        data_abertura = datetime.strptime(data_abertura_str, "%d/%m/%Y").date() 
     
         if data_abertura < hoje:
+            logger.debug("Caixa finalizado, hora de fechamento=%s", hora_fechamento)
             self.cur.execute("""
                 UPDATE caixa
                 SET hora_fechamento = ?,

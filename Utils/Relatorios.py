@@ -116,7 +116,27 @@ class Relatorios:
 
         logger.debug("total vendas=%s", row[0])
 
-        return f"R$ {row[0]:.2f}"
+        return row[0]
+    
+    def total_descontos(self, usuario, data):
+        self.cur.execute("""SELECT id FROM caixa WHERE funcionario=? AND data=?""", (usuario, data))
+        row = self.cur.fetchone()
+        if not row:
+            return 0  # não teve vendas
+
+        caixa_id = row[0]
+        logger.debug("caixa id=%s ",caixa_id)
+
+        self.cur.execute("""
+    SELECT COALESCE(SUM(desconto), 0)
+    FROM movimentacao_caixa
+    WHERE caixa_id = ?
+""", (caixa_id,))
+        row = self.cur.fetchone()
+
+        logger.debug("total descontos=%s", row[0])
+
+        return row[0]
     
     def filtrar_vendas(self, usuario=None, data=None, forma_pagamento=None):
         if not data:

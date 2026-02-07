@@ -48,7 +48,6 @@ class ProdutoMenu(ctk.CTkFrame):
 
             self.margem = StringVar()
             self.tipo = StringVar()
-            self.tipo.trace("w", lambda:self.controller.mudar_conteudo(self.tipo.get()))
             self.qtd_fardo = ctk.StringVar()
             self.referencia_codigo_fardo = ctk.StringVar()
 

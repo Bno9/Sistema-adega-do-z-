@@ -99,7 +99,7 @@ class RelatoriosMenu(ctk.CTkFrame):
         self.frame_tabela.grid(row=0, column=1, sticky="nsew", padx=10, pady=10)
 
         self.carregar_header()
-        self.carregar_relatorio_caixa()
+        self.controller.filtrar_relatorio_caixa(data=self.filtro_data.get()) #carrega o caixa com o filtro do dia atual
         self.carregar_bottom()
 
         botao_filtrar = ctk.CTkButton(frame_filtros,
@@ -242,9 +242,15 @@ class RelatoriosMenu(ctk.CTkFrame):
         frame_bottom.columnconfigure((0, 1), weight=1)
 
         self.total_vendas = ctk.StringVar()
-        self.total_vendas.set(self.main.relatorios.total_vendas(self.usuario.get(), self.filtro_data.get()))
+        self.total_vendas.set(f"R$ {self.main.relatorios.total_vendas(self.usuario.get(), self.filtro_data.get()):.2f}")
 
-        # Linha 0
+        self.total_descontos = ctk.StringVar()
+        self.total_descontos.set(f"R$ {self.main.relatorios.total_descontos(self.usuario.get(), self.filtro_data.get()):.2f}")
+
+        self.valor_final_caixa = ctk.StringVar()
+        self.valor_final_caixa.set(f"R$ {self.main.relatorios.total_vendas(self.usuario.get(), self.filtro_data.get()) - self.main.relatorios.total_descontos(self.usuario.get(), self.filtro_data.get()):.2f}")
+
+        # Linha 0 (total vendas)
         ctk.CTkLabel(frame_bottom, text="Total vendas:").grid(
             row=0, column=0, sticky="w", padx=10, pady=5
         )
@@ -253,7 +259,7 @@ class RelatoriosMenu(ctk.CTkFrame):
             row=0, column=1, sticky="e", padx=10, pady=5
         )
 
-        # Linha 1
+        # Linha 1 (sangrias)
         ctk.CTkLabel(frame_bottom, text="Total sangrias:").grid(
             row=1, column=0, sticky="w", padx=10, pady=5
         )
@@ -262,16 +268,16 @@ class RelatoriosMenu(ctk.CTkFrame):
             row=1, column=1, sticky="e", padx=10, pady=5
         )
 
-        # Linha 2
+        # Linha 2 (descontos)
         ctk.CTkLabel(frame_bottom, text="Total descontos:").grid(
             row=2, column=0, sticky="w", padx=10, pady=5
         )
-        self.lbl_total_descontos = ctk.CTkLabel(frame_bottom, text="R$ 0,00")
+        self.lbl_total_descontos = ctk.CTkLabel(frame_bottom, textvariable=self.total_descontos)
         self.lbl_total_descontos.grid(
             row=2, column=1, sticky="e", padx=10, pady=5
         )
 
-        # Linha 3 (valor esperado)
+        # Linha 3 (valor final)
         ctk.CTkLabel(
             frame_bottom,
             text="Valor esperado em caixa:",
@@ -282,7 +288,7 @@ class RelatoriosMenu(ctk.CTkFrame):
 
         self.lbl_valor_esperado = ctk.CTkLabel(
             frame_bottom,
-            text="R$ 0,00",
+            textvariable=self.valor_final_caixa,
             font=("Arial", 14, "bold")
         )
         self.lbl_valor_esperado.grid(
