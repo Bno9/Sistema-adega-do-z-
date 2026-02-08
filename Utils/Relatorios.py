@@ -163,3 +163,8 @@ class Relatorios:
 
         self.cur.execute(sql, params)
         return self.cur.fetchall()
+
+    def retornar_produtos(self, mov_id):
+        self.cur.execute("""SELECT codigo_produto, nome_produto, quantidade, valor_unitario, subtotal FROM itens_movimentacao WHERE movimentacao_id=?""", mov_id)
+        row = self.cur.fetchone()
+        return row

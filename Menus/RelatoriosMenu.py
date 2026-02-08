@@ -80,6 +80,8 @@ class RelatoriosMenu(ctk.CTkFrame):
         usuarios = self.main.get_usuarios()
         forma_pgt = ["Tudo", "Dinheiro", "Cartão", "Pix", "Sangria"]
 
+        self.master.bind("<Return>", lambda e: self.carregar_produto_selecionado())
+
         hoje = date.today().strftime("%d/%m/%Y")
         self.filtro_data.set(hoje)
 
@@ -167,35 +169,34 @@ class RelatoriosMenu(ctk.CTkFrame):
     def carregar_relatorio_caixa(self, vendas=None):
         colunas = ("caixa_id", "data/hora", "funcionario", "pagamento", "total")
 
-        tabela = ttk.Treeview(
+        self.tabela = ttk.Treeview(
             self.frame_tabela,
             columns=colunas,
             show="headings"
         )
 
-        tabela.heading("caixa_id", text="ID")
-        tabela.heading("data/hora", text="Data/Hora")
-        tabela.heading("funcionario", text="Funcionário")
-        tabela.heading("pagamento", text="Pagamento")
-        tabela.heading("total", text="Total")
+        self.tabela.heading("caixa_id", text="ID")
+        self.tabela.heading("data/hora", text="Data/Hora")
+        self.tabela.heading("funcionario", text="Funcionário")
+        self.tabela.heading("pagamento", text="Pagamento")
+        self.tabela.heading("total", text="Total")
 
-        tabela.column("caixa_id", anchor="center", width=60)
-        tabela.column("data/hora", anchor="center", width=200)
-        tabela.column("funcionario", anchor="center", width=180)
-        tabela.column("pagamento", anchor="center", width=120)
-        tabela.column("total", anchor="e", width=100)
+        self.tabela.column("caixa_id", anchor="center", width=60)
+        self.tabela.column("data/hora", anchor="center", width=200)
+        self.tabela.column("funcionario", anchor="center", width=180)
+        self.tabela.column("pagamento", anchor="center", width=120)
+        self.tabela.column("total", anchor="e", width=100)
 
-        tabela.grid(row=1, column=0, sticky="nsew")
+        self.tabela.grid(row=1, column=0, sticky="nsew")
 
-        for widget in tabela.get_children():
+        for widget in self.tabela.get_children():
             widget.destroy()
 
         if vendas is None:
             vendas = self.main.relatorios.mostrar_vendas()
 
         for venda in vendas:
-            print(venda)
-            tabela.insert(
+            self.tabela.insert(
                 "",
                 "end",
                 iid=venda[0],
@@ -241,6 +242,8 @@ class RelatoriosMenu(ctk.CTkFrame):
 
         frame_bottom.columnconfigure((0, 1), weight=1)
 
+        abertura_caixa = self.main.caixa.retornar_dados_caixa(self.filtro_data.get(), self.usuario.get())[5]
+
         self.total_vendas = ctk.StringVar()
         self.total_vendas.set(f"R$ {self.main.relatorios.total_vendas(self.usuario.get(), self.filtro_data.get()):.2f}")
 
@@ -248,7 +251,7 @@ class RelatoriosMenu(ctk.CTkFrame):
         self.total_descontos.set(f"R$ {self.main.relatorios.total_descontos(self.usuario.get(), self.filtro_data.get()):.2f}")
 
         self.valor_final_caixa = ctk.StringVar()
-        self.valor_final_caixa.set(f"R$ {self.main.relatorios.total_vendas(self.usuario.get(), self.filtro_data.get()) - self.main.relatorios.total_descontos(self.usuario.get(), self.filtro_data.get()):.2f}")
+        self.valor_final_caixa.set(f"R$ {self.main.relatorios.total_vendas(self.usuario.get(), self.filtro_data.get()) + abertura_caixa - self.main.relatorios.total_descontos(self.usuario.get(), self.filtro_data.get()):.2f}")
 
         # Linha 0 (total vendas)
         ctk.CTkLabel(frame_bottom, text="Total vendas:").grid(
@@ -288,13 +291,19 @@ class RelatoriosMenu(ctk.CTkFrame):
 
         self.lbl_valor_esperado = ctk.CTkLabel(
             frame_bottom,
-            textvariable=self.valor_final_caixa,
+            textvariable=self.valor_final_caixa, #falta descontar sangria e adicionar abertura de caixa na soma
             font=("Arial", 14, "bold")
         )
         self.lbl_valor_esperado.grid(
             row=3, column=1, sticky="e", padx=10, pady=(10, 5)
         )
 
+    def carregar_produto_selecionado(self):
+        id_movimentacao = self.tabela.selection()
+        if not id_movimentacao:
+            return
+    
+        CarregarProdutos(self.master, self.main.relatorios, id_movimentacao)
 
     def _aba_estoque(self):
         self.tab_estoque.columnconfigure(0, weight=1)
@@ -314,12 +323,83 @@ class RelatoriosMenu(ctk.CTkFrame):
             font=("Arial", 20, "bold")
         ).grid(row=0, column=0)
 
-
     def mudar_usuario(self, usuario):
         self.usuario.set(usuario)
 
     def mudar_forma_pgt(self, forma):
         self.forma_pgt.set(forma)
+
+class CarregarProdutos(ctk.CTkToplevel):
+    def __init__(self, master, relatorios, id_mov):
+        super().__init__(master=master, fg_color="#1e1e1e")
+        self.relatorios = relatorios
+        self.id_mov = id_mov
+        self.produtos = self.relatorios.retornar_produtos(self.id_mov)
+
+        self.title("Movimentação de produtos")
+        self.geometry("800x500")
+        self.resizable(False, False)
+
+        self.transient(master)
+        self.grab_set()
+
+        self._criar_widgets()
+
+    def _criar_widgets(self):
+        frame = ctk.CTkFrame(self)
+        frame.grid(row=0, column=0, padx=20, pady=20, sticky="nsew")
+
+        self.grid_rowconfigure(0, weight=1)
+        self.grid_columnconfigure(0, weight=1)
+
+        frame.grid_columnconfigure(0, weight=1)
+        frame.rowconfigure(0, weight=1)
+
+        colunas = ("codigo", "nome", "quantidade", "valor_unitario", "subtotal")
+
+        self.tabela = ttk.Treeview(
+            frame,
+            columns=colunas,
+            show="headings"
+        )
+
+        self.tabela.heading("codigo", text="Código")
+        self.tabela.heading("nome", text="Nome")
+        self.tabela.heading("quantidade", text="Quantidade")
+        self.tabela.heading("valor_unitario", text="Valor_Unit")
+        self.tabela.heading("subtotal", text="Subtotal")
+
+        self.tabela.column("codigo", anchor="center", width=60)
+        self.tabela.column("nome", anchor="center", width=200)
+        self.tabela.column("quantidade", anchor="center", width=180)
+        self.tabela.column("valor_unitario", anchor="center", width=120)
+        self.tabela.column("subtotal", anchor="e", width=100)
+
+        self.tabela.grid(row=0, column=0, sticky="nsew")
+
+        for widget in self.tabela.get_children():
+            widget.destroy()
+
+        self.tabela.insert(
+            "",
+            "end",
+            values=(
+                self.produtos[0],
+                self.produtos[1],
+                self.produtos[2],
+                self.produtos[3],
+                self.produtos[4]
+            )
+        )
+        btn_cancelar = ctk.CTkButton(
+            frame,
+            text="Fechar",
+            fg_color="red",
+            height=70,
+            command=self.destroy
+        )
+        btn_cancelar.grid(row=1, column=0, sticky="ew", pady=10)
+
 
 class RelatorioController:
     def __init__(self, tela, relatorios):
@@ -329,7 +409,6 @@ class RelatorioController:
     def filtrar_relatorio_caixa(self, **dados):
         if dados:
             resultado = self.relatorios.filtrar_vendas(dados.get("usuario"), dados.get("data"), dados.get("forma_pgt"))
-            print(resultado)
             self.tela.carregar_relatorio_caixa(resultado)
             self.tela.carregar_header()
             self.tela.carregar_bottom()
