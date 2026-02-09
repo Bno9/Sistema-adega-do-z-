@@ -306,13 +306,143 @@ class RelatoriosMenu(ctk.CTkFrame):
         CarregarProdutos(self.master, self.main.relatorios, id_movimentacao)
 
     def _aba_estoque(self):
-        self.tab_estoque.columnconfigure(0, weight=1)
+        self.filtro_data = ctk.StringVar()
+        self.tipo = ctk.StringVar()
+        self.tipo.set("Tudo")
+        self.usuario = ctk.StringVar()
+        self.usuario.set(self.main.usuario_atual)
+        usuarios = self.main.get_usuarios()
+        tipo = ["Tudo", "Registro", "Alteração", "Exclusão"]
 
-        ctk.CTkLabel(
-            self.tab_estoque,
-            text="Relatório de movimentação de estoque",
-            font=("Arial", 20, "bold")
-        ).grid(row=0, column=0)
+        self.master.bind("<Return>", lambda e: self.carregar_movimento_selecionado())
+
+        hoje = date.today().strftime("%d/%m/%Y")
+        self.filtro_data.set(hoje)
+
+        self.tab_estoque.columnconfigure((0,1), weight=1)
+        self.tab_estoque.rowconfigure(0, weight=1)
+
+        frame_filtros = ctk.CTkFrame(self.tab_estoque)
+        frame_filtros.grid(row=0, column=0, sticky="nsew", padx=10, pady=10)
+        frame_filtros.rowconfigure((0,1,2,3), weight=1)
+        frame_filtros.columnconfigure((0,1), weight=1)
+
+
+        self.frame_estoque = ctk.CTkFrame(self.tab_estoque)
+        self.frame_estoque.rowconfigure(1, weight=1)
+        self.frame_estoque.rowconfigure((0, 2), weight=0)
+        self.frame_estoque.columnconfigure(0, weight=1)
+        self.frame_estoque.grid(row=0, column=1, sticky="nsew", padx=10, pady=10)
+
+        self.controller.filtrar_relatorio_estoque(data=self.filtro_data.get()) #carrega o estoque com o filtro do dia atual
+
+        botao_filtrar = ctk.CTkButton(frame_filtros,
+            text="Filtrar", 
+            text_color="black", 
+            corner_radius=40,
+            border_color="black",
+            hover_color="white",
+            border_width=5,
+            width=150,  
+            height=100,
+            fg_color="orange",
+            font=("Arial", 30, "bold"),
+            command=lambda: self.controller.filtrar_relatorio_estoque(usuario=self.usuario.get(), data=self.filtro_data.get(), tipo=self.tipo.get())
+            )
+        botao_filtrar.grid(row=4, column=0, sticky="nsew")
+
+        botao_voltar = ctk.CTkButton(frame_filtros,
+            text="Sair", 
+            text_color="black", 
+            corner_radius=40,
+            border_color="black",
+            hover_color="red",
+            border_width=5,
+            width=150,  
+            height=100,
+            fg_color="orange",
+            font=("Arial", 30, "bold"),
+            command=self.main.voltar_menu_principal
+            )
+        botao_voltar.grid(row=4, column=1, sticky="nsew")
+
+        label_filtros = ctk.CTkLabel(frame_filtros,
+                    text="Filtros",
+                    font=("arial", 60, "bold")
+                    )
+        label_filtros.grid(row=0, column=0, columnspan=2, sticky="n")
+
+        label_data = ctk.CTkLabel(frame_filtros,
+                    text="Digite a data",
+                    font=("arial", 40, "bold")
+                    )
+        label_data.grid(row=0, column=0, sticky="s")
+
+        entry_data = ctk.CTkEntry(frame_filtros, width=300, height=50, textvariable=self.filtro_data, font=("arial",32))
+        entry_data.grid(row=1, column=0, sticky="n")
+
+        label_usuario = ctk.CTkLabel(frame_filtros,
+                    text="Escolha um usuario",
+                    font=("arial", 40, "bold")
+                    )
+        label_usuario.grid(row=0, column=1, sticky="s")
+        combobox_usuario = ctk.CTkComboBox(frame_filtros, height=50, width=300, fg_color="#1e1e1e", font=("arial", 32, "bold"), variable=self.usuario, values=usuarios, command=self.mudar_usuario)
+        combobox_usuario.grid(row=1, column=1, sticky="n")
+
+        label_tipo_mov = ctk.CTkLabel(frame_filtros,
+                    text="Movimentação",
+                    font=("arial", 40, "bold")
+                    )
+        label_tipo_mov.grid(row=2, column=0, sticky="s")
+        combobox_tipo_mov = ctk.CTkComboBox(frame_filtros, height=50, width=300, fg_color="#1e1e1e", font=("arial", 32, "bold"), variable=self.tipo, values=tipo, command=self.mudar_forma_pgt)
+        combobox_tipo_mov.grid(row=3, column=0, sticky="n")
+
+    def carregar_relatorio_estoque(self, registros=None):
+        colunas = ("mov_id", "data/hora", "funcionario", "tipo_movimento")
+
+        self.tabela = ttk.Treeview(
+            self.frame_estoque,
+            columns=colunas,
+            show="headings"
+        )
+
+        self.tabela.heading("mov_id", text="ID")
+        self.tabela.heading("data/hora", text="Data/Hora")
+        self.tabela.heading("funcionario", text="Funcionário")
+        self.tabela.heading("tipo_movimento", text="Movimentação")
+
+        self.tabela.column("mov_id", anchor="center", width=60)
+        self.tabela.column("data/hora", anchor="center", width=200)
+        self.tabela.column("funcionario", anchor="center", width=180)
+        self.tabela.column("tipo_movimento", anchor="center", width=120)
+
+        self.tabela.grid(row=1, column=0, sticky="nsew")
+
+        for widget in self.tabela.get_children():
+            widget.destroy()
+
+        if registros is None:
+            registros = self.main.relatorios.relatorio_estoque.retornar_movimentos()
+
+        for registro in registros:
+            self.tabela.insert(
+                "",
+                "end",
+                values=(
+                    registro[0],
+                    str(registro[1]) + " / " + str(registro[2]),
+                    registro[3],
+                    registro[4]
+                )
+            )
+
+    def carregar_movimento_selecionado(self):
+        id_movimentacao = self.tabela.selection()
+        if not id_movimentacao:
+            return
+    
+        #CarregarMovimentacao(self.master, self.main.relatorios, id_movimentacao)
+
 
     def _aba_produtos(self):
         self.tab_produtos.columnconfigure(0, weight=1)
@@ -414,3 +544,8 @@ class RelatorioController:
             self.tela.carregar_relatorio_caixa(resultado)
             self.tela.carregar_header()
             self.tela.carregar_bottom()
+    
+    def filtrar_relatorio_estoque(self, **dados):
+        if dados:
+            resultado = self.relatorios.relatorio_estoque.filtrar_movimentos(dados.get("usuario"), dados.get("data"), dados.get("tipo"))
+            self.tela.carregar_relatorio_estoque(resultado)

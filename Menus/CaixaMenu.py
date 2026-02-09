@@ -948,9 +948,8 @@ class AberturaCaixa(ctk.CTkToplevel):
         self.protocol("WM_DELETE_WINDOW", self._cancelar_abertura)
     
     def _cancelar_abertura(self):
-        print(self.on_sair)
         self.destroy()
-        self.on_sair()
+        self.on_sair() #volta pro menu se for admin e fecha o app se for funcionario
 
     def _abrir_caixa(self):
         valor = self.entry_valor.get().replace(",", ".")

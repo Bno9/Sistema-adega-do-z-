@@ -53,7 +53,9 @@ class Estoque:
         self.con.commit()
         if self.cur.rowcount>0:
             logger.info("Código=%s removido com sucesso", codigo_produto)
+            #Falta adicionar o registro de alteracao aqui
             return Resultado(True, "Produto removido com sucesso", "sucesso") 
+            
         
         logger.info("Produto com código=%s não encontrado", codigo_produto)
         Resultado(False, "Produto não encontrado", "info")
@@ -83,6 +85,7 @@ class Estoque:
             logger.info("Produto não encontrado")
             return Resultado(False, "Produto não encontrado", "info")
 
+        #falta adicionar o registro de alteração aqui
         logger.info("Produto=%s atualizado com sucesso", dados["nome"])
         return Resultado(True, "Produto atualizado com sucesso", "sucesso")
     

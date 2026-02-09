@@ -201,16 +201,88 @@ class RelatoriosEstoque():
                          )
         #tipo é saída, entrada, alteração
 
-    def registrar_movimento_estoque(self, produto: Produto, tipo, usuario, observacao=None):
+    def registrar_movimento_estoque(self, produto: Produto, tipo, usuario):
         agora = datetime.now()
         data = date.today().strftime("%d/%m/%Y")
         hora = agora.strftime("%H:%M:%S")
 
-        self.cur.execute("""INSERT INTO movimentacao_estoque (data, hora, funcionario, tipo_movimento, produto_codigo_depois, produto_nome_depois, preco_depois, observacao, quantidade_depois) VALUES (?,?,?,?,?,?,?,?,?)""", (data, hora, usuario, tipo, produto.codigo, produto.nome, produto.preco_venda, observacao, produto.quantidade))
+        self.cur.execute("""INSERT INTO movimentacao_estoque (data, hora, funcionario, tipo_movimento, produto_codigo_depois, produto_nome_depois, preco_depois, quantidade_depois) VALUES (?,?,?,?,?,?,?,?)""", (data, hora, usuario, tipo, produto.codigo, produto.nome, produto.preco_venda, produto.quantidade))
+        self.con.commit()
 
-    def registar_alteracao_estoque(self, produto: Produto, tipo, usuario, observacao=None):
+    def registrar_alteracao_estoque(self, produto_antes: Produto, produto_depois: Produto, tipo, usuario, observacao=None):
         agora = datetime.now()
         data = date.today().strftime("%d/%m/%Y")
         hora = agora.strftime("%H:%M:%S")
 
-        self.cur.execute("""UPDATE movimentacao_estoque (data, hora, funcionario, tipo_movimento, produto_codigo_depois, produto_nome_depois, preco_depois, observacao, quantidade_depois) VALUES (?,?,?,?,?,?,?,?,?)""", (data, hora, usuario, tipo, produto.codigo, produto.nome, produto.preco_venda, observacao, produto.quantidade))
+        self.cur.execute("""
+            INSERT INTO movimentacao_estoque (
+                data, hora, funcionario, tipo_movimento,
+
+                produto_codigo_antes,
+                produto_codigo_depois,
+
+                produto_nome_antes,
+                produto_nome_depois,
+
+                preco_antes,
+                preco_depois,
+
+                quantidade_antes,
+                quantidade_depois,
+
+                observacao
+            )
+            VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)
+        """, (
+            data,
+            hora,
+            usuario,
+            tipo,
+
+            produto_antes.codigo,
+            produto_depois.codigo,
+
+            produto_antes.nome,
+            produto_depois.nome,
+
+            produto_antes.preco_venda,
+            produto_depois.preco_venda,
+
+            produto_antes.quantidade,
+            produto_depois.quantidade,
+
+            observacao
+        ))
+
+        self.con.commit()
+
+    def retornar_movimentos(self):
+        self.cur.execute("""SELECT * FROM movimentacao_estoque""")
+        row = self.cur.fetchall()
+        return row
+    
+    def filtrar_movimentos(self, usuario=None, data=None, tipo=None):
+        if not data:
+            data = date.today().strftime("%d/%m/%Y")
+
+        sql = """
+            SELECT *
+            FROM movimentacao_estoque
+            WHERE 1=1 AND data = ?
+        """
+        params = [data]
+
+        if data:
+            data_formatada = datetime.strptime(data, "%d/%m/%Y").date().strftime("%d/%m/%Y")
+            params[0] = data_formatada
+
+        if usuario:
+            sql += " AND funcionario = ?"
+            params.append(usuario)
+
+        if tipo and tipo != "Tudo":
+            sql += " AND tipo_movimento = ?"
+            params.append(tipo)
+
+        self.cur.execute(sql, params)
+        return self.cur.fetchall()
