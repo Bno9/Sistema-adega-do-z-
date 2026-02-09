@@ -5,10 +5,11 @@ import customtkinter as ctk
 
 class ProdutoMenu(ctk.CTkFrame):
 
-        def __init__(self, root, referencia_main):
+        def __init__(self, root, referencia_main, usuario):
             super().__init__(master=root, fg_color="#1e1e1e")
             self.referencia_main = referencia_main
             self.controller = ProdutoController(self, self.referencia_main.estoque)
+            self.usuario = usuario
 
             #entradas
             self.entries = []
@@ -642,7 +643,8 @@ class ProdutoController:
                 "id_produto_pai": self.tela.referencia_codigo_fardo.get()
                     if self.tela.referencia_codigo_fardo.get().strip() else None,
                 "quantidade_fardo": int(self.tela.qtd_fardo.get())
-                    if self.tela.qtd_fardo.get().strip() else None
+                    if self.tela.qtd_fardo.get().strip() else None,
+                "funcionario": self.tela.usuario
             }
             return dados
         except ValueError:

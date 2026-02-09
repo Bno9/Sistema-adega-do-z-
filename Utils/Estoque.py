@@ -6,9 +6,10 @@ logger = logging.getLogger(__name__)
 class Estoque:
     """Classe que armazena os produtos cadastrados e suas informações"""
 
-    def __init__(self, con):
+    def __init__(self, con, relatorios):
         self.con = con
         self.cur = self.con.cursor()
+        self.relatorios = relatorios
         self.cur.execute("""
                         CREATE TABLE IF NOT EXISTS produtos (
                         id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -41,6 +42,8 @@ class Estoque:
         self.cur.execute("INSERT INTO produtos (codigo, nome, tipo, preco_custo, preco_venda, quantidade, id_produto_pai, quantidade_fardo) VALUES (?,?,?,?,?,?,?,?)",
                          (obj_produto.codigo, obj_produto.nome, obj_produto.tipo, obj_produto.preco_custo, obj_produto.preco_venda, obj_produto.quantidade, obj_produto.id_produto_pai, obj_produto.qtd_fardo))
         self.con.commit()
+
+        self.relatorios.relatorio_estoque.registrar_movimento_estoque(obj_produto, "Registro", dados.get("funcionario", "Erro"))
 
         logger.info("Produto=%s criado com sucesso", obj_produto.nome)
         return Resultado(True, f"{obj_produto.nome} criado", "sucesso")

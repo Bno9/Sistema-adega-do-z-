@@ -1,6 +1,7 @@
 from datetime import date, datetime
 import logging
 import sqlite3
+from Utils.Produto import Produto
 
 logger = logging.getLogger(__name__)
 
@@ -8,6 +9,7 @@ class Relatorios:
     def __init__(self, con, main):
         self.con = con
         self.cur = self.con.cursor()
+        self.relatorio_estoque = RelatoriosEstoque(self.con, main)
         
         self.cur.execute("""CREATE TABLE IF NOT EXISTS movimentacao_caixa (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -166,5 +168,49 @@ class Relatorios:
 
     def retornar_produtos(self, mov_id):
         self.cur.execute("""SELECT codigo_produto, nome_produto, quantidade, valor_unitario, subtotal FROM itens_movimentacao WHERE movimentacao_id=?""", mov_id)
-        row = self.cur.fetchone()
+        row = self.cur.fetchall()
         return row
+    
+
+class RelatoriosEstoque():
+    def __init__(self, con, main):
+        self.con = con
+        self.cur = self.con.cursor()
+        self.main = main
+
+        self.cur.execute("""CREATE TABLE IF NOT EXISTS movimentacao_estoque (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            data DATE NOT NULL,
+            hora TIME NOT NULL,
+            funcionario TEXT NOT NULL,
+            tipo_movimento TEXT NOT NULL,
+                         
+            produto_codigo_antes TEXT,
+            produto_codigo_depois TEXT,
+            
+            produto_nome_antes TEXT,
+            produto_nome_depois TEXT,
+                         
+            preco_antes REAL,
+            preco_depois REAL,
+                         
+            observacao TEXT,
+                         
+            quantidade_antes INTEGER,
+            quantidade_depois INTEGER)"""
+                         )
+        #tipo é saída, entrada, alteração
+
+    def registrar_movimento_estoque(self, produto: Produto, tipo, usuario, observacao=None):
+        agora = datetime.now()
+        data = date.today().strftime("%d/%m/%Y")
+        hora = agora.strftime("%H:%M:%S")
+
+        self.cur.execute("""INSERT INTO movimentacao_estoque (data, hora, funcionario, tipo_movimento, produto_codigo_depois, produto_nome_depois, preco_depois, observacao, quantidade_depois) VALUES (?,?,?,?,?,?,?,?,?)""", (data, hora, usuario, tipo, produto.codigo, produto.nome, produto.preco_venda, observacao, produto.quantidade))
+
+    def registar_alteracao_estoque(self, produto: Produto, tipo, usuario, observacao=None):
+        agora = datetime.now()
+        data = date.today().strftime("%d/%m/%Y")
+        hora = agora.strftime("%H:%M:%S")
+
+        self.cur.execute("""UPDATE movimentacao_estoque (data, hora, funcionario, tipo_movimento, produto_codigo_depois, produto_nome_depois, preco_depois, observacao, quantidade_depois) VALUES (?,?,?,?,?,?,?,?,?)""", (data, hora, usuario, tipo, produto.codigo, produto.nome, produto.preco_venda, observacao, produto.quantidade))

@@ -380,17 +380,19 @@ class CarregarProdutos(ctk.CTkToplevel):
         for widget in self.tabela.get_children():
             widget.destroy()
 
-        self.tabela.insert(
-            "",
-            "end",
-            values=(
-                self.produtos[0],
-                self.produtos[1],
-                self.produtos[2],
-                self.produtos[3],
-                self.produtos[4]
+        for produto in self.produtos:
+            self.tabela.insert(
+                "",
+                "end",
+                values=(
+                    produto[0],
+                    produto[1],
+                    produto[2],
+                    f"R$ {produto[3]:.2f}",
+                    f"R$ {produto[4]:.2f}"
+                )
             )
-        )
+
         btn_cancelar = ctk.CTkButton(
             frame,
             text="Fechar",

@@ -19,9 +19,9 @@ class CaixaMenu(ctk.CTkFrame):
             caixa_id = self.referencia_main.caixa.carregar_caixa_aberto(self.usuario)
             self.caixa_id = caixa_id
             if self.referencia_main.caixa.finalizar_caixa(date.today(), self.caixa_id, datetime.now().strftime("%H:%M:%S")):
-                AberturaCaixa(root, ref_caixa=self.referencia_main.caixa, usuario=self.usuario)
+                AberturaCaixa(root, ref_caixa=self.referencia_main.caixa, main=self.referencia_main, usuario=self.usuario, on_sair=self.on_sair)
         else:
-            AberturaCaixa(root, ref_caixa=self.referencia_main.caixa, usuario=self.usuario)
+            AberturaCaixa(root, ref_caixa=self.referencia_main.caixa, main=self.referencia_main, usuario=self.usuario, on_sair=self.on_sair)
         
         #textos
         self.status = StringVar()
@@ -878,11 +878,13 @@ Esc - Voltar""",
             var.set("")
 
 class AberturaCaixa(ctk.CTkToplevel):
-    def __init__(self, root, ref_caixa, usuario):
+    def __init__(self, root, ref_caixa, main, usuario, on_sair):
         super().__init__(master=root)
 
         self.ref_caixa = ref_caixa
         self.usuario = usuario
+        self.main = main
+        self.on_sair = on_sair
 
         self.title("Abertura de Caixa")
         self.geometry("400x300")
@@ -926,6 +928,7 @@ class AberturaCaixa(ctk.CTkToplevel):
             placeholder_text="0,00"
         )
         self.entry_valor.grid(row=3, column=0, columnspan=2, sticky="ew", pady=(5, 20))
+        self.entry_valor.after(1000, self.entry_valor.focus_set)
 
         btn_abrir = ctk.CTkButton(
             frame,
@@ -938,9 +941,16 @@ class AberturaCaixa(ctk.CTkToplevel):
             frame,
             text="Cancelar",
             fg_color="gray",
-            command=self.destroy
+            command=self._cancelar_abertura
         )
         btn_cancelar.grid(row=4, column=1, sticky="ew", padx=(5, 0))
+
+        self.protocol("WM_DELETE_WINDOW", self._cancelar_abertura)
+    
+    def _cancelar_abertura(self):
+        print(self.on_sair)
+        self.destroy()
+        self.on_sair()
 
     def _abrir_caixa(self):
         valor = self.entry_valor.get().replace(",", ".")

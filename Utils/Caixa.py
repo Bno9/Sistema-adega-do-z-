@@ -14,7 +14,6 @@ class Caixa:
         self.estoque = estoque
         self.con = con
         self.cur = self.con.cursor()
-        self.vendas = []
         self.itens_no_carrinho = []
         self.itens_passados = []
         self.desconto = 0
@@ -145,19 +144,12 @@ class Caixa:
         
         for item, quantidade in self.itens_no_carrinho:
             self.estoque.dar_baixa(item.codigo, quantidade)
+        
 
-        self.vendas.append({
-            "itens": [{"codigo": p.codigo, "nome": p.nome, "quantidade": q, "total_produto": p.preco_venda*q} for p, q in self.itens_no_carrinho],
-            "total": total,
-            "recebido": valor_pago,
-            "metodo pagamento": metodo_pagamento,
-            "troco": troco
-        })
+        self.relatorios.registrar_venda(self.itens_no_carrinho, valor_pago, self.desconto, metodo_pagamento, usuario, caixa_id)
 
         linhas = self.recibo.gerar_linhas(self.itens_no_carrinho, valor_pago, self.desconto)
-        self.relatorios.registrar_venda(self.itens_no_carrinho, valor_pago, self.desconto, metodo_pagamento, usuario, caixa_id)
-        itens = [self.vendas] #arrumar depois
-        logger.info("Compra finalizada | valor_total=%s | metodo_pagamento=%s | troco=%s | itens=%s", total, metodo_pagamento, troco, itens)
+        logger.info("Compra finalizada | valor_total=%s | metodo_pagamento=%s | troco=%s | itens=", total, metodo_pagamento, troco) #adicionar os itens depois
 
         self.itens_no_carrinho.clear()
         self.alternar_compra()

@@ -51,7 +51,7 @@ class Main:
         self.configs = self.carregar_config()
         self.configs_window = None
         self.relatorios = Relatorios(self.con, self)
-        self.estoque = Estoque(self.con)
+        self.estoque = Estoque(self.con, self.relatorios)
         self.caixa = Caixa(self.estoque, self.iniciar_impressora, self.con, self.relatorios)
         self.despesa = Despesas(self.con)
         self.root.bind_all("<Key>", self.tecla_apertada)
@@ -98,7 +98,7 @@ class Main:
 
     def abrir_produto(self):
         self.trocar_frame(
-            ProdutoMenu(self.root, self)
+            ProdutoMenu(self.root, self, self.usuario_atual)
         )
 
     def abrir_despesa(self):
@@ -250,7 +250,7 @@ class Main:
 
         self.con.close()
         #self.status.set("Finalizando programa...") #mudar aqui depois (talvez pra uma messagebox do ttk)
-        self.root.after(2000, self.root.quit)
+        self.root.after(1000, self.root.quit)
         logger.info("Programa finalizado")
         return
 
