@@ -242,7 +242,9 @@ class RelatoriosMenu(ctk.CTkFrame):
 
         frame_bottom.columnconfigure((0, 1), weight=1)
 
-        abertura_caixa = self.main.caixa.retornar_dados_caixa(self.filtro_data.get(), self.usuario.get())[5]
+        abertura_caixa = self.main.caixa.retornar_dados_caixa(self.filtro_data.get(), self.usuario.get())
+
+        print(abertura_caixa)
 
         self.total_vendas = ctk.StringVar()
         self.total_vendas.set(f"R$ {self.main.relatorios.total_vendas(self.usuario.get(), self.filtro_data.get()):.2f}")
@@ -251,7 +253,12 @@ class RelatoriosMenu(ctk.CTkFrame):
         self.total_descontos.set(f"R$ {self.main.relatorios.total_descontos(self.usuario.get(), self.filtro_data.get()):.2f}")
 
         self.valor_final_caixa = ctk.StringVar()
-        self.valor_final_caixa.set(f"R$ {self.main.relatorios.total_vendas(self.usuario.get(), self.filtro_data.get()) + abertura_caixa - self.main.relatorios.total_descontos(self.usuario.get(), self.filtro_data.get()):.2f}")
+        if abertura_caixa is not None:
+            abertura_caixa = abertura_caixa[5]
+            print(abertura_caixa)
+            self.valor_final_caixa.set(f"R$ {self.main.relatorios.total_vendas(self.usuario.get(), self.filtro_data.get()) + abertura_caixa - self.main.relatorios.total_descontos(self.usuario.get(), self.filtro_data.get()):.2f}")
+        else:
+            self.valor_final_caixa.set(f"R$: 0,00")
 
         # Linha 0 (total vendas)
         ctk.CTkLabel(frame_bottom, text="Total vendas:").grid(
