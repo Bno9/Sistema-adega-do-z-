@@ -28,6 +28,9 @@ class Estoque:
     def criar_produto(self, **dados: dict):
         obj_produto = Produto(**dados) #Cria o objeto produto usando a classe Produto
 
+        if obj_produto.preco_custo <= 0 or obj_produto.preco_venda <= 0:
+            return Resultado(False, "Preço nao pode ser igual ou menor que 0", "aviso", 2000)
+
         if self.conferir_se_existe_no_estoque(obj_produto.codigo):
             return True
         
@@ -80,6 +83,10 @@ class Estoque:
         except ValueError:
             logger.error("Erro ao gerar dados para atualizar produto")
             return None
+        
+
+        if dados["preco_custo"] <= 0 or dados["preco_venda"] <= 0:
+            return Resultado(False, "Preço nao pode ser igual ou menor que 0", "aviso", 2000)
         
         codigo = dados.pop("codigo")
 

@@ -152,7 +152,7 @@ class RelatoriosMenu(ctk.CTkFrame):
                     font=("arial", 40, "bold")
                     )
         label_usuario.grid(row=0, column=1, sticky="s")
-        combobox_usuario = ctk.CTkComboBox(frame_filtros, height=50, width=300, fg_color="#1e1e1e", font=("arial", 32, "bold"), variable=self.usuario, values=usuarios, command=self.mudar_usuario)
+        combobox_usuario = ctk.CTkComboBox(frame_filtros, state="readonly", height=50, width=300, fg_color="#1e1e1e", font=("arial", 32, "bold"), variable=self.usuario, values=usuarios, command=self.mudar_usuario)
         combobox_usuario.grid(row=1, column=1, sticky="n")
 
         label_pgt = ctk.CTkLabel(frame_filtros,
@@ -160,7 +160,7 @@ class RelatoriosMenu(ctk.CTkFrame):
                     font=("arial", 40, "bold")
                     )
         label_pgt.grid(row=2, column=0, sticky="s")
-        combobox_pgt = ctk.CTkComboBox(frame_filtros, height=50, width=300, fg_color="#1e1e1e", font=("arial", 32, "bold"), variable=self.forma_pgt, values=forma_pgt, command=self.mudar_forma_pgt)
+        combobox_pgt = ctk.CTkComboBox(frame_filtros, state="readonly", height=50, width=300, fg_color="#1e1e1e", font=("arial", 32, "bold"), variable=self.forma_pgt, values=forma_pgt, command=self.mudar_forma_pgt)
         combobox_pgt.grid(row=3, column=0, sticky="n")
 
 
@@ -397,7 +397,7 @@ class RelatoriosMenu(ctk.CTkFrame):
                     font=("arial", 40, "bold")
                     )
         label_usuario.grid(row=0, column=1, sticky="s")
-        combobox_usuario = ctk.CTkComboBox(frame_filtros, height=50, width=300, fg_color="#1e1e1e", font=("arial", 32, "bold"), variable=self.usuario_estoque, values=usuarios, command=self.mudar_usuario)
+        combobox_usuario = ctk.CTkComboBox(frame_filtros, state="readonly", height=50, width=300, fg_color="#1e1e1e", font=("arial", 32, "bold"), variable=self.usuario_estoque, values=usuarios, command=self.mudar_usuario)
         combobox_usuario.grid(row=1, column=1, sticky="n")
 
         label_tipo_mov = ctk.CTkLabel(frame_filtros,
@@ -405,7 +405,7 @@ class RelatoriosMenu(ctk.CTkFrame):
                     font=("arial", 40, "bold")
                     )
         label_tipo_mov.grid(row=2, column=0, sticky="s")
-        combobox_tipo_mov = ctk.CTkComboBox(frame_filtros, height=50, width=300, fg_color="#1e1e1e", font=("arial", 32, "bold"), variable=self.tipo, values=tipo, command=self.mudar_forma_pgt)
+        combobox_tipo_mov = ctk.CTkComboBox(frame_filtros, state="readonly", height=50, width=300, fg_color="#1e1e1e", font=("arial", 32, "bold"), variable=self.tipo, values=tipo, command=self.mudar_forma_pgt)
         combobox_tipo_mov.grid(row=3, column=0, sticky="n")
 
     def carregar_relatorio_estoque(self, registros=None):
