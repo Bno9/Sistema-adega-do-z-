@@ -568,7 +568,8 @@ class ProdutoController:
             return resultado
 
     def deletar(self, codigo, modal):
-        resultado = self.ref_estoque.remover_produto(codigo)
+        dados = self.coletar_dados_produto()
+        resultado = self.ref_estoque.remover_produto(**dados)
         self.limpar_variaveis()
         self.tela.carregar_estoque()
         modal.destroy()

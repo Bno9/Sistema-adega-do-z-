@@ -80,8 +80,6 @@ class RelatoriosMenu(ctk.CTkFrame):
         usuarios = self.main.get_usuarios()
         forma_pgt = ["Tudo", "Dinheiro", "Cartão", "Pix", "Sangria"]
 
-        self.master.bind("<Return>", lambda e: self.carregar_produto_selecionado())
-
         hoje = date.today().strftime("%d/%m/%Y")
         self.filtro_data.set(hoje)
 
@@ -189,6 +187,8 @@ class RelatoriosMenu(ctk.CTkFrame):
 
         self.tabela.grid(row=1, column=0, sticky="nsew")
 
+        self.tabela.bind("<Return>", lambda e: self.carregar_produto_selecionado())
+
         for widget in self.tabela.get_children():
             widget.destroy()
 
@@ -244,8 +244,6 @@ class RelatoriosMenu(ctk.CTkFrame):
 
         abertura_caixa = self.main.caixa.retornar_dados_caixa(self.filtro_data.get(), self.usuario.get())
 
-        print(abertura_caixa)
-
         self.total_vendas = ctk.StringVar()
         self.total_vendas.set(f"R$ {self.main.relatorios.total_vendas(self.usuario.get(), self.filtro_data.get()):.2f}")
 
@@ -255,7 +253,6 @@ class RelatoriosMenu(ctk.CTkFrame):
         self.valor_final_caixa = ctk.StringVar()
         if abertura_caixa is not None:
             abertura_caixa = abertura_caixa[5]
-            print(abertura_caixa)
             self.valor_final_caixa.set(f"R$ {self.main.relatorios.total_vendas(self.usuario.get(), self.filtro_data.get()) + abertura_caixa - self.main.relatorios.total_descontos(self.usuario.get(), self.filtro_data.get()):.2f}")
         else:
             self.valor_final_caixa.set(f"R$: 0,00")
@@ -307,24 +304,23 @@ class RelatoriosMenu(ctk.CTkFrame):
 
     def carregar_produto_selecionado(self):
         id_movimentacao = self.tabela.selection()
+        print(id_movimentacao)
         if not id_movimentacao:
             return
     
         CarregarProdutos(self.master, self.main.relatorios, id_movimentacao)
 
     def _aba_estoque(self):
-        self.filtro_data = ctk.StringVar()
+        self.filtro_data_estoque = ctk.StringVar()
         self.tipo = ctk.StringVar()
         self.tipo.set("Tudo")
-        self.usuario = ctk.StringVar()
-        self.usuario.set(self.main.usuario_atual)
+        self.usuario_estoque = ctk.StringVar()
+        self.usuario_estoque.set(self.main.usuario_atual)
         usuarios = self.main.get_usuarios()
         tipo = ["Tudo", "Registro", "Alteração", "Exclusão"]
 
-        self.master.bind("<Return>", lambda e: self.carregar_movimento_selecionado())
-
         hoje = date.today().strftime("%d/%m/%Y")
-        self.filtro_data.set(hoje)
+        self.filtro_data_estoque.set(hoje)
 
         self.tab_estoque.columnconfigure((0,1), weight=1)
         self.tab_estoque.rowconfigure(0, weight=1)
@@ -341,7 +337,7 @@ class RelatoriosMenu(ctk.CTkFrame):
         self.frame_estoque.columnconfigure(0, weight=1)
         self.frame_estoque.grid(row=0, column=1, sticky="nsew", padx=10, pady=10)
 
-        self.controller.filtrar_relatorio_estoque(data=self.filtro_data.get()) #carrega o estoque com o filtro do dia atual
+        self.controller.filtrar_relatorio_estoque(data=self.filtro_data_estoque.get()) #carrega o estoque com o filtro do dia atual
 
         botao_filtrar = ctk.CTkButton(frame_filtros,
             text="Filtrar", 
@@ -354,7 +350,7 @@ class RelatoriosMenu(ctk.CTkFrame):
             height=100,
             fg_color="orange",
             font=("Arial", 30, "bold"),
-            command=lambda: self.controller.filtrar_relatorio_estoque(usuario=self.usuario.get(), data=self.filtro_data.get(), tipo=self.tipo.get())
+            command=lambda: self.controller.filtrar_relatorio_estoque(usuario=self.usuario_estoque.get(), data=self.filtro_data_estoque.get(), tipo=self.tipo.get())
             )
         botao_filtrar.grid(row=4, column=0, sticky="nsew")
 
@@ -385,7 +381,7 @@ class RelatoriosMenu(ctk.CTkFrame):
                     )
         label_data.grid(row=0, column=0, sticky="s")
 
-        entry_data = ctk.CTkEntry(frame_filtros, width=300, height=50, textvariable=self.filtro_data, font=("arial",32))
+        entry_data = ctk.CTkEntry(frame_filtros, width=300, height=50, textvariable=self.filtro_data_estoque, font=("arial",32))
         entry_data.grid(row=1, column=0, sticky="n")
 
         label_usuario = ctk.CTkLabel(frame_filtros,
@@ -393,7 +389,7 @@ class RelatoriosMenu(ctk.CTkFrame):
                     font=("arial", 40, "bold")
                     )
         label_usuario.grid(row=0, column=1, sticky="s")
-        combobox_usuario = ctk.CTkComboBox(frame_filtros, height=50, width=300, fg_color="#1e1e1e", font=("arial", 32, "bold"), variable=self.usuario, values=usuarios, command=self.mudar_usuario)
+        combobox_usuario = ctk.CTkComboBox(frame_filtros, height=50, width=300, fg_color="#1e1e1e", font=("arial", 32, "bold"), variable=self.usuario_estoque, values=usuarios, command=self.mudar_usuario)
         combobox_usuario.grid(row=1, column=1, sticky="n")
 
         label_tipo_mov = ctk.CTkLabel(frame_filtros,
@@ -407,34 +403,37 @@ class RelatoriosMenu(ctk.CTkFrame):
     def carregar_relatorio_estoque(self, registros=None):
         colunas = ("mov_id", "data/hora", "funcionario", "tipo_movimento")
 
-        self.tabela = ttk.Treeview(
+        self.tabela_estoque = ttk.Treeview(
             self.frame_estoque,
             columns=colunas,
             show="headings"
         )
 
-        self.tabela.heading("mov_id", text="ID")
-        self.tabela.heading("data/hora", text="Data/Hora")
-        self.tabela.heading("funcionario", text="Funcionário")
-        self.tabela.heading("tipo_movimento", text="Movimentação")
+        self.tabela_estoque.heading("mov_id", text="ID")
+        self.tabela_estoque.heading("data/hora", text="Data/Hora")
+        self.tabela_estoque.heading("funcionario", text="Funcionário")
+        self.tabela_estoque.heading("tipo_movimento", text="Movimentação")
 
-        self.tabela.column("mov_id", anchor="center", width=60)
-        self.tabela.column("data/hora", anchor="center", width=200)
-        self.tabela.column("funcionario", anchor="center", width=180)
-        self.tabela.column("tipo_movimento", anchor="center", width=120)
+        self.tabela_estoque.column("mov_id", anchor="center", width=60)
+        self.tabela_estoque.column("data/hora", anchor="center", width=200)
+        self.tabela_estoque.column("funcionario", anchor="center", width=180)
+        self.tabela_estoque.column("tipo_movimento", anchor="center", width=120)
 
-        self.tabela.grid(row=1, column=0, sticky="nsew")
+        self.tabela_estoque.grid(row=1, column=0, sticky="nsew")
 
-        for widget in self.tabela.get_children():
+        self.tabela_estoque.bind("<Return>", lambda e: self.carregar_movimento_selecionado())
+
+        for widget in self.tabela_estoque.get_children():
             widget.destroy()
 
         if registros is None:
             registros = self.main.relatorios.relatorio_estoque.retornar_movimentos()
 
         for registro in registros:
-            self.tabela.insert(
+            self.tabela_estoque.insert(
                 "",
                 "end",
+                iid=registro[0],
                 values=(
                     registro[0],
                     str(registro[1]) + " / " + str(registro[2]),
@@ -444,11 +443,12 @@ class RelatoriosMenu(ctk.CTkFrame):
             )
 
     def carregar_movimento_selecionado(self):
-        id_movimentacao = self.tabela.selection()
+        id_movimentacao = self.tabela_estoque.selection()
+        print(id_movimentacao)
         if not id_movimentacao:
             return
     
-        #CarregarMovimentacao(self.master, self.main.relatorios, id_movimentacao)
+        CarregarMovimentacao(self.master, self.main.relatorios, id_movimentacao)
 
 
     def _aba_produtos(self):
@@ -465,6 +465,70 @@ class RelatoriosMenu(ctk.CTkFrame):
 
     def mudar_forma_pgt(self, forma):
         self.forma_pgt.set(forma)
+
+class CarregarMovimentacao(ctk.CTkToplevel):
+    def __init__(self, master, relatorios, id_mov):
+        super().__init__(master=master, fg_color="#1e1e1e")
+
+        self.mov = relatorios.relatorio_estoque.retornar_movimentacao_estoque(id_mov)
+
+        self.title("Movimentação de Estoque")
+        self.geometry("800x400")
+        self.resizable(False, False)
+
+        self.transient(master)
+        self.grab_set()
+
+        self._criar_widgets()
+
+    def _criar_widgets(self):
+        container = ctk.CTkFrame(self)
+        container.pack(fill="both", expand=True, padx=20, pady=20)
+
+        frame_dados = ctk.CTkFrame(container)
+        frame_dados.pack(fill="both", expand=True)
+
+        frame_antes = ctk.CTkFrame(frame_dados)
+        frame_depois = ctk.CTkFrame(frame_dados)
+
+        frame_antes.pack(side="left", expand=True, fill="both", padx=10)
+        frame_depois.pack(side="right", expand=True, fill="both", padx=10)
+
+        ctk.CTkLabel(frame_antes, text="ANTES", font=("Arial", 20, "bold")).pack(pady=10)
+        ctk.CTkLabel(frame_depois, text="DEPOIS", font=("Arial", 20, "bold")).pack(pady=10)
+
+        # ANTES
+        self._label(frame_antes, "Código", self.mov[5])
+        self._label(frame_antes, "Nome", self.mov[7])
+        self._label(frame_antes, "Preço", self._fmt_money(self.mov[9]))
+        self._label(frame_antes, "Quantidade", self.mov[12])
+
+        # DEPOIS
+        self._label(frame_depois, "Código", self.mov[6])
+        self._label(frame_depois, "Nome", self.mov[8])
+        self._label(frame_depois, "Preço", self._fmt_money(self.mov[10]))
+        self._label(frame_depois, "Quantidade", self.mov[13])
+
+        ctk.CTkButton(
+            container,
+            text="Fechar",
+            fg_color="red",
+            height=50,
+            command=self.destroy
+        ).pack(fill="x", pady=20)
+
+    def _label(self, frame, titulo, valor):
+        ctk.CTkLabel(
+            frame,
+            text=f"{titulo}: {valor if valor is not None else '-'}",
+            font=("Arial", 20)
+        ).pack(anchor="w", padx=10, pady=4)
+
+    def _fmt_money(self, valor):
+        if valor is None:
+            return "-"
+        return f"R$ {valor:.2f}"
+
 
 class CarregarProdutos(ctk.CTkToplevel):
     def __init__(self, master, relatorios, id_mov):

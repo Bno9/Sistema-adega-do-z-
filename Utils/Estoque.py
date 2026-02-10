@@ -1,4 +1,5 @@
 from Utils.Resultado import Resultado
+from Utils.Produto import Produto
 import logging
 
 logger = logging.getLogger(__name__)
@@ -25,8 +26,6 @@ class Estoque:
         self.con.commit()
 
     def criar_produto(self, **dados: dict):
-        from Utils.Produto import Produto
-
         obj_produto = Produto(**dados) #Cria o objeto produto usando a classe Produto
 
         if self.conferir_se_existe_no_estoque(obj_produto.codigo):
@@ -48,25 +47,48 @@ class Estoque:
         logger.info("Produto=%s criado com sucesso", obj_produto.nome)
         return Resultado(True, f"{obj_produto.nome} criado", "sucesso")
       
-    def remover_produto(self, codigo_produto):
-        self.cur.execute("DELETE FROM produtos WHERE codigo=?", (codigo_produto,))
+    def remover_produto(self, **dados):
+        obj_produto_antes = Produto(**dados)
+        obj_produto_depois = Produto()
+        self.cur.execute("DELETE FROM produtos WHERE codigo=?", (dados.get("codigo"),))
         self.con.commit()
         if self.cur.rowcount>0:
-            logger.info("Código=%s removido com sucesso", codigo_produto)
-            #Falta adicionar o registro de alteracao aqui
+            logger.info("Código=%s removido com sucesso", dados.get("codigo"))
+            self.relatorios.relatorio_estoque.registrar_alteracao_estoque(obj_produto_antes, obj_produto_depois, "Exclusao", dados.get("funcionario", "Erro"))
             return Resultado(True, "Produto removido com sucesso", "sucesso") 
             
         
-        logger.info("Produto com código=%s não encontrado", codigo_produto)
+        logger.info("Produto com código=%s não encontrado", dados.get("codigo"))
         Resultado(False, "Produto não encontrado", "info")
     
     def atualizar_produto(self, dados: dict):
+        self.cur.execute("SELECT * FROM produtos WHERE codigo=?", (dados.get("codigo"),))
+        row = self.cur.fetchone()
+        try:
+            dados_antigo = {
+                "codigo": row[1],
+                "nome": row[2],
+                "tipo": row[3],
+                "preco_custo": row[4],
+                "preco_venda": row[5],
+                "quantidade": row[6],
+                "id_produto_pai": row[7]
+                    if row[7] else None,
+                "quantidade_fardo": row[8]
+                    if row[8] else None
+            }
+        except ValueError:
+            logger.error("Erro ao gerar dados para atualizar produto")
+            return None
+        
         codigo = dados.pop("codigo")
 
         campos = []
         valores = []
 
         for campo, valor in dados.items():
+            if campo == "funcionario":
+                continue
             campos.append(f"{campo} = ?")
             valores.append(valor)
 
@@ -85,7 +107,10 @@ class Estoque:
             logger.info("Produto não encontrado")
             return Resultado(False, "Produto não encontrado", "info")
 
-        #falta adicionar o registro de alteração aqui
+        dados["codigo"] = dados_antigo.get("codigo")
+        produto_novo = Produto(**dados)
+        produto_antigo = Produto(**dados_antigo)
+        self.relatorios.relatorio_estoque.registrar_alteracao_estoque(produto_antigo, produto_novo, "Alteraçao", dados.get("funcionario", "Erro"))     
         logger.info("Produto=%s atualizado com sucesso", dados["nome"])
         return Resultado(True, "Produto atualizado com sucesso", "sucesso")
     

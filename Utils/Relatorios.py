@@ -232,7 +232,7 @@ class RelatoriosEstoque():
 
                 observacao
             )
-            VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)
+            VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)
         """, (
             data,
             hora,
@@ -255,11 +255,6 @@ class RelatoriosEstoque():
         ))
 
         self.con.commit()
-
-    def retornar_movimentos(self):
-        self.cur.execute("""SELECT * FROM movimentacao_estoque""")
-        row = self.cur.fetchall()
-        return row
     
     def filtrar_movimentos(self, usuario=None, data=None, tipo=None):
         if not data:
@@ -286,3 +281,8 @@ class RelatoriosEstoque():
 
         self.cur.execute(sql, params)
         return self.cur.fetchall()
+
+    def retornar_movimentacao_estoque(self, id):
+        self.cur.execute("""SELECT * FROM movimentacao_estoque WHERE id=?""", id)
+        row = self.cur.fetchone()
+        return row

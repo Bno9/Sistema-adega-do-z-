@@ -802,7 +802,7 @@ class MenuPrincipal(ctk.CTkFrame):
         #botao Relatórios
         ctk.CTkButton(
             botoes_frame, 
-            text="Relatórios (W.I.P)", 
+            text="Relatórios", 
             text_color="black", 
             corner_radius=40,
             border_color="black",
