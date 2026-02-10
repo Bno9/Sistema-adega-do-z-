@@ -556,7 +556,8 @@ class ProdutoController:
         if produto:
             from Utils.Resultado import Resultado
             return Resultado(False, "Já existe um produto com esse código", "erro")
-        resultado = self.ref_estoque.alterar_codigo(codigo_atual, codigo_novo)
+        dados = self.coletar_dados_produto()
+        resultado = self.ref_estoque.alterar_codigo(codigo_atual, codigo_novo, dados)
         self.limpar_variaveis()
         self.tela.carregar_estoque()
         modal.destroy()

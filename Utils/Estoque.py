@@ -110,16 +110,20 @@ class Estoque:
         dados["codigo"] = dados_antigo.get("codigo")
         produto_novo = Produto(**dados)
         produto_antigo = Produto(**dados_antigo)
-        self.relatorios.relatorio_estoque.registrar_alteracao_estoque(produto_antigo, produto_novo, "Alteraçao", dados.get("funcionario", "Erro"))     
+        self.relatorios.relatorio_estoque.registrar_alteracao_estoque(produto_antigo, produto_novo, "Alteraçao_dados", dados.get("funcionario", "Erro"))     
         logger.info("Produto=%s atualizado com sucesso", dados["nome"])
         return Resultado(True, "Produto atualizado com sucesso", "sucesso")
     
-    def alterar_codigo(self, codigo_atual, codigo_novo):
+    def alterar_codigo(self, codigo_atual, codigo_novo, dados):
         self.cur.execute(f"SELECT * FROM produtos WHERE codigo=?", (codigo_atual,))
         produto = self.cur.fetchone()
         id_produto = produto[0]
         self.cur.execute(f"UPDATE produtos SET codigo=? WHERE id=?", (codigo_novo, id_produto))
         self.con.commit()
+        produto_antigo = Produto(**dados)
+        dados["codigo"] = codigo_novo
+        produto_novo = Produto(**dados)
+        self.relatorios.relatorio_estoque.registrar_alteracao_estoque(produto_antigo, produto_novo, "Alteraçao_codigo", dados.get("funcionario", "Erro"))
         logger.info("Código do produto=%s alterado para código=%s | Código_antigo=%s", produto[2], codigo_novo, codigo_atual)
 
     def conferir_se_existe_no_estoque(self, codigo_produto):
