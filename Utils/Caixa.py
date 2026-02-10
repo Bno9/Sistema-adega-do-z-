@@ -83,33 +83,35 @@ class Caixa:
         self.caixa_atual_id = self.cur.lastrowid
         logger.info("Caixa aberto | Usuario=%s | Valor=%S | ID do caixa=%s", funcionario, valor_inicial, self.caixa_atual_id)
         return self.caixa_atual_id
-            
-    def finalizar_caixa(self, hoje, caixa_id, hora_fechamento):
+        
+    def finalizar_caixa(self, caixa_id, hora_fechamento):
         self.cur.execute("""
             SELECT data
             FROM caixa
-            WHERE id = ?
-            AND status = 1
-            LIMIT 1
+            WHERE id = ? AND status = 1
         """, (caixa_id,))
         row = self.cur.fetchone()
-        data_abertura_str = row[0]
-        data_abertura = datetime.strptime(data_abertura_str, "%d/%m/%Y").date() 
-    
-        if data_abertura < hoje:
-            logger.debug("Caixa finalizado, hora de fechamento=%s", hora_fechamento)
-            self.cur.execute("""
-                UPDATE caixa
-                SET hora_fechamento = ?,
-                    status = 0
-                WHERE id = ?
-                AND status = 1
-            """, (hora_fechamento, caixa_id))
-            self.con.commit()
-            logger.info("Caixa finalizado | ID_caixa=%s, hora_fechamento=%s", caixa_id, hora_fechamento)
-            return True
+
+        if not row:
+            return False
+
+        data_abertura = datetime.strptime(row[0], "%d/%m/%Y").date()
+
+        if data_abertura >= date.today():
+            return False  # ainda não pode fechar
+
         
-        return False
+        logger.debug("Caixa finalizado, hora de fechamento=%s", hora_fechamento)
+        self.cur.execute("""
+            UPDATE caixa
+            SET status = 0,
+                hora_fechamento = ?
+            WHERE id = ?
+        """, (hora_fechamento, caixa_id))
+
+        self.con.commit()
+        logger.info("Caixa finalizado | ID_caixa=%s, hora_fechamento=%s", caixa_id, hora_fechamento)
+        return self.cur.rowcount > 0
 
     def carrinho_caixa(self, produto, quantidade=1):
         """Método que adiciona os produtos a tela de soma do caixa"""

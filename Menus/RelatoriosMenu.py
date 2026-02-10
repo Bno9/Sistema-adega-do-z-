@@ -170,7 +170,8 @@ class RelatoriosMenu(ctk.CTkFrame):
         self.tabela = ttk.Treeview(
             self.frame_tabela,
             columns=colunas,
-            show="headings"
+            show="headings",
+            style="Custom.Treeview"
         )
 
         self.tabela.heading("caixa_id", text="ID")
@@ -227,8 +228,11 @@ class RelatoriosMenu(ctk.CTkFrame):
         data_label = ctk.CTkLabel(frame_header, fg_color="#1e1e1e", font=("arial", 20), text=f"Data: {data}")
         data_label.grid(row=0, column=1, sticky="nsew")
 
-        hora_label = ctk.CTkLabel(frame_header, fg_color="#1e1e1e", font=("arial", 20), text=f"Hora: {self.dados[2]}")
-        hora_label.grid(row=0, column=2, sticky="nsew")
+        hora_abertura_label = ctk.CTkLabel(frame_header, fg_color="#1e1e1e", font=("arial", 20), text=f"Hora abertura: {self.dados[2]}")
+        hora_abertura_label.grid(row=0, column=2, sticky="nsew")
+
+        hora_fechamento_label = ctk.CTkLabel(frame_header, fg_color="#1e1e1e", font=("arial", 20), text=f"Hora fechamento: {self.dados[3]}")
+        hora_fechamento_label.grid(row=1, column=0, sticky="nsew")
 
         funcionario_label = ctk.CTkLabel(frame_header, fg_color="#1e1e1e", font=("arial", 20), text=f"Funcionario: {self.dados[4]}")
         funcionario_label.grid(row=1, column=1, sticky="nsew")
@@ -250,10 +254,14 @@ class RelatoriosMenu(ctk.CTkFrame):
         self.total_descontos = ctk.StringVar()
         self.total_descontos.set(f"R$ {self.main.relatorios.total_descontos(self.usuario.get(), self.filtro_data.get()):.2f}")
 
+        self.total_sangrias = ctk.StringVar()
+        self.total_sangrias.set(f"R$ {self.main.relatorios.total_sangrias(self.usuario.get(), self.filtro_data.get()):.2f}")
+
+
         self.valor_final_caixa = ctk.StringVar()
         if abertura_caixa is not None:
             abertura_caixa = abertura_caixa[5]
-            self.valor_final_caixa.set(f"R$ {self.main.relatorios.total_vendas(self.usuario.get(), self.filtro_data.get()) + abertura_caixa - self.main.relatorios.total_descontos(self.usuario.get(), self.filtro_data.get()):.2f}")
+            self.valor_final_caixa.set(f"R$ {self.main.relatorios.total_vendas(self.usuario.get(), self.filtro_data.get()) + abertura_caixa - self.main.relatorios.total_sangrias(self.usuario.get(), self.filtro_data.get()) - self.main.relatorios.total_descontos(self.usuario.get(), self.filtro_data.get()):.2f}")
         else:
             self.valor_final_caixa.set(f"R$: 0,00")
 
@@ -270,7 +278,7 @@ class RelatoriosMenu(ctk.CTkFrame):
         ctk.CTkLabel(frame_bottom, text="Total sangrias:").grid(
             row=1, column=0, sticky="w", padx=10, pady=5
         )
-        self.lbl_total_sangrias = ctk.CTkLabel(frame_bottom, text="R$ 0,00")
+        self.lbl_total_sangrias = ctk.CTkLabel(frame_bottom, textvariable=self.total_sangrias)
         self.lbl_total_sangrias.grid(
             row=1, column=1, sticky="e", padx=10, pady=5
         )
@@ -406,7 +414,8 @@ class RelatoriosMenu(ctk.CTkFrame):
         self.tabela_estoque = ttk.Treeview(
             self.frame_estoque,
             columns=colunas,
-            show="headings"
+            show="headings",
+            style="Custom.Treeview"
         )
 
         self.tabela_estoque.heading("mov_id", text="ID")
@@ -450,15 +459,61 @@ class RelatoriosMenu(ctk.CTkFrame):
     
         CarregarMovimentacao(self.master, self.main.relatorios, id_movimentacao)
 
-
     def _aba_produtos(self):
         self.tab_produtos.columnconfigure(0, weight=1)
+        self.tab_produtos.rowconfigure(1, weight=1)
 
-        ctk.CTkLabel(
+        titulo = ctk.CTkLabel(
             self.tab_produtos,
             text="Produtos mais vendidos",
-            font=("Arial", 20, "bold")
-        ).grid(row=0, column=0)
+            font=("Arial", 40, "bold")
+        )
+        titulo.grid(row=0, column=0, pady=20)
+
+        frame_tabela = ctk.CTkFrame(self.tab_produtos)
+        frame_tabela.grid(row=1, column=0, sticky="nsew", padx=20, pady=20)
+
+        frame_tabela.columnconfigure(0, weight=1)
+        frame_tabela.rowconfigure(0, weight=1)
+
+        colunas = ("codigo", "nome", "quantidade")
+
+        self.tabela_produtos = ttk.Treeview(
+            frame_tabela,
+            columns=colunas,
+            show="headings",
+            style="Custom.Treeview"
+        )
+
+        self.tabela_produtos.heading("codigo", text="Código")
+        self.tabela_produtos.heading("nome", text="Produto")
+        self.tabela_produtos.heading("quantidade", text="Qtd. Vendida")
+
+        self.tabela_produtos.column("codigo", anchor="center", width=120)
+        self.tabela_produtos.column("nome", anchor="center", width=400)
+        self.tabela_produtos.column("quantidade", anchor="center", width=150)
+
+        self.tabela_produtos.grid(row=0, column=0, sticky="nsew")
+
+        # carrega os dados
+        self.carregar_produtos_mais_vendidos()
+
+    def carregar_produtos_mais_vendidos(self):
+        for item in self.tabela_produtos.get_children():
+            self.tabela_produtos.delete(item)
+
+        produtos = self.main.relatorios.mais_vendidos()
+
+        for produto in produtos:
+            self.tabela_produtos.insert(
+                "",
+                "end",
+                values=(
+                    produto[0],  # codigo
+                    produto[1],  # nome
+                    produto[2]   # quantidade
+                )
+            )
 
     def mudar_usuario(self, usuario):
         self.usuario.set(usuario)

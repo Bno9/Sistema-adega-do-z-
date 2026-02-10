@@ -2,6 +2,7 @@ from datetime import date, datetime
 import logging
 import sqlite3
 from Utils.Produto import Produto
+from Utils.Resultado import Resultado
 
 logger = logging.getLogger(__name__)
 
@@ -95,6 +96,34 @@ class Relatorios:
             self.con.rollback()
             logger.error("Erro ao registrar venda no banco de dados | erro=%s", e)
 
+    def registrar_sangria(self, caixa_id, valor, observacao, usuario):
+        agora = datetime.now()
+        data = date.today().strftime("%d/%m/%Y")
+        hora = agora.strftime("%H:%M:%S")
+
+        try:
+            self.cur.execute("""
+                INSERT INTO movimentacao_caixa
+                (caixa_id, data, hora, funcionario, tipo, total, valor_pago, desconto, troco)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+            """, (
+                caixa_id,
+                data,
+                hora,
+                usuario,
+                "SANGRIA",
+                valor,
+                valor,
+                0,
+                0
+            ))
+            self.con.commit()
+            return Resultado(True, "Sangria lançada", "sucesso", 2000)
+
+        except Exception as e:
+            self.con.rollback()
+            raise e
+
     def mostrar_vendas(self, data=None):
         self.cur.execute("""SELECT id, caixa_id, data, hora, funcionario, tipo, total FROM movimentacao_caixa""")
         return self.cur.fetchall()
@@ -140,6 +169,26 @@ class Relatorios:
 
         return row[0]
     
+    def total_sangrias(self, usuario, data):
+        self.cur.execute("""SELECT id FROM caixa WHERE funcionario=? AND data=?""", (usuario, data))
+        row = self.cur.fetchone()
+        if not row:
+            return 0  # não teve vendas
+
+        caixa_id = row[0]
+        logger.debug("caixa id=%s ",caixa_id)
+
+        self.cur.execute("""
+    SELECT COALESCE(SUM(total), 0)
+    FROM movimentacao_caixa
+    WHERE caixa_id = ? AND tipo = ?
+""", (caixa_id, "SANGRIA"))
+        row = self.cur.fetchone()
+
+        logger.debug("total sangrias=%s", row[0])
+
+        return row[0]
+    
     def filtrar_vendas(self, usuario=None, data=None, forma_pagamento=None):
         if not data:
             data = date.today().strftime("%d/%m/%Y")
@@ -170,6 +219,23 @@ class Relatorios:
         self.cur.execute("""SELECT codigo_produto, nome_produto, quantidade, valor_unitario, subtotal FROM itens_movimentacao WHERE movimentacao_id=?""", mov_id)
         row = self.cur.fetchall()
         return row
+    
+    def mais_vendidos(self):
+        self.cur.execute("""
+    SELECT
+        i.codigo_produto,
+        i.nome_produto,
+        SUM(i.quantidade) AS total_vendido
+    FROM itens_movimentacao i
+    JOIN movimentacao_caixa m ON m.id = i.movimentacao_id
+    GROUP BY i.codigo_produto, i.nome_produto
+    ORDER BY total_vendido DESC
+    LIMIT 10
+""")
+
+        rows = self.cur.fetchall()
+        return rows
+
     
 
 class RelatoriosEstoque():
