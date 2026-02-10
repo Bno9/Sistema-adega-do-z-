@@ -734,9 +734,10 @@ Esc - Voltar""",
             if resultado and hasattr(resultado, "sucesso") and not resultado.sucesso:
                 self.status_sangria.set(resultado.mensagem)
                 return
-
-            modal.destroy()
-            self.entry_codigo.focus_set()
+            else:
+                self.setar_status(resultado=resultado, label_status=self.label_status, var_status=self.status)
+                modal.destroy()
+                self.entry_codigo.focus_set()
 
         ctk.CTkButton(
             frame_botoes,
