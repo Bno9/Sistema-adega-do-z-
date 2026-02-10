@@ -1,0 +1,4 @@
+customtkinter
+Pillow
+bcrypt
+pywin32; platform_system == "Windows"
