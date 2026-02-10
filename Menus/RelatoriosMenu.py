@@ -251,10 +251,14 @@ class RelatoriosMenu(ctk.CTkFrame):
         self.total_descontos = ctk.StringVar()
         self.total_descontos.set(f"R$ {self.main.relatorios.total_descontos(self.usuario.get(), self.filtro_data.get()):.2f}")
 
+        self.total_sangrias = ctk.StringVar()
+        self.total_sangrias.set(f"R$ {self.main.relatorios.total_sangrias(self.usuario.get(), self.filtro_data.get()):.2f}")
+
+
         self.valor_final_caixa = ctk.StringVar()
         if abertura_caixa is not None:
             abertura_caixa = abertura_caixa[5]
-            self.valor_final_caixa.set(f"R$ {self.main.relatorios.total_vendas(self.usuario.get(), self.filtro_data.get()) + abertura_caixa - self.main.relatorios.total_descontos(self.usuario.get(), self.filtro_data.get()):.2f}")
+            self.valor_final_caixa.set(f"R$ {self.main.relatorios.total_vendas(self.usuario.get(), self.filtro_data.get()) + abertura_caixa - self.main.relatorios.total_sangrias(self.usuario.get(), self.filtro_data.get()) - self.main.relatorios.total_descontos(self.usuario.get(), self.filtro_data.get()):.2f}")
         else:
             self.valor_final_caixa.set(f"R$: 0,00")
 
@@ -271,7 +275,7 @@ class RelatoriosMenu(ctk.CTkFrame):
         ctk.CTkLabel(frame_bottom, text="Total sangrias:").grid(
             row=1, column=0, sticky="w", padx=10, pady=5
         )
-        self.lbl_total_sangrias = ctk.CTkLabel(frame_bottom, text="R$ 0,00")
+        self.lbl_total_sangrias = ctk.CTkLabel(frame_bottom, textvariable=self.total_sangrias)
         self.lbl_total_sangrias.grid(
             row=1, column=1, sticky="e", padx=10, pady=5
         )

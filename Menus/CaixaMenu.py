@@ -247,6 +247,8 @@ class CaixaMenu(ctk.CTkFrame):
         label_atalhos = ctk.CTkLabel(frame_atalho,
                                         text="""
 F1 - Finalizar compra
+F2 - Lançar sangria
+F3 - Pesquisar produto
 F5 - Aplicar desconto
 F7 - Alternar compra
 F10 - Consultar produto
@@ -261,7 +263,8 @@ Esc - Voltar""",
         
         #binds
         self.master.bind("<F1>", self.atalho_finalizar)
-        self.master.bind("<F2>", lambda e: self.pesquisar_produto())
+        self.master.bind("<F2>", self.modal_sangria)
+        self.master.bind("<F3>", lambda e: self.pesquisar_produto())
         self.master.bind("<F5>", self.frame_desconto)
         self.master.bind("<F7>", self.mudar_compra)
         self.master.bind("<F10>", self.consultar_produto)
@@ -634,6 +637,131 @@ Esc - Voltar""",
         self.entry_codigo.focus_set()
         self.master.bind("<Escape>", self.voltar)
 
+    def modal_sangria(self, event=None):
+        self.valor_sangria = StringVar()
+        self.obs_sangria = StringVar()
+        self.status_sangria = StringVar()
+
+        modal = ctk.CTkToplevel(self.frame_conteudo, fg_color="#1e1e1e")
+        modal.title("Sangria")
+        modal.geometry("400x350")
+        modal.resizable(False, False)
+
+        modal.transient(self.frame_conteudo)
+        modal.grab_set()
+        modal.focus_force()
+
+        modal.columnconfigure(0, weight=1)
+        modal.rowconfigure((0, 1, 2, 3), weight=1)
+
+        # título
+        ctk.CTkLabel(
+            modal,
+            text="Sangria de Caixa",
+            font=("Arial", 28, "bold"),
+            text_color="white"
+        ).grid(row=0, column=0, pady=10)
+
+        # status
+        ctk.CTkLabel(
+            modal,
+            textvariable=self.status_sangria,
+            font=("Arial", 16, "bold"),
+            text_color="red"
+        ).grid(row=1, column=0)
+
+        # valor
+        frame_valor = ctk.CTkFrame(modal, fg_color="#1e1e1e")
+        frame_valor.grid(row=2, column=0, pady=10)
+
+        ctk.CTkLabel(
+            frame_valor,
+            text="Valor da sangria",
+            font=("Arial", 20, "bold"),
+            text_color="white"
+        ).grid(row=0, column=0, pady=5)
+
+        entry_valor = ctk.CTkEntry(
+            frame_valor,
+            textvariable=self.valor_sangria,
+            width=200,
+            font=("Arial", 18, "bold")
+        )
+        entry_valor.grid(row=1, column=0)
+        entry_valor.focus_set()
+        # observação
+
+        frame_obs = ctk.CTkFrame(modal, fg_color="#1e1e1e")
+        frame_obs.grid(row=3, column=0, pady=10)
+
+        ctk.CTkLabel(
+            frame_obs,
+            text="Observação",
+            font=("Arial", 18, "bold"),
+            text_color="white"
+        ).grid(row=0, column=0, pady=5)
+
+        entry_obs = ctk.CTkEntry(
+            frame_obs,
+            textvariable=self.obs_sangria,
+            width=300,
+            font=("Arial", 16)
+        )
+        entry_obs.grid(row=1, column=0)
+
+        # botões
+        frame_botoes = ctk.CTkFrame(modal, fg_color="#1e1e1e")
+        frame_botoes.grid(row=4, column=0, pady=15)
+
+        def confirmar():
+            try:
+                valor = float(self.valor_sangria.get().replace(",", "."))
+            except ValueError:
+                self.status_sangria.set("Valor inválido")
+                return
+
+            if valor <= 0:
+                self.status_sangria.set("Valor deve ser maior que zero")
+                return
+
+            resultado = self.referencia_main.relatorios.registrar_sangria(
+                valor=valor,
+                observacao=self.obs_sangria.get(),
+                usuario=self.usuario,
+                caixa_id=self.caixa_id
+            )
+
+            if resultado and hasattr(resultado, "sucesso") and not resultado.sucesso:
+                self.status_sangria.set(resultado.mensagem)
+                return
+
+            modal.destroy()
+            self.entry_codigo.focus_set()
+
+        ctk.CTkButton(
+            frame_botoes,
+            text="Confirmar",
+            width=140,
+            fg_color="orange",
+            text_color="black",
+            font=("Arial", 16, "bold"),
+            command=confirmar
+        ).grid(row=0, column=0, padx=10)
+
+        ctk.CTkButton(
+            frame_botoes,
+            text="Cancelar",
+            width=140,
+            fg_color="gray",
+            text_color="black",
+            font=("Arial", 16, "bold"),
+            command=lambda: modal.destroy()
+        ).grid(row=0, column=1, padx=10)
+
+        modal.bind("<Return>", lambda e: confirmar())
+        modal.bind("<Escape>", lambda e: modal.destroy())
+
+
     def pesquisar_produto(self):
         self.filtro_nome = StringVar()
         self.filtro_nome.trace("w", self.filtrar)
@@ -987,7 +1115,6 @@ class CaixaController:
 
         item_id = selecionado[0] #id do item
         valores = self.tela.tabela.item(item_id, "values") #valores do item
-
         self.ref_caixa.excluir_do_carrinho(int(valores[0]))
         self.tela.atualizar_tabela()
         self.tela.atualizar_total()
