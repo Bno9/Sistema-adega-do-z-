@@ -228,8 +228,11 @@ class RelatoriosMenu(ctk.CTkFrame):
         data_label = ctk.CTkLabel(frame_header, fg_color="#1e1e1e", font=("arial", 20), text=f"Data: {data}")
         data_label.grid(row=0, column=1, sticky="nsew")
 
-        hora_label = ctk.CTkLabel(frame_header, fg_color="#1e1e1e", font=("arial", 20), text=f"Hora: {self.dados[2]}")
-        hora_label.grid(row=0, column=2, sticky="nsew")
+        hora_abertura_label = ctk.CTkLabel(frame_header, fg_color="#1e1e1e", font=("arial", 20), text=f"Hora abertura: {self.dados[2]}")
+        hora_abertura_label.grid(row=0, column=2, sticky="nsew")
+
+        hora_fechamento_label = ctk.CTkLabel(frame_header, fg_color="#1e1e1e", font=("arial", 20), text=f"Hora fechamento: {self.dados[3]}")
+        hora_fechamento_label.grid(row=1, column=0, sticky="nsew")
 
         funcionario_label = ctk.CTkLabel(frame_header, fg_color="#1e1e1e", font=("arial", 20), text=f"Funcionario: {self.dados[4]}")
         funcionario_label.grid(row=1, column=1, sticky="nsew")

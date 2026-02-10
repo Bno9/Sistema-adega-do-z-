@@ -18,7 +18,7 @@ class CaixaMenu(ctk.CTkFrame):
         if caixa_aberto:
             caixa_id = self.referencia_main.caixa.carregar_caixa_aberto(self.usuario)
             self.caixa_id = caixa_id
-            if self.referencia_main.caixa.finalizar_caixa(date.today(), self.caixa_id, datetime.now().strftime("%H:%M:%S")):
+            if self.referencia_main.caixa.finalizar_caixa(self.caixa_id, datetime.now().strftime("%H:%M:%S")):
                 AberturaCaixa(root, ref_caixa=self.referencia_main.caixa, main=self.referencia_main, usuario=self.usuario, on_sair=self.on_sair)
         else:
             AberturaCaixa(root, ref_caixa=self.referencia_main.caixa, main=self.referencia_main, usuario=self.usuario, on_sair=self.on_sair)
