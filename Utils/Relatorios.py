@@ -171,6 +171,23 @@ class Relatorios:
         row = self.cur.fetchall()
         return row
     
+    def mais_vendidos(self):
+        self.cur.execute("""
+    SELECT
+        i.codigo_produto,
+        i.nome_produto,
+        SUM(i.quantidade) AS total_vendido
+    FROM itens_movimentacao i
+    JOIN movimentacao_caixa m ON m.id = i.movimentacao_id
+    GROUP BY i.codigo_produto, i.nome_produto
+    ORDER BY total_vendido DESC
+    LIMIT 10
+""")
+
+        rows = self.cur.fetchall()
+        return rows
+
+    
 
 class RelatoriosEstoque():
     def __init__(self, con, main):
