@@ -5,10 +5,11 @@ import customtkinter as ctk
 
 class ProdutoMenu(ctk.CTkFrame):
 
-        def __init__(self, root, referencia_main):
+        def __init__(self, root, referencia_main, usuario):
             super().__init__(master=root, fg_color="#1e1e1e")
             self.referencia_main = referencia_main
             self.controller = ProdutoController(self, self.referencia_main.estoque)
+            self.usuario = usuario
 
             #entradas
             self.entries = []
@@ -48,7 +49,6 @@ class ProdutoMenu(ctk.CTkFrame):
 
             self.margem = StringVar()
             self.tipo = StringVar()
-            self.tipo.trace("w", lambda:self.controller.mudar_conteudo(self.tipo.get()))
             self.qtd_fardo = ctk.StringVar()
             self.referencia_codigo_fardo = ctk.StringVar()
 
@@ -556,7 +556,8 @@ class ProdutoController:
         if produto:
             from Utils.Resultado import Resultado
             return Resultado(False, "Já existe um produto com esse código", "erro")
-        resultado = self.ref_estoque.alterar_codigo(codigo_atual, codigo_novo)
+        dados = self.coletar_dados_produto()
+        resultado = self.ref_estoque.alterar_codigo(codigo_atual, codigo_novo, dados)
         self.limpar_variaveis()
         self.tela.carregar_estoque()
         modal.destroy()
@@ -568,7 +569,8 @@ class ProdutoController:
             return resultado
 
     def deletar(self, codigo, modal):
-        resultado = self.ref_estoque.remover_produto(codigo)
+        dados = self.coletar_dados_produto()
+        resultado = self.ref_estoque.remover_produto(**dados)
         self.limpar_variaveis()
         self.tela.carregar_estoque()
         modal.destroy()
@@ -643,7 +645,8 @@ class ProdutoController:
                 "id_produto_pai": self.tela.referencia_codigo_fardo.get()
                     if self.tela.referencia_codigo_fardo.get().strip() else None,
                 "quantidade_fardo": int(self.tela.qtd_fardo.get())
-                    if self.tela.qtd_fardo.get().strip() else None
+                    if self.tela.qtd_fardo.get().strip() else None,
+                "funcionario": self.tela.usuario
             }
             return dados
         except ValueError:

@@ -15,6 +15,7 @@ import sqlite3
 from Utils.Caixa import Caixa
 from Utils.Estoque import Estoque
 from Utils.Despesa import Despesas
+from Utils.Relatorios import Relatorios
 from Utils.Recibo import Recibo, ImpressoraBase, ImpressoraTxt, ImpressoraWindows
 from Utils.Produto import Produto
 from RelatoriosMenu import RelatoriosMenu
@@ -43,13 +44,15 @@ class Main:
         """
         self.root = root
         self.con = sqlite3.connect("adega.db", timeout=10, check_same_thread=False)
+        self.con.execute("PRAGMA foreign_keys = ON")
         self.impressora =  None
         self.frame_atual = None
         self.pode_usar_atalho = True
         self.configs = self.carregar_config()
         self.configs_window = None
-        self.estoque = Estoque(self.con)
-        self.caixa = Caixa(self.estoque, self.iniciar_impressora, self.con)
+        self.relatorios = Relatorios(self.con, self)
+        self.estoque = Estoque(self.con, self.relatorios)
+        self.caixa = Caixa(self.estoque, self.iniciar_impressora, self.con, self.relatorios)
         self.despesa = Despesas(self.con)
         self.root.bind_all("<Key>", self.tecla_apertada)
         self.usuario = Usuario(self.con)
@@ -95,7 +98,7 @@ class Main:
 
     def abrir_produto(self):
         self.trocar_frame(
-            ProdutoMenu(self.root, self)
+            ProdutoMenu(self.root, self, self.usuario_atual)
         )
 
     def abrir_despesa(self):
@@ -247,7 +250,7 @@ class Main:
 
         self.con.close()
         #self.status.set("Finalizando programa...") #mudar aqui depois (talvez pra uma messagebox do ttk)
-        self.root.after(2000, self.root.quit)
+        self.root.after(1000, self.root.quit)
         logger.info("Programa finalizado")
         return
 
@@ -799,7 +802,7 @@ class MenuPrincipal(ctk.CTkFrame):
         #botao Relatórios
         ctk.CTkButton(
             botoes_frame, 
-            text="Relatórios (W.I.P)", 
+            text="Relatórios", 
             text_color="black", 
             corner_radius=40,
             border_color="black",
@@ -1164,7 +1167,7 @@ root.rowconfigure(0, weight=1)
 
 logger = logging.getLogger(__name__)
 
-logging.basicConfig(filename="logs", level=logging.INFO, format="%(asctime)s [%(levelname)s] %(name)s - %(message)s")
+logging.basicConfig(filename="logs", level=logging.DEBUG, format="%(asctime)s [%(levelname)s] %(name)s - %(message)s")
 
 m = Main(root) #Instanciando a main
 

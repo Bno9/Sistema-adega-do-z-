@@ -1,20 +1,115 @@
 from Utils.Recibo import Recibo, ImpressoraBase, ImpressoraTxt, ImpressoraWindows
 from Utils.Resultado import Resultado
 import logging
+from datetime import date, datetime
 
 logger = logging.getLogger(__name__)
 
 class Caixa:
     
-    def __init__(self, estoque, iniciar_impressora, con):
+    def __init__(self, estoque, iniciar_impressora, con, relatorios):
         self.recibo = Recibo()
+        self.relatorios = relatorios
         self.iniciar_impressora = iniciar_impressora
         self.estoque = estoque
         self.con = con
-        self.vendas = []
+        self.cur = self.con.cursor()
         self.itens_no_carrinho = []
         self.itens_passados = []
         self.desconto = 0
+        self.caixa_atual_id = None
+
+        self.cur.execute("""CREATE TABLE IF NOT EXISTS caixa (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        data DATE NOT NULL,
+        hora_abertura TIME NOT NULL,
+        hora_fechamento TIME,
+        funcionario TEXT NOT NULL,
+        valor_inicial REAL NOT NULL,
+        status INT NOT NULL
+    )""") #status 1 = aberto 0 = fechado  #data salva  dd/mm/yy
+        
+    def retornar_dados_caixa(self, data, usuario):
+        self.cur.execute("""
+            SELECT *
+            FROM caixa
+            WHERE funcionario = ?
+            AND data = ?
+        """, (usuario, data))
+        row = self.cur.fetchone()
+        logger.debug("dados caixa=%s", row)
+        return row
+        
+    def carregar_caixa_aberto(self, funcionario):
+        self.cur.execute("""
+            SELECT id
+            FROM caixa
+            WHERE funcionario = ?
+            AND status = 1
+            ORDER BY data DESC, hora_abertura DESC
+            LIMIT 1
+        """, (funcionario,))
+
+        row = self.cur.fetchone()
+
+        if row:
+            self.caixa_atual_id = row[0]
+            logger.info("caixa carregado | usuario=%s ID do caixa=%s", funcionario, self.caixa_atual_id)
+            return self.caixa_atual_id
+
+        return False
+        
+    def conferir_abertura_caixa(self, funcionario):
+        hoje = date.today().strftime("%d/%m/%Y")
+
+        self.cur.execute("""
+            SELECT 1
+            FROM caixa
+            WHERE funcionario = ?
+            AND data = ?
+            AND status = 1
+            LIMIT 1
+        """, (funcionario, hoje))
+
+        return self.cur.fetchone() is not None #retorna bool
+
+    def abrir_caixa(self, data, hora_abertura, funcionario, valor_inicial, hora_fechamento=None, status=1):
+        data = data.strftime("%d/%m/%Y")
+        logger.info("dados da abertura de caixa data=%s, hora=%s, usuario=%s", data, hora_abertura, funcionario)
+        self.cur.execute("""INSERT INTO caixa (data, hora_abertura, hora_fechamento, funcionario, valor_inicial, status) VALUES(?,?,?,?,?,?)""", 
+                         (data, hora_abertura, hora_fechamento, funcionario, valor_inicial, status))
+        self.con.commit()
+        
+        self.caixa_atual_id = self.cur.lastrowid
+        logger.info("Caixa aberto | Usuario=%s | Valor=%S | ID do caixa=%s", funcionario, valor_inicial, self.caixa_atual_id)
+        return self.caixa_atual_id
+            
+    def finalizar_caixa(self, hoje, caixa_id, hora_fechamento):
+        self.cur.execute("""
+            SELECT data
+            FROM caixa
+            WHERE id = ?
+            AND status = 1
+            LIMIT 1
+        """, (caixa_id,))
+        row = self.cur.fetchone()
+        data_abertura_str = row[0]
+        data_abertura = datetime.strptime(data_abertura_str, "%d/%m/%Y").date() 
+    
+        if data_abertura < hoje:
+            logger.debug("Caixa finalizado, hora de fechamento=%s", hora_fechamento)
+            self.cur.execute("""
+                UPDATE caixa
+                SET hora_fechamento = ?,
+                    status = 0
+                WHERE id = ?
+                AND status = 1
+            """, (hora_fechamento, caixa_id))
+            self.con.commit()
+            logger.info("Caixa finalizado | ID_caixa=%s, hora_fechamento=%s", caixa_id, hora_fechamento)
+            return True
+        
+        return False
 
     def carrinho_caixa(self, produto, quantidade=1):
         """Método que adiciona os produtos a tela de soma do caixa"""
@@ -27,7 +122,7 @@ class Caixa:
 
         self.itens_no_carrinho.append((produto, quantidade))
 
-    def finalizar_compra(self, valor_pago, metodo_pagamento):
+    def finalizar_compra(self, valor_pago, metodo_pagamento, usuario, caixa_id):
         """Método que finaliza a compra e da baixa no estoque"""
         
         if not self.itens_no_carrinho:
@@ -49,18 +144,12 @@ class Caixa:
         
         for item, quantidade in self.itens_no_carrinho:
             self.estoque.dar_baixa(item.codigo, quantidade)
+        
 
-        self.vendas.append({
-            "itens": [{"codigo": p.codigo, "nome": p.nome, "quantidade": q, "total_produto": p.preco_venda*q} for p, q in self.itens_no_carrinho],
-            "total": total,
-            "recebido": valor_pago,
-            "metodo pagamento": metodo_pagamento,
-            "troco": troco
-        })
+        self.relatorios.registrar_venda(self.itens_no_carrinho, valor_pago, self.desconto, metodo_pagamento, usuario, caixa_id)
 
         linhas = self.recibo.gerar_linhas(self.itens_no_carrinho, valor_pago, self.desconto)
-        itens = [self.vendas] #arrumar depois
-        logger.info("Compra finalizada | valor_total=%s | metodo_pagamento=%s | troco=%s | itens=%s", total, metodo_pagamento, troco, itens)
+        logger.info("Compra finalizada | valor_total=%s | metodo_pagamento=%s | troco=%s | itens=", total, metodo_pagamento, troco) #adicionar os itens depois
 
         self.itens_no_carrinho.clear()
         self.alternar_compra()
@@ -68,30 +157,6 @@ class Caixa:
         return Resultado(True, "", "info", 1000000, {"total": total,
                                                                               "troco": troco,
                                                                               "linhas": linhas})
-    
-    def aplicar_desconto(self, valor):
-        if valor == "":
-            self.desconto = 0
-            return self.total()
-        
-        try:
-            valor = int(valor)
-        except ValueError:
-            logger.error("Valor de desconto inválido | valor=%s", valor)
-            return Resultado(False, "Digite apenas numeros", "erro", 5000)
-        
-        if valor < 0:
-            self.desconto = 0
-            return self.total()
-        
-        self.desconto = valor
-        
-        if self.total() < 0:
-            self.desconto = 0
-            logger.warning("Entrada de desconto maior que valor total dos produtos")
-            return Resultado(False, "Desconto maior que o valor dos produtos", "erro", 5000)
-        
-        return self.total()
         
     def imprimir_recibo(self, linhas, cpf=None):
         logger.debug("Cpf=%s recebido", cpf)
@@ -101,27 +166,6 @@ class Caixa:
         
         impressora = self.iniciar_impressora() #se for trocar aqui pra testes nao posso esquecer que o quee ta vindo no self é uma função, então vai dar nonetype caso eu nao mude a main
         impressora.imprimir(linhas)
-
-    def total(self):
-        if self.desconto:
-            logger.debug("Desconto aplicado | Desconto=%s", self.desconto)
-            return sum(item.preco_venda * quantidade for item, quantidade in self.itens_no_carrinho) - self.desconto
-    
-        return sum(item.preco_venda * quantidade for item, quantidade in self.itens_no_carrinho)
-    
-    def listar_vendas(self): 
-        for venda in self.vendas:
-            print(venda) #ainda incompleto (pretendo fazer uma tela ou um bloco de notas para exibir essa parte)
-
-    def validar_compra_existente(self):
-        """Método para validar se existe uma compra pendente
-        Usado para evitar o fechamento do caixa sem finalizar a compra"""
-
-        if self.itens_no_carrinho:
-            logger.warning("Tentativa de fechar caixa com produto registrado")
-            return Resultado(False, "Finalize a compra primeiro", "info")
-
-        return Resultado(True)
 
     def validar_codigo(self, codigo_produto, quantidade=1):
         if quantidade < 0:
@@ -167,6 +211,47 @@ class Caixa:
                 logger.info("Produto excluido do carrinho | nome=%s", item.nome)
                 return True
             
+    def total(self):
+        if self.desconto:
+            logger.debug("Desconto aplicado | Desconto=%s", self.desconto)
+            return sum(item.preco_venda * quantidade for item, quantidade in self.itens_no_carrinho) - self.desconto
+    
+        return sum(item.preco_venda * quantidade for item, quantidade in self.itens_no_carrinho)
+    
+    def aplicar_desconto(self, valor):
+        if valor == "":
+            self.desconto = 0
+            return self.total()
+        
+        try:
+            valor = int(valor)
+        except ValueError:
+            logger.error("Valor de desconto inválido | valor=%s", valor)
+            return Resultado(False, "Digite apenas numeros", "erro", 5000)
+        
+        if valor < 0:
+            self.desconto = 0
+            return self.total()
+        
+        self.desconto = valor
+        
+        if self.total() < 0:
+            self.desconto = 0
+            logger.warning("Entrada de desconto maior que valor total dos produtos")
+            return Resultado(False, "Desconto maior que o valor dos produtos", "erro", 5000)
+        
+        return self.total()
+
+    def validar_compra_existente(self):
+        """Método para validar se existe uma compra pendente
+        Usado para evitar o fechamento do caixa sem finalizar a compra"""
+
+        if self.itens_no_carrinho:
+            logger.warning("Tentativa de fechar caixa com produto registrado")
+            return Resultado(False, "Finalize a compra primeiro", "info")
+
+        return Resultado(True)
+            
     def alternar_compra(self):
         if self.itens_passados:
             logger.debug("Itens da compra pendente copiados para tela atual")
@@ -176,7 +261,6 @@ class Caixa:
             self.desconto = 0
             logger.debug(self.itens_no_carrinho)
             if not self.itens_passados:
-                print("retomou")
                 return "Retomou"
 
             return "Pendente"

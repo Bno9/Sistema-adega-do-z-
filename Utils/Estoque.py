@@ -1,4 +1,5 @@
 from Utils.Resultado import Resultado
+from Utils.Produto import Produto
 import logging
 
 logger = logging.getLogger(__name__)
@@ -6,9 +7,10 @@ logger = logging.getLogger(__name__)
 class Estoque:
     """Classe que armazena os produtos cadastrados e suas informações"""
 
-    def __init__(self, con):
+    def __init__(self, con, relatorios):
         self.con = con
         self.cur = self.con.cursor()
+        self.relatorios = relatorios
         self.cur.execute("""
                         CREATE TABLE IF NOT EXISTS produtos (
                         id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -24,8 +26,6 @@ class Estoque:
         self.con.commit()
 
     def criar_produto(self, **dados: dict):
-        from Utils.Produto import Produto
-
         obj_produto = Produto(**dados) #Cria o objeto produto usando a classe Produto
 
         if self.conferir_se_existe_no_estoque(obj_produto.codigo):
@@ -42,26 +42,53 @@ class Estoque:
                          (obj_produto.codigo, obj_produto.nome, obj_produto.tipo, obj_produto.preco_custo, obj_produto.preco_venda, obj_produto.quantidade, obj_produto.id_produto_pai, obj_produto.qtd_fardo))
         self.con.commit()
 
+        self.relatorios.relatorio_estoque.registrar_movimento_estoque(obj_produto, "Registro", dados.get("funcionario", "Erro"))
+
         logger.info("Produto=%s criado com sucesso", obj_produto.nome)
         return Resultado(True, f"{obj_produto.nome} criado", "sucesso")
       
-    def remover_produto(self, codigo_produto):
-        self.cur.execute("DELETE FROM produtos WHERE codigo=?", (codigo_produto,))
+    def remover_produto(self, **dados):
+        obj_produto_antes = Produto(**dados)
+        obj_produto_depois = Produto()
+        self.cur.execute("DELETE FROM produtos WHERE codigo=?", (dados.get("codigo"),))
         self.con.commit()
         if self.cur.rowcount>0:
-            logger.info("Código=%s removido com sucesso", codigo_produto)
+            logger.info("Código=%s removido com sucesso", dados.get("codigo"))
+            self.relatorios.relatorio_estoque.registrar_alteracao_estoque(obj_produto_antes, obj_produto_depois, "Exclusao", dados.get("funcionario", "Erro"))
             return Resultado(True, "Produto removido com sucesso", "sucesso") 
+            
         
-        logger.info("Produto com código=%s não encontrado", codigo_produto)
+        logger.info("Produto com código=%s não encontrado", dados.get("codigo"))
         Resultado(False, "Produto não encontrado", "info")
     
     def atualizar_produto(self, dados: dict):
+        self.cur.execute("SELECT * FROM produtos WHERE codigo=?", (dados.get("codigo"),))
+        row = self.cur.fetchone()
+        try:
+            dados_antigo = {
+                "codigo": row[1],
+                "nome": row[2],
+                "tipo": row[3],
+                "preco_custo": row[4],
+                "preco_venda": row[5],
+                "quantidade": row[6],
+                "id_produto_pai": row[7]
+                    if row[7] else None,
+                "quantidade_fardo": row[8]
+                    if row[8] else None
+            }
+        except ValueError:
+            logger.error("Erro ao gerar dados para atualizar produto")
+            return None
+        
         codigo = dados.pop("codigo")
 
         campos = []
         valores = []
 
         for campo, valor in dados.items():
+            if campo == "funcionario":
+                continue
             campos.append(f"{campo} = ?")
             valores.append(valor)
 
@@ -80,15 +107,23 @@ class Estoque:
             logger.info("Produto não encontrado")
             return Resultado(False, "Produto não encontrado", "info")
 
+        dados["codigo"] = dados_antigo.get("codigo")
+        produto_novo = Produto(**dados)
+        produto_antigo = Produto(**dados_antigo)
+        self.relatorios.relatorio_estoque.registrar_alteracao_estoque(produto_antigo, produto_novo, "Alteraçao_dados", dados.get("funcionario", "Erro"))     
         logger.info("Produto=%s atualizado com sucesso", dados["nome"])
         return Resultado(True, "Produto atualizado com sucesso", "sucesso")
     
-    def alterar_codigo(self, codigo_atual, codigo_novo):
+    def alterar_codigo(self, codigo_atual, codigo_novo, dados):
         self.cur.execute(f"SELECT * FROM produtos WHERE codigo=?", (codigo_atual,))
         produto = self.cur.fetchone()
         id_produto = produto[0]
         self.cur.execute(f"UPDATE produtos SET codigo=? WHERE id=?", (codigo_novo, id_produto))
         self.con.commit()
+        produto_antigo = Produto(**dados)
+        dados["codigo"] = codigo_novo
+        produto_novo = Produto(**dados)
+        self.relatorios.relatorio_estoque.registrar_alteracao_estoque(produto_antigo, produto_novo, "Alteraçao_codigo", dados.get("funcionario", "Erro"))
         logger.info("Código do produto=%s alterado para código=%s | Código_antigo=%s", produto[2], codigo_novo, codigo_atual)
 
     def conferir_se_existe_no_estoque(self, codigo_produto):
