@@ -126,6 +126,7 @@ class Caixa:
 
     def finalizar_compra(self, valor_pago, metodo_pagamento, usuario, caixa_id):
         """Método que finaliza a compra e da baixa no estoque"""
+        valor_pago = valor_pago.replace(",", ".")
         
         if not self.itens_no_carrinho:
             return Resultado(False, "Nenhum item registrado", "aviso", 5000)
@@ -226,7 +227,7 @@ class Caixa:
             return self.total()
         
         try:
-            valor = int(valor)
+            valor = float(valor)
         except ValueError:
             logger.error("Valor de desconto inválido | valor=%s", valor)
             return Resultado(False, "Digite apenas numeros", "erro", 5000)

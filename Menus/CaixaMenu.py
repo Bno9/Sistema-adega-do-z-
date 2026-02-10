@@ -19,9 +19,9 @@ class CaixaMenu(ctk.CTkFrame):
             caixa_id = self.referencia_main.caixa.carregar_caixa_aberto(self.usuario)
             self.caixa_id = caixa_id
             if self.referencia_main.caixa.finalizar_caixa(self.caixa_id, datetime.now().strftime("%H:%M:%S")):
-                AberturaCaixa(root, ref_caixa=self.referencia_main.caixa, main=self.referencia_main, usuario=self.usuario, on_sair=self.on_sair)
+                AberturaCaixa(root, ref_caixa=self.referencia_main.caixa, main=self.referencia_main, usuario=self.usuario, on_sair=self.on_sair, tela=self)
         else:
-            AberturaCaixa(root, ref_caixa=self.referencia_main.caixa, main=self.referencia_main, usuario=self.usuario, on_sair=self.on_sair)
+            AberturaCaixa(root, ref_caixa=self.referencia_main.caixa, main=self.referencia_main, usuario=self.usuario, on_sair=self.on_sair, tela=self)
         
         #textos
         self.status = StringVar()
@@ -32,7 +32,7 @@ class CaixaMenu(ctk.CTkFrame):
 
         #entradas
         self.codigo = StringVar()
-        self.quantidade = IntVar(value=1)
+        self.quantidade = ctk.IntVar(value=1)
 
         #frame
         self.columnconfigure(0, weight=1)
@@ -349,6 +349,7 @@ Esc - Voltar""",
             command=self.alterar_metodo_pagamento,
             text_color="white",
             justify="center",
+            state="readonly",
             width=150,
             fg_color="#1e1e1e",
             font=("arial", 20, "bold")
@@ -434,9 +435,12 @@ Esc - Voltar""",
         total = self.referencia_main.caixa.total()
 
         try:
-            valor_pago = int(self.valor_pago.get())
+            valor_pago = self.valor_pago.get()
+            valor_pago = valor_pago.replace(",", ".")
+            valor_pago = float(valor_pago)
         except ValueError:
             return
+        
         
         troco = valor_pago - total
         if troco < 0 or troco > 1000:
@@ -1007,13 +1011,14 @@ Esc - Voltar""",
             var.set("")
 
 class AberturaCaixa(ctk.CTkToplevel):
-    def __init__(self, root, ref_caixa, main, usuario, on_sair):
+    def __init__(self, root, ref_caixa, main, usuario, on_sair, tela):
         super().__init__(master=root)
 
         self.ref_caixa = ref_caixa
         self.usuario = usuario
         self.main = main
         self.on_sair = on_sair
+        self.tela = tela
 
         self.title("Abertura de Caixa")
         self.geometry("400x300")
@@ -1097,7 +1102,8 @@ class AberturaCaixa(ctk.CTkToplevel):
             messagebox.showwarning("Erro", "Valor nao pode ser menor que 1")
             return
 
-        self.ref_caixa.abrir_caixa(date.today(), datetime.now().strftime("%H:%M:%S"), self.usuario, valor)
+        id = self.ref_caixa.abrir_caixa(date.today(), datetime.now().strftime("%H:%M:%S"), self.usuario, valor)
+        self.tela.caixa_id = id
         self.destroy()
 
 class CaixaController:
@@ -1159,6 +1165,7 @@ class CaixaController:
         label_quantidade.configure(text=quantidade)
 
     def dar_desconto(self, valor):
+        valor = valor.replace(",", ".")
         total = self.ref_caixa.aplicar_desconto(valor)
 
         if hasattr(total, "mensagem"):

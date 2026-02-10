@@ -51,6 +51,7 @@ class DespesasMenu(ctk.CTkFrame):
         self.combobox = ctk.CTkComboBox(self.frame_conteudo,
                       values=["Selecione um filtro"],
                       command=self.controller.get_escolha,
+                      state="readonly",
                       width=200,
                       height=50
                       )
@@ -568,6 +569,7 @@ class DespesaController:
             return Resultado(False, "Nome da despesa é obrigatório", "info")
         
         try:
+            valor = valor.replace(",", ".")
             valor = float(valor)
 
         except ValueError:
@@ -597,6 +599,7 @@ class DespesaController:
              return Resultado(False, "Nome da despesa é obrigatório", "info")
         
         try:
+            valor = valor.replace(",", ".")
             valor = float(valor)
 
         except ValueError:

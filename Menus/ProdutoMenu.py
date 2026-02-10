@@ -41,9 +41,9 @@ class ProdutoMenu(ctk.CTkFrame):
             self.codigo = ctk.StringVar()
             self.codigo.trace("w", self.controller.buscar_produto)
             self.nome = ctk.StringVar()
-            self.preco_custo = ctk.IntVar()
+            self.preco_custo = ctk.StringVar()
             self.preco_custo.trace("w", self.atualizar_margem)
-            self.preco_venda = ctk.IntVar()
+            self.preco_venda = ctk.StringVar()
             self.preco_venda.trace("w", self.atualizar_margem)
             self.quantidade = ctk.StringVar()
 
@@ -210,6 +210,7 @@ class ProdutoMenu(ctk.CTkFrame):
             combobox_tipo = ctk.CTkComboBox(entrys_frame,
                                             values=["unidade", "fardo"],
                                             variable=self.tipo,
+                                            state="readonly",
                                             width=310,
                                             height=50,
                                             font=("arial", 32, "bold"),
@@ -473,10 +474,13 @@ Esc - Voltar""",
 
         def atualizar_margem(self, *args):
             try:
-                preco_venda = float(self.preco_venda.get())
-                preco_custo = float(self.preco_custo.get())
+                preco_custo = self.preco_custo.get().replace(",", ".")
+                preco_custo = float(preco_custo)
+                preco_venda = self.preco_venda.get().replace(",", ".")
+                preco_venda = float(preco_venda)
             
             except:
+                return #tirei o raise porque ficava aparecendo erro toda hora
                 raise ValueError
             
             try:
@@ -635,12 +639,27 @@ class ProdutoController:
 
     def coletar_dados_produto(self):
         try:
+            codigo = self.tela.codigo.get()
+            produto_pai = self.tela.referencia_codigo_fardo.get()
+            if produto_pai == codigo:
+                self.tela.status_menu.set("Código do produto de referencia nao pode ser o mesmo do produto atual")
+                return None
+            preco_custo = self.tela.preco_custo.get().replace(",", ".")
+            preco_venda = self.tela.preco_venda.get().replace(",", ".")
+            nome = self.tela.nome.get()
+            quantidade = self.tela.quantidade.get()
+            if nome == "":
+                self.tela.status_menu.set("Produto precisa de um nome")
+                return None
+            if quantidade == "":
+                self.tela.status_menu.set("Produto precisa de quantidade")
+                return None
             dados = {
                 "codigo": self.tela.codigo.get(),
-                "nome": self.tela.nome.get(),
-                "preco_custo": float(self.tela.preco_custo.get()),
-                "preco_venda": float(self.tela.preco_venda.get()),
-                "quantidade": int(self.tela.quantidade.get()),
+                "nome": nome,
+                "preco_custo": float(preco_custo),
+                "preco_venda": float(preco_venda),
+                "quantidade": int(quantidade),
                 "tipo": self.tela.tipo.get(),
                 "id_produto_pai": self.tela.referencia_codigo_fardo.get()
                     if self.tela.referencia_codigo_fardo.get().strip() else None,

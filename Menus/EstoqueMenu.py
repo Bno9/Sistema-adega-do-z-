@@ -145,6 +145,7 @@ class EstoqueMenu(ctk.CTkFrame):
         combobox = ctk.CTkComboBox(canto_filtro,
                       values=["Nome", "Codigo"],
                       command=self.mudar_coluna,
+                      state="readonly",
                       width=200,
                       height=50,
                       font=("arial", 22, "bold")

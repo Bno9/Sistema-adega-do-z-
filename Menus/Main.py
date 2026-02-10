@@ -294,6 +294,7 @@ class ModalSenha(ctk.CTkToplevel):
                         variable=self.usuario_atual,
                         font=("arial", 32, "bold"),
                         command=self.mudar_usuario,
+                        state="readonly",
                         width=200
                         ).grid(row=0, column=0)
         
@@ -354,6 +355,7 @@ class ModalAlterarSenha(ctk.CTkToplevel):
                         variable=self.usuario_atual,
                         font=("arial", 32, "bold"),
                         command=self.mudar_usuario,
+                        state="readonly",
                         width=200
                         ).grid(row=0, column=0)
         
@@ -424,6 +426,7 @@ class ModalCadastrarUsuario(ctk.CTkToplevel):
                 variable=self.cargo_atual,
                 font=("arial", 32, "bold"),
                 command=self.mudar_cargo,
+                state="readonly",
                 width=300
                 ).grid(row=0, column=0)
 
@@ -559,6 +562,13 @@ class ListarUsuarios(ctk.CTkToplevel):
             )
             return
         
+        if self.usuario_selecionado == self.main.usuario_atual:
+            messagebox.showwarning(
+                "Aviso",
+                "Não é possivel excluir um usuario que está em uso."
+            )
+            return
+
         confirmar = messagebox.askyesno(
             "Confirmar exclusão",
             f"Tem certeza que deseja excluir o usuário '{self.usuario_selecionado}'?"
@@ -607,7 +617,7 @@ class MenuPrincipal(ctk.CTkFrame):
         self.columnconfigure((0,1), weight=1)
         self.rowconfigure(2, weight=1)
 
-        self.master.bind("<Escape>", lambda e: self.escolher(6))
+        self.master.bind("<Escape>", lambda e: self.main.fechar_app())
 
         #frame pra menubar
         header_menubar = ctk.CTkFrame(self, fg_color="#313030")
@@ -860,7 +870,7 @@ class MenuPrincipal(ctk.CTkFrame):
             height=200,
             fg_color="orange",
             font=("Arial", 30, "bold"),
-            command=lambda: self.escolher(6)
+            command=lambda: self.main.fechar_app()
             ).grid(column=1, row=2, pady=20, sticky="ns", padx=40)
 
         estoque_baixo = self.main.estoque.estoque_baixo(self.main.configs.get("Quantidade_aviso", 4))
@@ -929,14 +939,13 @@ class MenuPrincipal(ctk.CTkFrame):
             self.escolher(int(tecla.char))
 
 class PopupBaixoEstoque(ctk.CTkToplevel):
-    #fiz essa classe pra nao deixar tao poluido e ilegivel  o código (inclusive acho que vou fazer nas outras telas tambem com as coisas repetidas)
     def __init__(self, master, produtos, configs):
         super().__init__(master)
 
         # Config básica
         self.overrideredirect(True)
         self.attributes("-topmost", True)
-        self.configs = configs #aqui vai ser um dicionario com informações por exemplo "quantidade": 1, "tempo para fechar popup": "10000" (vou salvar num banco de dados isso e o usuario vai poder configurar na menubar)
+        self.configs = configs
 
         largura = 320
         altura = 180
@@ -1157,10 +1166,12 @@ ctk.set_default_color_theme("blue")
 ctk.set_appearance_mode("dark")
 
 root = ctk.CTk()
-root.title("Adega do zé 2.1")
+root.title("Adega do zé 3.0")
 root.configure(bg="#1e1e1e")
-root.attributes("-zoomed", True)
-#root.state("zoomed") #para windows
+if sys.platform.startswith("win"):
+    root.state("zoomed")
+else:
+    root.attributes("-zoomed", True)
 
 root.columnconfigure(0, weight=1)
 root.rowconfigure(0, weight=1)
