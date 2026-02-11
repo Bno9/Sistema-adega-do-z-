@@ -16,8 +16,7 @@ from Utils.Caixa import Caixa
 from Utils.Estoque import Estoque
 from Utils.Despesa import Despesas
 from Utils.Relatorios import Relatorios
-from Utils.Recibo import Recibo, ImpressoraBase, ImpressoraTxt, ImpressoraWindows
-from Utils.Produto import Produto
+from Utils.Recibo import ImpressoraTxt, ImpressoraWindows
 from RelatoriosMenu import RelatoriosMenu
 from Utils.Usuarios import Usuario
 

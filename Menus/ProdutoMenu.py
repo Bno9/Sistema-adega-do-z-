@@ -527,10 +527,6 @@ Esc - Voltar""",
             if indice - 1 >= 0:
                 self.entries[indice - 1].focus_set()
 
-        def teclas_menu(self, tecla):
-            if tecla.char.lower() in ["f1", "f2", "f3"] and self.pode_usar_atalho: #arrumar aqui ainda
-                self.escolha_tela(tecla.char)
-
 class ProdutoController:
     def __init__(self, tela, ref_estoque):
         self.tela = tela
