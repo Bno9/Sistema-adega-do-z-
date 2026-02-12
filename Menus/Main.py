@@ -822,7 +822,7 @@ class MenuPrincipal(ctk.CTkFrame):
             fg_color="orange",
             font=("Arial", 30, "bold"),
             command=lambda: self.escolher(5)
-            ).grid(column=1, row=0, pady=20,  padx=40, sticky="ns")
+            ).grid(column=1, row=1, pady=20,  padx=40, sticky="ns")
         
         #botao despesas
         ctk.CTkButton(
@@ -838,7 +838,7 @@ class MenuPrincipal(ctk.CTkFrame):
             fg_color="orange",
             font=("Arial", 30, "bold"),
             command=lambda: self.escolher(4)
-            ).grid(column=1, row=1, pady=20, sticky="ns", padx=40)
+            ).grid(column=1, row=0, pady=20, sticky="ns", padx=40)
         
         #botao cadastro
         ctk.CTkButton(

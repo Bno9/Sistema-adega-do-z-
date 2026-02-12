@@ -208,6 +208,7 @@ class Caixa:
         return Resultado(False, "Produto não encontrado", "aviso", 5000)
 
     def excluir_do_carrinho(self, produto_codigo):
+        produto_codigo = str(produto_codigo)
         for i, (item, _) in enumerate(self.itens_no_carrinho):
             if produto_codigo == item.codigo:
                 del self.itens_no_carrinho[i]

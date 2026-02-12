@@ -12,6 +12,8 @@ class CaixaMenu(ctk.CTkFrame):
         self.usuario = usuario
         self.on_sair = on_sair if on_sair is not None else self.referencia_main.voltar_menu_principal
         self.caixa_id = None
+        self.label_desconto = None
+        self.entry_desconto = None
 
         #abertura caixa
         caixa_aberto = self.referencia_main.caixa.conferir_abertura_caixa(self.usuario)
@@ -253,8 +255,6 @@ F5 - Aplicar desconto
 F7 - Alternar compra
 F10 - Consultar produto
 Delete - Excluir
-Right - Quantidade
-Left - Código
 Esc - Voltar""",
                 text_color="black",
                 font=("Consolas", 15),
@@ -599,6 +599,11 @@ Esc - Voltar""",
         self.total_itens.set(f"ITENS: {total}")
             
     def frame_desconto(self, event=None):
+        if self.entry_desconto is not None:
+            self.destruir_desconto()
+            return
+
+
         desconto = StringVar()
         desconto.trace("w", lambda *args: self.setar_status(
                         resultado=self.controller.dar_desconto(
@@ -608,18 +613,18 @@ Esc - Voltar""",
                         )
 
         #texto desconto
-        label_desconto = ctk.CTkLabel(
+        self.label_desconto = ctk.CTkLabel(
             self.botoes,
             text="Desconto",
-            text_color="green",
+            text_color="white",
             fg_color="#1e1e1e",
             width=100,
             font=("Arial", 32, "bold")
         )
-        label_desconto.grid(row=2, column=1, padx=10)
+        self.label_desconto.grid(row=2, column=1, padx=10)
 
         #entrada de desconto
-        entry_desconto = ctk.CTkEntry(
+        self.entry_desconto = ctk.CTkEntry(
             self.botoes,
             textvariable=desconto,
             text_color="white",
@@ -627,17 +632,23 @@ Esc - Voltar""",
             width=100,
             font=("Arial", 32, "bold")
         )
-        entry_desconto.grid(row=1, column=1, padx=10)
-        entry_desconto.focus_set()
+        self.entry_desconto.grid(row=1, column=1, padx=10)
+        self.entry_desconto.focus_set()
 
 
         self.master.unbind("<Escape>")
-        entry_desconto.bind("<Return>", lambda e:  self.entry_codigo.focus_set())
-        entry_desconto.bind("<Escape>", lambda e: self.destruir_desconto(label_desconto, entry_desconto))
+        self.entry_desconto.bind("<Return>", lambda e:  self.entry_codigo.focus_set())
+        self.entry_desconto.bind("<Escape>", lambda e: self.destruir_desconto())
 
-    def destruir_desconto(self, label, entry):
-        label.destroy()
-        entry.destroy()
+    def destruir_desconto(self):
+        if self.label_desconto:
+            self.label_desconto.destroy()
+            self.label_desconto = None
+
+        if self.entry_desconto:
+            self.entry_desconto.destroy()
+            self.entry_desconto = None
+
         self.entry_codigo.focus_set()
         self.master.bind("<Escape>", self.voltar)
 
@@ -1023,8 +1034,10 @@ class AberturaCaixa(ctk.CTkToplevel):
         self.title("Abertura de Caixa")
         self.geometry("400x300")
         self.resizable(False, False)
-
         self.transient(root)
+
+        self.update_idletasks()
+        self.wait_visibility()
         self.grab_set()
 
         self._criar_widgets()

@@ -303,7 +303,7 @@ class RelatoriosMenu(ctk.CTkFrame):
 
         self.lbl_valor_esperado = ctk.CTkLabel(
             frame_bottom,
-            textvariable=self.valor_final_caixa, #falta descontar sangria e adicionar abertura de caixa na soma
+            textvariable=self.valor_final_caixa,
             font=("Arial", 14, "bold")
         )
         self.lbl_valor_esperado.grid(
@@ -312,7 +312,6 @@ class RelatoriosMenu(ctk.CTkFrame):
 
     def carregar_produto_selecionado(self):
         id_movimentacao = self.tabela.selection()
-        print(id_movimentacao)
         if not id_movimentacao:
             return
     
@@ -453,7 +452,6 @@ class RelatoriosMenu(ctk.CTkFrame):
 
     def carregar_movimento_selecionado(self):
         id_movimentacao = self.tabela_estoque.selection()
-        print(id_movimentacao)
         if not id_movimentacao:
             return
     

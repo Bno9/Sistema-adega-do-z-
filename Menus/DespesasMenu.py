@@ -113,8 +113,6 @@ class DespesasMenu(ctk.CTkFrame):
         self.tabela.column("observacao", width=200)
 
         self.master.bind("<Delete>", lambda e: self.tela_deletar())
-        self.master.bind("<F1>", lambda e: self.tela_cadastrar())
-        self.master.bind("<F2>", lambda e: self.tela_editar())
 
         self.carregar_tabela()
 
@@ -224,8 +222,8 @@ class DespesasMenu(ctk.CTkFrame):
 
         label_atalhos = ctk.CTkLabel(frame_atalho,
                                         text="""
-F1 - Adicionar despesa
-F2 - Editar Despesa
+1 - Adicionar despesa
+2 - Editar Despesa
 Delete - Excluir
 Esc - Voltar""",
                 text_color="black",
