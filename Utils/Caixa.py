@@ -97,9 +97,8 @@ class Caixa:
 
         data_abertura = datetime.strptime(row[0], "%d/%m/%Y").date()
 
-        if data_abertura >= date.today():
-            return False  # ainda não pode fechar
-
+        if date.today() <= data_abertura:
+            return False
         
         logger.debug("Caixa finalizado, hora de fechamento=%s", hora_fechamento)
         self.cur.execute("""
@@ -171,9 +170,9 @@ class Caixa:
         impressora.imprimir(linhas)
 
     def validar_codigo(self, codigo_produto, quantidade=1):
-        if quantidade < 0:
-             logger.warning("Quantidade não pode ser negativa")
-             return Resultado(False, "Quantidade não pode ser negativa", "erro", 5000)
+        if quantidade <= 0:
+             logger.debug("Quantidade de produtos inserida é menor que 1")
+             return Resultado(False, "Quantidade precisa ser positiva", "erro", 5000)
 
         if self.estoque.conferir_se_existe_no_estoque(codigo_produto):
             cursor_estoque = self.estoque.cur
@@ -194,7 +193,7 @@ class Caixa:
                         if row[8] is not None else None
                 }
             except ValueError:
-                logger.error("Erro ao processar dados")
+                logger.error("Erro ao processar dados na validação de código")
                 return Resultado(False, "Erro de processamento", "erro")
 
             from Utils.Produto import Produto
@@ -204,7 +203,7 @@ class Caixa:
             logger.info("Item registrado no caixa | item=%s quantidade=%d", produto, quantidade)
             return Resultado(True)
 
-        logger.warning("Produto não encontrado")
+        logger.debug("Produto não encontrado")
         return Resultado(False, "Produto não encontrado", "aviso", 5000)
 
     def excluir_do_carrinho(self, produto_codigo):

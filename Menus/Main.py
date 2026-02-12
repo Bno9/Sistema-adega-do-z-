@@ -221,8 +221,8 @@ class Main:
             os.remove(caminho)
             logger.info("Backup removido por excesso | arquivo=%s", nome)
 
-    def get_usuarios(self):
-        usuarios = self.usuario.listar_usuarios()
+    def get_usuarios(self, admin=None):
+        usuarios = self.usuario.listar_usuarios(admin)
         return [nome for nome, _ in usuarios]
     
     def abrir_configs(self):

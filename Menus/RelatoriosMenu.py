@@ -323,7 +323,7 @@ class RelatoriosMenu(ctk.CTkFrame):
         self.tipo.set("Tudo")
         self.usuario_estoque = ctk.StringVar()
         self.usuario_estoque.set(self.main.usuario_atual)
-        usuarios = self.main.get_usuarios()
+        usuarios = self.main.get_usuarios("admin")
         tipo = ["Tudo", "Registro", "Alteração", "Exclusão"]
 
         hoje = date.today().strftime("%d/%m/%Y")

@@ -126,8 +126,13 @@ class Usuario:
             tipo="sucesso"
         )
 
-    def listar_usuarios(self):
-        self.cur.execute(
-            "SELECT usuario, cargo FROM usuarios"
-        )
+    def listar_usuarios(self, admin=None):
+        sql = "SELECT usuario, cargo FROM usuarios WHERE 1=1"
+        params = []
+
+        if admin is not None:
+            sql += " AND cargo = ?"
+            params.append(admin)
+
+        self.cur.execute(sql, params)
         return self.cur.fetchall()
