@@ -21,13 +21,17 @@ class Despesas():
 
     
     def adicionar_despesa(self, nome, valor, data=None, observacao=None):
-        data_formatada = date.today().isoformat()
-        try:
-            if data:
-                data_formatada = datetime.strptime(data, "%d/%m/%Y").date().isoformat()
-        except ValueError:
-            logger.warning("Data recebida inválida -> Data=%s", data)
-            return Resultado(False, "Data inválida. Use DD/MM/AAAA", "erro", 6000)
+        data_formatada = datetime.today().isoformat()
+
+        if data:
+                try:
+                    if isinstance(data, str):
+                        data_formatada = datetime.strptime(data, "%d/%m/%Y").strftime("%Y-%m-%d")
+                    else:
+                        data_formatada = data.strftime("%Y-%m-%d")
+                except Exception:
+                    logger.warning("Data recebida inválida -> Data=%s", data)
+                    return Resultado(False, "Data inválida. Use DD/MM/AAAA", "erro", 6000)
         
         if not observacao:
             observacao = ""
@@ -42,13 +46,17 @@ class Despesas():
         return Resultado(True, "Despesa criada", "sucesso")
     
     def editar_despesa(self, id_despesa, nome, valor, data="", observacao=""):
-        try:
-            if data:
-                data = datetime.strptime(data, "%d/%m/%Y").date().isoformat()
-        except ValueError:
-            logger.warning("Data recebida inválida -> Data=%s", data)
-            return Resultado(False, "Data inválida. Use DD/MM/AAAA", "erro", 6000)
-        
+        if data:
+            try:
+                if isinstance(data, str):
+                    data_formatada = datetime.strptime(data, "%d/%m/%Y").strftime("%Y-%m-%d")
+                else:
+                    data_formatada = data.strftime("%Y-%m-%d")
+            except Exception:
+                logger.warning("Data recebida inválida -> Data=%s", data)
+                return Resultado(False, "Data inválida. Use DD/MM/AAAA", "erro", 6000)
+
+
         if data == "":
             self.cur.execute("""SELECT data FROM despesas WHERE id=?""", (id_despesa,))
             res = self.cur.fetchone()
@@ -57,7 +65,7 @@ class Despesas():
                 logger.warning("Data não encontrada no banco de dados | Data=%s | resultado_Banco=%s", data, res)
                 return Resultado(False, "Data não encontrada no banco de dados", "erro")
 
-            data = res[0]
+            data_formatada = res[0]
 
         if observacao == "":
             self.cur.execute("""SELECT observacao FROM despesas WHERE id=?""", (id_despesa,))
@@ -74,7 +82,7 @@ class Despesas():
                 SET nome = ?, valor = ?, data = ?, observacao = ?
                 WHERE id = ?
                 """,
-                (nome, valor, data, observacao, id_despesa)
+                (nome, valor, data_formatada, observacao, id_despesa)
             )
         
         self.con.commit()

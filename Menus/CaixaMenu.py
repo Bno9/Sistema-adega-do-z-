@@ -445,7 +445,7 @@ Esc - Voltar""",
         
         
         troco = valor_pago - total
-        if troco < 0 or troco > 1000:
+        if troco < 0:
             self.troco_modal.set(f"Troco: R$ {0:.2f}")
             return
         

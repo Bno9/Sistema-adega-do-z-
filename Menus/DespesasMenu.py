@@ -2,6 +2,7 @@ import customtkinter as ctk
 from tkinter import ttk
 from Utils.Resultado import Resultado
 import logging
+from datetime import datetime
 
 logger = logging.getLogger(__name__)
 
@@ -494,6 +495,7 @@ Esc - Voltar""",
         for desp in despesas: #pega o objeto no banco de dados e insere na tabela
             id_despesa, nome, valor, data, observacao = desp
             #primeiro valor é o id
+            data = datetime.strptime(data, "%Y-%m-%d").strftime("%d/%m/%Y")
 
             self.tabela.insert(
                 "",

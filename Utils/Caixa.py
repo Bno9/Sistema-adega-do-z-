@@ -60,7 +60,7 @@ class Caixa:
         return False
         
     def conferir_abertura_caixa(self, funcionario):
-        hoje = date.today().strftime("%d/%m/%Y")
+        hoje = date.today().isoformat()
 
         self.cur.execute("""
             SELECT 1
@@ -74,7 +74,7 @@ class Caixa:
         return self.cur.fetchone() is not None #retorna bool
 
     def abrir_caixa(self, data, hora_abertura, funcionario, valor_inicial, hora_fechamento=None, status=1):
-        data = data.strftime("%d/%m/%Y")
+        data = data.isoformat()
         logger.info("dados da abertura de caixa data=%s, hora=%s, usuario=%s", data, hora_abertura, funcionario)
         self.cur.execute("""INSERT INTO caixa (data, hora_abertura, hora_fechamento, funcionario, valor_inicial, status) VALUES(?,?,?,?,?,?)""", 
                          (data, hora_abertura, hora_fechamento, funcionario, valor_inicial, status))
@@ -95,7 +95,7 @@ class Caixa:
         if not row:
             return False
 
-        data_abertura = datetime.strptime(row[0], "%d/%m/%Y").date()
+        data_abertura = datetime.strptime(row[0], "%Y-%m-%d").date()
 
         if date.today() <= data_abertura:
             return False
@@ -138,7 +138,7 @@ class Caixa:
             logger.error("Erro ao converter valor pago para float | valor_pago=%s", valor_pago)
             return Resultado(False, "Erro de processamento", "erro", 5000)
 
-        if valor_pago < total or valor_pago > 100000:
+        if valor_pago < total:
             logger.warning("Valor recebido inválido | valor=%s", valor_pago)
             return Resultado(False, "Valor recebido inválido", "aviso", 5000)
 
