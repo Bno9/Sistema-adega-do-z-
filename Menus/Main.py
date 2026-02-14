@@ -1,5 +1,6 @@
 import sys
 import os
+import shutil
 sys.path.append(os.path.dirname(os.path.dirname(__file__)))
 
 from tkinter import ttk, messagebox
@@ -191,6 +192,33 @@ class Main:
             logger.error("Erro ao realizar backup | erro=%s", e)
             return False
         
+    def carregar_backup(self, nome_backup, top):
+        try:
+            self.con.close()
+
+            caminho_backup = os.path.join("backup", nome_backup)
+
+            shutil.copy2(caminho_backup, "adega.db")
+
+            messagebox.showinfo(
+                "Sucesso",
+                "Backup restaurado com sucesso!",
+                parent=top
+            )
+
+            top.destroy()
+
+            self.reiniciar_app()
+
+
+        except Exception as e:
+            messagebox.showerror(
+                "Erro",
+                f"Erro ao restaurar backup:\n{e}",
+                parent=top
+            )
+
+        
     def limpar_backups_antigos(self):
         dias = self.configs.get("Dias_backup", 7)
         limite = datetime.now() - timedelta(days=dias)
@@ -220,6 +248,19 @@ class Main:
             nome, caminho, _ = backups.pop(0)
             os.remove(caminho)
             logger.info("Backup removido por excesso | arquivo=%s", nome)
+
+    def reiniciar_app(self):
+        with open("configs.json", "w", encoding="utf-8") as f:
+            json.dump(self.configs, f, indent=4, ensure_ascii=False)
+
+        if self.con:
+            try:
+                self.con.close()
+            except:
+                pass
+
+        python = sys.executable
+        os.execl(python, python, *sys.argv)
 
     def get_usuarios(self, admin=None):
         usuarios = self.usuario.listar_usuarios(admin)
@@ -1077,7 +1118,17 @@ class Configs(ctk.CTkToplevel):
             fg_color="#1f6aa5",
             hover_color="#144870",
             command=self.fazer_backup
-        ).grid(row=8, column=0, columnspan=2, pady=(0, 25))
+        ).grid(row=8, column=0, columnspan=2, pady=(0, 10))
+
+        ctk.CTkButton(
+            frame,
+            text="Carregar backup",
+            width=260,
+            fg_color="#2e7d32",
+            hover_color="#1b5e20",
+            command=self.abrir_carregar_backup
+        ).grid(row=9, column=0, columnspan=2, pady=(0, 25))
+
 
         # ---------- BOTÕES ----------
         ctk.CTkButton(
@@ -1085,7 +1136,7 @@ class Configs(ctk.CTkToplevel):
             text="Salvar",
             width=120,
             command=self.salvar
-        ).grid(row=9, column=0, padx=10)
+        ).grid(row=10, column=0, padx=10)
 
         ctk.CTkButton(
             frame,
@@ -1094,7 +1145,7 @@ class Configs(ctk.CTkToplevel):
             fg_color="gray",
             hover_color="#555555",
             command=self.fechar
-        ).grid(row=9, column=1, padx=10)
+        ).grid(row=10, column=1, padx=10)
 
         # ---------- CENTRALIZAR ----------
         self.update_idletasks()
@@ -1160,6 +1211,82 @@ class Configs(ctk.CTkToplevel):
                                 message="Falha ao realizar backup.",
                                 parent=self
                             )
+            
+    def abrir_carregar_backup(self):
+        top = ctk.CTkToplevel(self)
+        top.title("Carregar Backup")
+        top.resizable(False, False)
+
+        frame = ctk.CTkFrame(top, corner_radius=12)
+        frame.pack(padx=20, pady=20)
+
+        ctk.CTkLabel(
+            frame,
+            text="Selecione um backup para restaurar",
+            font=("Arial", 16, "bold")
+        ).pack(pady=(10, 15))
+
+        backups = self.listar_backups()
+
+        self.backup_selecionado = StringVar(value=backups[0] if backups else "")
+
+        option = ctk.CTkOptionMenu(
+            frame,
+            values=backups if backups else ["Nenhum backup encontrado"],
+            variable=self.backup_selecionado,
+            width=260
+        )
+        option.pack(pady=(0, 20))
+
+        ctk.CTkButton(
+            frame,
+            text="Restaurar",
+            width=120,
+            fg_color="#2e7d32",
+            hover_color="#1b5e20",
+            command=lambda: self.restaurar_backup(top)
+        ).pack(side="left", padx=10, pady=(0, 10))
+
+        ctk.CTkButton(
+            frame,
+            text="Cancelar",
+            width=120,
+            fg_color="gray",
+            hover_color="#555555",
+            command=top.destroy
+        ).pack(side="right", padx=10, pady=(0, 10))
+
+        # Centralizar
+        top.update_idletasks()
+        largura = frame.winfo_width() + 40
+        altura = frame.winfo_height() + 40
+
+        x = (top.winfo_screenwidth() // 2) - (largura // 2)
+        y = (top.winfo_screenheight() // 2) - (altura // 2)
+
+        top.geometry(f"{largura}x{altura}+{x}+{y}")
+
+        top.transient(self)
+        top.lift()
+        top.grab_set()
+        top.focus()
+
+    def listar_backups(self):
+        return os.listdir("backup")
+
+    def restaurar_backup(self, top):
+        confirmar = messagebox.askyesno("Confirmar", "Deseja mesmo restaurar esse backup? Isso é irreversivel", parent=top)
+        if confirmar:
+            self.main.carregar_backup(self.backup_selecionado.get(), top)
+
+            messagebox.showinfo(
+                "Sucesso",
+                "Backup restaurado com sucesso!",
+                parent=top
+            )
+
+        else:
+            return
 
 ctk.set_default_color_theme("blue")
 ctk.set_appearance_mode("dark")
