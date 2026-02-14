@@ -12,6 +12,9 @@ class CaixaMenu(ctk.CTkFrame):
         self.usuario = usuario
         self.on_sair = on_sair if on_sair is not None else self.referencia_main.voltar_menu_principal
         self.caixa_id = None
+        self.label_desconto = None
+        self.entry_desconto = None
+        self.status_after_id = None
 
         #abertura caixa
         caixa_aberto = self.referencia_main.caixa.conferir_abertura_caixa(self.usuario)
@@ -253,8 +256,6 @@ F5 - Aplicar desconto
 F7 - Alternar compra
 F10 - Consultar produto
 Delete - Excluir
-Right - Quantidade
-Left - Código
 Esc - Voltar""",
                 text_color="black",
                 font=("Consolas", 15),
@@ -319,14 +320,14 @@ Esc - Voltar""",
 
         header = ctk.CTkFrame(self.modal, fg_color="#1e1e1e")
         entry = ctk.CTkFrame(self.modal, fg_color="#1e1e1e")
-        self.botoes = ctk.CTkFrame(self.modal, fg_color="#1e1e1e")
+        self.botoes_modal = ctk.CTkFrame(self.modal, fg_color="#1e1e1e")
 
-        self.botoes.columnconfigure((0,1,2), weight=1)
+        self.botoes_modal.columnconfigure((0,1,2), weight=1)
         header.rowconfigure((0,1,2), weight=1)
 
         header.grid(column=0, row=0)
         entry.grid(column=0, row=1)
-        self.botoes.grid(column=0, row=2)
+        self.botoes_modal.grid(column=0, row=2)
 
         self.status_modal.set("")
         self.modal.bind("<Escape>", lambda e: self.fechar_modal(self.modal))
@@ -375,7 +376,8 @@ Esc - Voltar""",
             font=("Arial", 20, "bold")
         )
         self.entry_valor_pago.grid(row=0, column=0, pady=5)
-        self.entry_valor_pago.after(1000, self.entry_valor_pago.focus_set)
+        self.modal.after(1000, lambda: self.entry_valor_pago.focus_set())
+
         self.entry_valor_pago.bind("<Return>", lambda e: self.setar_status(
                                                                             resultado=self.finalizar_compra(),
                                                                            label_status=label_status_modal, 
@@ -395,7 +397,7 @@ Esc - Voltar""",
 
         #botao finalizar compra
         self.botao_finalizar = ctk.CTkButton(
-            self.botoes,
+            self.botoes_modal,
             text="Finalizar",
             text_color="black", 
             corner_radius=20,
@@ -416,7 +418,7 @@ Esc - Voltar""",
 
         #botao fechar modal
         self.botao_cancelar = ctk.CTkButton(
-            self.botoes,
+            self.botoes_modal,
             text="Cancelar",
             text_color="black", 
             corner_radius=20,
@@ -443,7 +445,7 @@ Esc - Voltar""",
         
         
         troco = valor_pago - total
-        if troco < 0 or troco > 1000:
+        if troco < 0:
             self.troco_modal.set(f"Troco: R$ {0:.2f}")
             return
         
@@ -464,7 +466,7 @@ Esc - Voltar""",
         
         #criação botão ok
         self.botao_ok = ctk.CTkButton(
-            self.botoes,
+            self.botoes_modal,
             text="OK",
             text_color="black", 
             corner_radius=20,
@@ -563,17 +565,17 @@ Esc - Voltar""",
         self.botao_cancelar.grid(column=0, row=1, pady=20)
 
     def fechar_modal(self, modal):
-        modal.grab_release()
+        try:
+            modal.grab_release()
+        except:
+            pass
+
         modal.destroy()
 
         self.limpar_campos()
         self.entry_codigo.focus_set()
         self.master.bind("<Escape>", self.voltar)
         self.master.unbind("<Return>")
-        
-
-        modal.grab_release()
-        modal.destroy()
 
     def atualizar_total(self):
         total = self.referencia_main.caixa.total()
@@ -599,6 +601,11 @@ Esc - Voltar""",
         self.total_itens.set(f"ITENS: {total}")
             
     def frame_desconto(self, event=None):
+        if self.entry_desconto is not None:
+            self.destruir_desconto()
+            return
+
+
         desconto = StringVar()
         desconto.trace("w", lambda *args: self.setar_status(
                         resultado=self.controller.dar_desconto(
@@ -608,18 +615,18 @@ Esc - Voltar""",
                         )
 
         #texto desconto
-        label_desconto = ctk.CTkLabel(
+        self.label_desconto = ctk.CTkLabel(
             self.botoes,
             text="Desconto",
-            text_color="green",
+            text_color="white",
             fg_color="#1e1e1e",
             width=100,
             font=("Arial", 32, "bold")
         )
-        label_desconto.grid(row=2, column=1, padx=10)
+        self.label_desconto.grid(row=2, column=1, padx=10)
 
         #entrada de desconto
-        entry_desconto = ctk.CTkEntry(
+        self.entry_desconto = ctk.CTkEntry(
             self.botoes,
             textvariable=desconto,
             text_color="white",
@@ -627,17 +634,23 @@ Esc - Voltar""",
             width=100,
             font=("Arial", 32, "bold")
         )
-        entry_desconto.grid(row=1, column=1, padx=10)
-        entry_desconto.focus_set()
+        self.entry_desconto.grid(row=1, column=1, padx=10)
+        self.entry_desconto.focus_set()
 
 
         self.master.unbind("<Escape>")
-        entry_desconto.bind("<Return>", lambda e:  self.entry_codigo.focus_set())
-        entry_desconto.bind("<Escape>", lambda e: self.destruir_desconto(label_desconto, entry_desconto))
+        self.entry_desconto.bind("<Return>", lambda e:  self.entry_codigo.focus_set())
+        self.entry_desconto.bind("<Escape>", lambda e: self.destruir_desconto())
 
-    def destruir_desconto(self, label, entry):
-        label.destroy()
-        entry.destroy()
+    def destruir_desconto(self):
+        if self.label_desconto:
+            self.label_desconto.destroy()
+            self.label_desconto = None
+
+        if self.entry_desconto:
+            self.entry_desconto.destroy()
+            self.entry_desconto = None
+
         self.entry_codigo.focus_set()
         self.master.bind("<Escape>", self.voltar)
 
@@ -884,9 +897,18 @@ Esc - Voltar""",
         self.carregar_tabela_pesquisa(filtro)
 
     def atalho_finalizar(self, event=None):
+        if self.status_after_id is not None:
+            try:
+                self.after_cancel(self.status_after_id)
+            except:
+                pass
+            self.status_after_id = None
+
         resultado = self.controller.enviar_codigo()
         self.setar_status(resultado, label_status=self.label_status, var_status=self.status)
-        self.abrir_modal_finalizar()
+
+        if resultado and resultado.sucesso:
+            self.abrir_modal_finalizar()
         
     def consultar_produto(self, event=None):
         codigo_consulta = StringVar()
@@ -986,7 +1008,26 @@ Esc - Voltar""",
        
         if var_status:
             var_status.set(resultado.mensagem)
-            self.after(resultado.tempo, lambda: var_status.set(""))
+            
+            if self.status_after_id is not None:
+                try:
+                    self.after_cancel(self.status_after_id)
+                except:
+                    pass
+                self.status_after_id = None
+
+            self.status_after_id = self.after(
+                resultado.tempo,
+                lambda: self.limpar_status(var_status)
+            )
+
+    def limpar_status(self, var_status):
+        try:
+            var_status.set("")
+        except:
+            pass
+        self.status_after_id = None
+
 
     def voltar(self, event=None):
         resultado = self.referencia_main.caixa.validar_compra_existente()
@@ -1023,8 +1064,10 @@ class AberturaCaixa(ctk.CTkToplevel):
         self.title("Abertura de Caixa")
         self.geometry("400x300")
         self.resizable(False, False)
-
         self.transient(root)
+
+        self.update_idletasks()
+        self.wait_visibility()
         self.grab_set()
 
         self._criar_widgets()

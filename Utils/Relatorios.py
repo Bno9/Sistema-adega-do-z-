@@ -38,7 +38,7 @@ class Relatorios:
 
     def registrar_venda(self, produtos, valor_pago, desconto, metodo_pagamento, usuario, caixa_id):
         agora = datetime.now()
-        data = date.today().strftime("%d/%m/%Y")
+        data = date.today().strftime("%Y-%m-%d")
         hora = agora.strftime("%H:%M:%S")
 
         total_venda = 0
@@ -98,7 +98,7 @@ class Relatorios:
 
     def registrar_sangria(self, caixa_id, valor, observacao, usuario):
         agora = datetime.now()
-        data = date.today().strftime("%d/%m/%Y")
+        data = date.today().strftime("%Y-%m-%d")
         hora = agora.strftime("%H:%M:%S")
 
         try:
@@ -191,7 +191,7 @@ class Relatorios:
     
     def filtrar_vendas(self, usuario=None, data=None, forma_pagamento=None):
         if not data:
-            data = date.today().strftime("%d/%m/%Y")
+            data = date.today().strftime("%Y-%m-%d")
 
         sql = """
             SELECT *
@@ -201,10 +201,9 @@ class Relatorios:
         params = [data]
 
         if data:
-            data_formatada = datetime.strptime(data, "%d/%m/%Y").date().strftime("%d/%m/%Y")
-            params[0] = data_formatada
+            params[0] = data
 
-        if usuario:
+        if usuario and usuario != "Todos":
             sql += " AND funcionario = ?"
             params.append(usuario)
 
@@ -269,7 +268,7 @@ class RelatoriosEstoque():
 
     def registrar_movimento_estoque(self, produto: Produto, tipo, usuario):
         agora = datetime.now()
-        data = date.today().strftime("%d/%m/%Y")
+        data = date.today().strftime("%Y-%m-%d")
         hora = agora.strftime("%H:%M:%S")
 
         self.cur.execute("""INSERT INTO movimentacao_estoque (data, hora, funcionario, tipo_movimento, produto_codigo_depois, produto_nome_depois, preco_depois, quantidade_depois) VALUES (?,?,?,?,?,?,?,?)""", (data, hora, usuario, tipo, produto.codigo, produto.nome, produto.preco_venda, produto.quantidade))
@@ -277,7 +276,7 @@ class RelatoriosEstoque():
 
     def registrar_alteracao_estoque(self, produto_antes: Produto, produto_depois: Produto, tipo, usuario, observacao=None):
         agora = datetime.now()
-        data = date.today().strftime("%d/%m/%Y")
+        data = date.today().strftime("%Y-%m-%d")
         hora = agora.strftime("%H:%M:%S")
 
         self.cur.execute("""
@@ -323,21 +322,18 @@ class RelatoriosEstoque():
         self.con.commit()
     
     def filtrar_movimentos(self, usuario=None, data=None, tipo=None):
-        if not data:
-            data = date.today().strftime("%d/%m/%Y")
-
+        params = []
         sql = """
             SELECT *
             FROM movimentacao_estoque
-            WHERE 1=1 AND data = ?
+            WHERE 1=1
         """
-        params = [data]
 
         if data:
-            data_formatada = datetime.strptime(data, "%d/%m/%Y").date().strftime("%d/%m/%Y")
-            params[0] = data_formatada
+            sql += " AND data = ?"
+            params.append(data)
 
-        if usuario:
+        if usuario and usuario != "Todos":
             sql += " AND funcionario = ?"
             params.append(usuario)
 

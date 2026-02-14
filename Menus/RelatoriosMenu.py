@@ -1,6 +1,6 @@
 import customtkinter as ctk
-from tkinter import ttk
-from datetime import date
+from tkinter import ttk, messagebox
+from datetime import date, datetime
 
 
 class RelatoriosMenu(ctk.CTkFrame):
@@ -12,6 +12,8 @@ class RelatoriosMenu(ctk.CTkFrame):
 
         self.columnconfigure(0, weight=1)
         self.rowconfigure(1, weight=1)
+        self.master.unbind("<Escape>")
+        self.master.bind("<Escape>", lambda e: self.main.voltar_menu_principal())
 
         style = ttk.Style()
         style.theme_use("clam")
@@ -76,8 +78,8 @@ class RelatoriosMenu(ctk.CTkFrame):
         self.forma_pgt = ctk.StringVar()
         self.forma_pgt.set("Tudo")
         self.usuario = ctk.StringVar()
-        self.usuario.set(self.main.usuario_atual)
-        usuarios = self.main.get_usuarios()
+        self.usuario.set("Todos")
+        usuarios = ["Todos"] + self.main.get_usuarios()
         forma_pgt = ["Tudo", "Dinheiro", "Cartão", "Pix", "Sangria"]
 
         hoje = date.today().strftime("%d/%m/%Y")
@@ -99,7 +101,7 @@ class RelatoriosMenu(ctk.CTkFrame):
         self.frame_tabela.grid(row=0, column=1, sticky="nsew", padx=10, pady=10)
 
         self.carregar_header()
-        self.controller.filtrar_relatorio_caixa(data=self.filtro_data.get()) #carrega o caixa com o filtro do dia atual
+        self.controller.filtrar_relatorio_caixa(data=self.formatar_data(self.filtro_data)) #carrega o caixa com o filtro do dia atual
         self.carregar_bottom()
 
         botao_filtrar = ctk.CTkButton(frame_filtros,
@@ -113,7 +115,7 @@ class RelatoriosMenu(ctk.CTkFrame):
             height=100,
             fg_color="orange",
             font=("Arial", 30, "bold"),
-            command=lambda: self.controller.filtrar_relatorio_caixa(usuario=self.usuario.get(), data=self.filtro_data.get(), forma_pgt=self.forma_pgt.get())
+            command=lambda: self.controller.filtrar_relatorio_caixa(usuario=self.usuario.get(), data=self.formatar_data(self.filtro_data), forma_pgt=self.forma_pgt.get())
             )
         botao_filtrar.grid(row=4, column=0, sticky="nsew")
 
@@ -163,6 +165,8 @@ class RelatoriosMenu(ctk.CTkFrame):
         combobox_pgt = ctk.CTkComboBox(frame_filtros, state="readonly", height=50, width=300, fg_color="#1e1e1e", font=("arial", 32, "bold"), variable=self.forma_pgt, values=forma_pgt, command=self.mudar_forma_pgt)
         combobox_pgt.grid(row=3, column=0, sticky="n")
 
+        entry_data.focus_set()
+        entry_data.bind("<Return>", lambda e: self.controller.filtrar_relatorio_caixa(usuario=self.usuario.get(), data=self.formatar_data(self.filtro_data), forma_pgt=self.forma_pgt.get()))
 
     def carregar_relatorio_caixa(self, vendas=None):
         colunas = ("caixa_id", "data/hora", "funcionario", "pagamento", "total")
@@ -197,13 +201,14 @@ class RelatoriosMenu(ctk.CTkFrame):
             vendas = self.main.relatorios.mostrar_vendas()
 
         for venda in vendas:
+            data_formatada = datetime.strptime(venda[2], "%Y-%m-%d").strftime("%d/%m/%Y")
             self.tabela.insert(
                 "",
                 "end",
                 iid=venda[0],
                 values=(
                     venda[1],
-                    str(venda[2]) + " / " + str(venda[3]),
+                    data_formatada + " / " + str(venda[3]),
                     venda[4],
                     venda[5],
                     f"R$ {venda[6]:.2f}"
@@ -211,7 +216,7 @@ class RelatoriosMenu(ctk.CTkFrame):
             )
 
     def carregar_header(self):
-        self.dados = self.main.caixa.retornar_dados_caixa(self.filtro_data.get(), self.usuario.get())
+        self.dados = self.main.caixa.retornar_dados_caixa(self.formatar_data(self.filtro_data), self.usuario.get())
         if self.dados is None:
             return
         
@@ -224,8 +229,8 @@ class RelatoriosMenu(ctk.CTkFrame):
         caixa_id_label = ctk.CTkLabel(frame_header, fg_color="#1e1e1e", font=("arial", 20), text=f"CAIXA ID: {self.dados[0]}")
         caixa_id_label.grid(row=0, column=0, sticky="nsew")
 
-        data = self.dados[1]
-        data_label = ctk.CTkLabel(frame_header, fg_color="#1e1e1e", font=("arial", 20), text=f"Data: {data}")
+        data_formatada = datetime.strptime(self.dados[1], "%Y-%m-%d").strftime("%d/%m/%Y")
+        data_label = ctk.CTkLabel(frame_header, fg_color="#1e1e1e", font=("arial", 20), text=f"Data: {data_formatada}")
         data_label.grid(row=0, column=1, sticky="nsew")
 
         hora_abertura_label = ctk.CTkLabel(frame_header, fg_color="#1e1e1e", font=("arial", 20), text=f"Hora abertura: {self.dados[2]}")
@@ -246,22 +251,22 @@ class RelatoriosMenu(ctk.CTkFrame):
 
         frame_bottom.columnconfigure((0, 1), weight=1)
 
-        abertura_caixa = self.main.caixa.retornar_dados_caixa(self.filtro_data.get(), self.usuario.get())
+        abertura_caixa = self.main.caixa.retornar_dados_caixa(self.formatar_data(self.filtro_data), self.usuario.get())
 
         self.total_vendas = ctk.StringVar()
-        self.total_vendas.set(f"R$ {self.main.relatorios.total_vendas(self.usuario.get(), self.filtro_data.get()):.2f}")
+        self.total_vendas.set(f"R$ {self.main.relatorios.total_vendas(self.usuario.get(), self.formatar_data(self.filtro_data)):.2f}")
 
         self.total_descontos = ctk.StringVar()
-        self.total_descontos.set(f"R$ {self.main.relatorios.total_descontos(self.usuario.get(), self.filtro_data.get()):.2f}")
+        self.total_descontos.set(f"R$ {self.main.relatorios.total_descontos(self.usuario.get(), self.formatar_data(self.filtro_data)):.2f}")
 
         self.total_sangrias = ctk.StringVar()
-        self.total_sangrias.set(f"R$ {self.main.relatorios.total_sangrias(self.usuario.get(), self.filtro_data.get()):.2f}")
+        self.total_sangrias.set(f"R$ {self.main.relatorios.total_sangrias(self.usuario.get(), self.formatar_data(self.filtro_data)):.2f}")
 
 
         self.valor_final_caixa = ctk.StringVar()
         if abertura_caixa is not None:
             abertura_caixa = abertura_caixa[5]
-            self.valor_final_caixa.set(f"R$ {self.main.relatorios.total_vendas(self.usuario.get(), self.filtro_data.get()) + abertura_caixa - self.main.relatorios.total_sangrias(self.usuario.get(), self.filtro_data.get()) - self.main.relatorios.total_descontos(self.usuario.get(), self.filtro_data.get()):.2f}")
+            self.valor_final_caixa.set(f"R$ {self.main.relatorios.total_vendas(self.usuario.get(), self.formatar_data(self.filtro_data)) + abertura_caixa - self.main.relatorios.total_sangrias(self.usuario.get(), self.formatar_data(self.filtro_data)) - self.main.relatorios.total_descontos(self.usuario.get(), self.formatar_data(self.filtro_data)):.2f}")
         else:
             self.valor_final_caixa.set(f"R$: 0,00")
 
@@ -303,7 +308,7 @@ class RelatoriosMenu(ctk.CTkFrame):
 
         self.lbl_valor_esperado = ctk.CTkLabel(
             frame_bottom,
-            textvariable=self.valor_final_caixa, #falta descontar sangria e adicionar abertura de caixa na soma
+            textvariable=self.valor_final_caixa,
             font=("Arial", 14, "bold")
         )
         self.lbl_valor_esperado.grid(
@@ -312,7 +317,6 @@ class RelatoriosMenu(ctk.CTkFrame):
 
     def carregar_produto_selecionado(self):
         id_movimentacao = self.tabela.selection()
-        print(id_movimentacao)
         if not id_movimentacao:
             return
     
@@ -323,8 +327,8 @@ class RelatoriosMenu(ctk.CTkFrame):
         self.tipo = ctk.StringVar()
         self.tipo.set("Tudo")
         self.usuario_estoque = ctk.StringVar()
-        self.usuario_estoque.set(self.main.usuario_atual)
-        usuarios = self.main.get_usuarios()
+        self.usuario_estoque.set("Todos")
+        usuarios = ["Todos"] + self.main.get_usuarios("admin")
         tipo = ["Tudo", "Registro", "Alteração", "Exclusão"]
 
         hoje = date.today().strftime("%d/%m/%Y")
@@ -345,7 +349,7 @@ class RelatoriosMenu(ctk.CTkFrame):
         self.frame_estoque.columnconfigure(0, weight=1)
         self.frame_estoque.grid(row=0, column=1, sticky="nsew", padx=10, pady=10)
 
-        self.controller.filtrar_relatorio_estoque(data=self.filtro_data_estoque.get()) #carrega o estoque com o filtro do dia atual
+        self.controller.filtrar_relatorio_estoque()
 
         botao_filtrar = ctk.CTkButton(frame_filtros,
             text="Filtrar", 
@@ -358,7 +362,7 @@ class RelatoriosMenu(ctk.CTkFrame):
             height=100,
             fg_color="orange",
             font=("Arial", 30, "bold"),
-            command=lambda: self.controller.filtrar_relatorio_estoque(usuario=self.usuario_estoque.get(), data=self.filtro_data_estoque.get(), tipo=self.tipo.get())
+            command=lambda: self.controller.filtrar_relatorio_estoque(usuario=self.usuario_estoque.get(), data=self.formatar_data(self.filtro_data_estoque), tipo=self.tipo.get())
             )
         botao_filtrar.grid(row=4, column=0, sticky="nsew")
 
@@ -389,8 +393,8 @@ class RelatoriosMenu(ctk.CTkFrame):
                     )
         label_data.grid(row=0, column=0, sticky="s")
 
-        entry_data = ctk.CTkEntry(frame_filtros, width=300, height=50, textvariable=self.filtro_data_estoque, font=("arial",32))
-        entry_data.grid(row=1, column=0, sticky="n")
+        entry_data_estoque = ctk.CTkEntry(frame_filtros, width=300, height=50, textvariable=self.filtro_data_estoque, font=("arial",32))
+        entry_data_estoque.grid(row=1, column=0, sticky="n")
 
         label_usuario = ctk.CTkLabel(frame_filtros,
                     text="Escolha um usuario",
@@ -407,6 +411,9 @@ class RelatoriosMenu(ctk.CTkFrame):
         label_tipo_mov.grid(row=2, column=0, sticky="s")
         combobox_tipo_mov = ctk.CTkComboBox(frame_filtros, state="readonly", height=50, width=300, fg_color="#1e1e1e", font=("arial", 32, "bold"), variable=self.tipo, values=tipo, command=self.mudar_forma_pgt)
         combobox_tipo_mov.grid(row=3, column=0, sticky="n")
+
+        entry_data_estoque.focus_set()
+        entry_data_estoque.bind("<Return>", lambda e: self.controller.filtrar_relatorio_estoque(usuario=self.usuario_estoque.get(), data=self.formatar_data(self.filtro_data_estoque), tipo=self.tipo.get()))
 
     def carregar_relatorio_estoque(self, registros=None):
         colunas = ("mov_id", "data/hora", "funcionario", "tipo_movimento")
@@ -432,20 +439,22 @@ class RelatoriosMenu(ctk.CTkFrame):
 
         self.tabela_estoque.bind("<Return>", lambda e: self.carregar_movimento_selecionado())
 
-        for widget in self.tabela_estoque.get_children():
-            widget.destroy()
+        for item in self.tabela_estoque.get_children():
+            self.tabela.delete(item)
+
 
         if registros is None:
             registros = self.main.relatorios.relatorio_estoque.retornar_movimentos()
 
         for registro in registros:
+            data_formatada= datetime.strptime(registro[1], "%Y-%m-%d").strftime("%d/%m/%Y")
             self.tabela_estoque.insert(
                 "",
                 "end",
                 iid=registro[0],
                 values=(
                     registro[0],
-                    str(registro[1]) + " / " + str(registro[2]),
+                    data_formatada + " / " + str(registro[2]),
                     registro[3],
                     registro[4]
                 )
@@ -453,7 +462,6 @@ class RelatoriosMenu(ctk.CTkFrame):
 
     def carregar_movimento_selecionado(self):
         id_movimentacao = self.tabela_estoque.selection()
-        print(id_movimentacao)
         if not id_movimentacao:
             return
     
@@ -520,6 +528,14 @@ class RelatoriosMenu(ctk.CTkFrame):
 
     def mudar_forma_pgt(self, forma):
         self.forma_pgt.set(forma)
+    
+    def formatar_data(self, data):
+        try:
+            data_ui = data.get()
+            return datetime.strptime(data_ui, "%d/%m/%Y").strftime("%Y-%m-%d")
+        except ValueError:
+            messagebox.showerror("Erro", "Formato de data inválido. Use DD/MM/AAAA")
+            return None
 
 class CarregarMovimentacao(ctk.CTkToplevel):
     def __init__(self, master, relatorios, id_mov):
@@ -672,6 +688,5 @@ class RelatorioController:
             self.tela.carregar_bottom()
     
     def filtrar_relatorio_estoque(self, **dados):
-        if dados:
-            resultado = self.relatorios.relatorio_estoque.filtrar_movimentos(dados.get("usuario"), dados.get("data"), dados.get("tipo"))
-            self.tela.carregar_relatorio_estoque(resultado)
+        resultado = self.relatorios.relatorio_estoque.filtrar_movimentos(dados.get("usuario"), dados.get("data"), dados.get("tipo"))
+        self.tela.carregar_relatorio_estoque(resultado)
