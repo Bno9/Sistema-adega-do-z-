@@ -35,6 +35,17 @@ class Relatorios:
             valor_unitario REAL NOT NULL,
             subtotal REAL NOT NULL,
             FOREIGN KEY (movimentacao_id) REFERENCES movimentacao_caixa(id))""")
+        
+    def retornar_vendas(self, data):
+        try:
+            data = datetime.strptime(data, "%d/%m/%Y").strftime("%Y-%m-%d")
+        except ValueError:
+            logger.error("Data inserida no filtro de recibos inválida")
+            return False
+        
+        self.cur.execute("""SELECT * FROM movimentacao_caixa WHERE data=?""", (data,))
+        row = self.cur.fetchall()
+        return row
 
     def registrar_venda(self, produtos, valor_pago, desconto, metodo_pagamento, usuario, caixa_id):
         agora = datetime.now()
@@ -215,8 +226,13 @@ class Relatorios:
         return self.cur.fetchall()
 
     def retornar_produtos(self, mov_id):
-        self.cur.execute("""SELECT codigo_produto, nome_produto, quantidade, valor_unitario, subtotal FROM itens_movimentacao WHERE movimentacao_id=?""", mov_id)
+        self.cur.execute("""SELECT codigo_produto, nome_produto, quantidade, valor_unitario, subtotal FROM itens_movimentacao WHERE movimentacao_id=?""", (mov_id,))
         row = self.cur.fetchall()
+        return row
+    
+    def retornar_venda(self, mov_id):
+        self.cur.execute("""SELECT data, hora, valor_pago, desconto FROM movimentacao_caixa WHERE id=?""", (mov_id,))
+        row = self.cur.fetchone()
         return row
     
     def mais_vendidos(self):

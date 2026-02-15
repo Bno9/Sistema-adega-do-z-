@@ -150,8 +150,8 @@ class Caixa:
 
         self.relatorios.registrar_venda(self.itens_no_carrinho, valor_pago, self.desconto, metodo_pagamento, usuario, caixa_id)
 
-        linhas = self.recibo.gerar_linhas(self.itens_no_carrinho, valor_pago, self.desconto)
-        logger.info("Compra finalizada | valor_total=%s | metodo_pagamento=%s | troco=%s | itens=", total, metodo_pagamento, troco) #adicionar os itens depois
+        linhas = self.recibo.gerar_linhas(self.itens_no_carrinho, valor_pago, datetime.now().strftime("%d/%m/%Y %H:%M:%S"), self.desconto)
+        logger.info("Compra finalizada | valor_total=%s | metodo_pagamento=%s | troco=%s | itens=", total, metodo_pagamento, troco, self.itens_no_carrinho) 
 
         self.itens_no_carrinho.clear()
         self.alternar_compra()
@@ -166,7 +166,7 @@ class Caixa:
         if cpf == "":
             return
         
-        impressora = self.iniciar_impressora() #se for trocar aqui pra testes nao posso esquecer que o quee ta vindo no self é uma função, então vai dar nonetype caso eu nao mude a main
+        impressora = self.iniciar_impressora()
         impressora.imprimir(linhas)
 
     def validar_codigo(self, codigo_produto, quantidade=1):

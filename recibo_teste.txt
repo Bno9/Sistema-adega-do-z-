@@ -2,16 +2,13 @@
        RUA JUAN VICENTE, 461 - OSASCO/SP        
               CPF/CPNJ:00000000-0               
 ------------------------------------------------
-Data/Hora: 23/01/2026 20:55:34
+Data/Hora: 15/02/2026 / 10:42:58
 Produto          Cod       Quant     Valor
 ------------------------------------------------
-heineken           1          1      R$40.00
-teste2             3          1      R$10.00
+teste              1          3      R$30.00
 
-Total                                R$50.00
-Desconto                             R$14.00
-Subtotal                             R$36.00
-Valor pago                           R$100.00
-Troco                                 R$64.00
+Total                                R$30.00
+Valor pago                          R$1000.00
+Troco                                R$970.00
            Obrigado pela preferencia            
 

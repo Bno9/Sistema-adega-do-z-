@@ -2,6 +2,7 @@ from tkinter import ttk, messagebox
 from tkinter import *
 import customtkinter as ctk
 from datetime import datetime, date
+from Utils.Produto import Produto
 
 class CaixaMenu(ctk.CTkFrame):
 
@@ -255,6 +256,7 @@ F3 - Pesquisar produto
 F5 - Aplicar desconto
 F7 - Alternar compra
 F10 - Consultar produto
+F12 - Reimpressão
 Delete - Excluir
 Esc - Voltar""",
                 text_color="black",
@@ -269,6 +271,7 @@ Esc - Voltar""",
         self.master.bind("<F5>", self.frame_desconto)
         self.master.bind("<F7>", self.mudar_compra)
         self.master.bind("<F10>", self.consultar_produto)
+        self.master.bind("<F12>", self.reimprimir_recibo)
         self.master.bind("<Escape>", self.voltar)
         self.tabela.bind("<Delete>", lambda e: self.controller.excluir_item())
 
@@ -891,6 +894,121 @@ Esc - Voltar""",
                 )
             )
 
+    def reimprimir_recibo(self, event=None):
+        self.filtro_data = StringVar()
+        self.filtro_data.set(date.today().strftime("%d/%m/%Y"))
+
+        modal = ctk.CTkToplevel(self.frame_conteudo, fg_color="#1e1e1e")
+
+        modal.bind("<Escape>", lambda e: self.fechar_modal(modal))
+        modal.bind("<F1>", lambda e: self.enviar_impressao()) #fazer uma função com select que criau m modal de confirmação que envia o recibo pra ser impresso
+
+        modal.title("Reimpressao de recibo")
+        modal.geometry("900x900")
+
+        modal.transient(self.frame_conteudo)
+        modal.update_idletasks()
+        modal.grab_set()   
+
+        style = ttk.Style()
+        style.theme_use("clam")
+
+        style.configure(
+            "Treeview",
+            background="#1e1e1e",
+            foreground="white",
+            rowheight=30,
+            fieldbackground="#1e1e1e"
+        )
+        style.configure(
+            "Treeview.Heading",
+            background="#2b2b2b",
+            foreground="white",
+            font=("Arial", 12, "bold")
+        )
+        style.map("Treeview", background=[("selected", "#2a7fff")])
+
+        self.tabela_recibo = ttk.Treeview(
+            modal,
+            columns=("id", "data", "valor", "pagamento"),
+            show="headings"
+        )
+
+        self.tabela_recibo.heading("id", text="ID")
+        self.tabela_recibo.heading("data", text="Data / Hora")
+        self.tabela_recibo.heading("valor", text="Total")
+        self.tabela_recibo.heading("pagamento", text="Forma pagamento")
+
+        self.tabela_recibo.column("id", width=200, anchor="center")
+        self.tabela_recibo.column("data", width=220, anchor="center")
+        self.tabela_recibo.column("valor", width=120, anchor="center")
+        self.tabela_recibo.column("pagamento", width=220, anchor="center")
+
+        self.tabela_recibo.grid(row=0, column=0, sticky="nsew")
+
+        scroll = ttk.Scrollbar(
+            modal,
+            orient="vertical",
+            command=self.tabela_recibo.yview
+        )
+        self.tabela_recibo.configure(yscrollcommand=scroll.set)
+
+        scroll.grid(row=0, column=1, sticky="ns")
+        modal.rowconfigure(0, weight=1)
+        modal.rowconfigure(1, weight=0)
+        modal.columnconfigure(0, weight=1)
+
+        frame_filtro = ctk.CTkFrame(modal, fg_color="#1e1e1e")
+        frame_filtro.grid(row=1, column=0, sticky="nsew")
+        frame_filtro.rowconfigure(0, weight=1)
+        frame_filtro.columnconfigure((0,1), weight=1)
+
+        entry_data = ctk.CTkEntry(frame_filtro,
+                         textvariable=self.filtro_data,
+                         font=("Arial", 20, "bold"),
+                         justify="center",
+                         width=200,
+                         height=50)
+        entry_data.grid(row=1, column=1, sticky="w")
+        entry_data.bind("<Return>", lambda e: self.carregar_recibos(self.filtro_data.get()))
+        entry_data.focus_set()
+
+        self.carregar_recibos(self.filtro_data.get())
+
+    def carregar_recibos(self, data):
+
+        for item in self.tabela_recibo.get_children():
+            self.tabela_recibo.delete(item)
+
+        vendas = self.referencia_main.relatorios.retornar_vendas(data)
+
+        if not vendas:
+            return
+        
+        for recibo in vendas:
+            id, _, data, hora, _, pagamento, total, _, _, _ = recibo
+            data = datetime.strptime(data, "%Y-%m-%d").strftime("%d/%m/%Y")
+
+            self.tabela_recibo.insert(
+                "",
+                "end",
+                values=(
+                    id,
+                    data + " / " + hora,
+                    f"R$ {total:.2f}",
+                    pagamento
+                )
+            )
+
+    def enviar_impressao(self):
+        selecionado = self.tabela_recibo.selection()
+        if not selecionado:
+            return
+        
+        dados = self.tabela_recibo.item(selecionado[0], "values")
+        self.controller.reimpressao(dados)
+
+
     def filtrar(self, *args):
         digitado = self.filtro_nome.get()
         filtro = self.referencia_main.estoque.filtrar_produto(self.coluna_filtro, digitado)
@@ -1247,3 +1365,28 @@ class CaixaController:
         self.tela.atualizar_tabela()
         self.tela.atualizar_total()
         return
+    
+    def reimpressao(self, dados):
+        id = dados[0]
+        venda = []
+
+        itens = self.tela.referencia_main.relatorios.retornar_produtos(id)
+        for item in itens:
+            print(item)
+            dado = {"codigo": item[0],
+                    "nome": item[1],
+                    "preco_custo": item[2],
+                    "preco_venda": item[3]}
+            
+            produto = Produto(**dado)
+            venda.append((produto, item[2]))
+
+        movimentacao = self.tela.referencia_main.relatorios.retornar_venda(id)
+        data = datetime.strptime(movimentacao[0], "%Y-%m-%d").strftime("%d/%m/%Y")
+        data_hora = data + " / " + movimentacao[1]
+        valor_pago = movimentacao[2]
+        desconto = movimentacao[3]
+
+        linhas = self.ref_caixa.recibo.gerar_linhas(venda, valor_pago, data_hora, desconto)
+        self.ref_caixa.imprimir_recibo(linhas)
+        #logger.info("Recibo reimpresso | valor_total=%s | metodo_pagamento=%s | troco=%s | itens=", total, metodo_pagamento, troco) #adicionar os itens depois
