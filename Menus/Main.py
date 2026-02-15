@@ -114,12 +114,16 @@ class Main:
     def iniciar_impressora(self):
         if self.impressora is None:
             try:
+                self.impressora = ImpressoraTxt()
+                return self.impressora
                 self.impressora = ImpressoraWindows("MP-4200 TH")
             except Exception as e:
                 logger.error("Erro ao iniciar impressora | erro=%s", e)
                 self.impressora = ImpressoraTxt()
             
             return self.impressora
+        
+        return self.impressora
 
     def carregar_config(self):
         try:
