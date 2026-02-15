@@ -1022,7 +1022,7 @@ class PopupBaixoEstoque(ctk.CTkToplevel):
                 text=f"Produto '{nome}' com estoque baixo | Quantidade: {quantidade}",
                 text_color="red",
                 justify="left",
-                wraplength=400
+                wraplength=280
             ).pack(padx=10)
 
 

@@ -81,7 +81,7 @@ class Caixa:
         self.con.commit()
         
         self.caixa_atual_id = self.cur.lastrowid
-        logger.info("Caixa aberto | Usuario=%s | Valor=%S | ID do caixa=%s", funcionario, valor_inicial, self.caixa_atual_id)
+        logger.info("Caixa aberto | Usuario=%s | Valor=%s | ID do caixa=%s", funcionario, valor_inicial, self.caixa_atual_id)
         return self.caixa_atual_id
         
     def finalizar_caixa(self, caixa_id, hora_fechamento):
@@ -146,12 +146,11 @@ class Caixa:
         
         for item, quantidade in self.itens_no_carrinho:
             self.estoque.dar_baixa(item.codigo, quantidade)
-        
 
         self.relatorios.registrar_venda(self.itens_no_carrinho, valor_pago, self.desconto, metodo_pagamento, usuario, caixa_id)
 
         linhas = self.recibo.gerar_linhas(self.itens_no_carrinho, valor_pago, datetime.now().strftime("%d/%m/%Y %H:%M:%S"), self.desconto)
-        logger.info("Compra finalizada | valor_total=%s | metodo_pagamento=%s | troco=%s | itens=", total, metodo_pagamento, troco, self.itens_no_carrinho) 
+        logger.info("Compra finalizada | valor_total=%s | metodo_pagamento=%s | troco=%s", total, metodo_pagamento, troco) 
 
         self.itens_no_carrinho.clear()
         self.alternar_compra()
@@ -185,7 +184,7 @@ class Caixa:
                     "preco_custo": float(row[4]),
                     "preco_venda": float(row[5]),
                     "quantidade": int(row[6]),
-                    "id_produto_pai": int(row[7])
+                    "id_produto_pai": row[7]
                         if row[7] is not None  else None,
                     "quantidade_fardo": int(row[8])
                         if row[8] is not None else None

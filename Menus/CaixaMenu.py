@@ -462,6 +462,7 @@ Esc - Voltar""",
 
         resultado = self.referencia_main.caixa.finalizar_compra(self.valor_pago.get(), self.metodo_pagamento, self.usuario, self.caixa_id)
 
+        
         if resultado.sucesso == False:
             return resultado
         
@@ -1333,7 +1334,7 @@ class CaixaController:
 
         item_id = selecionado[0] #id do item
         valores = self.tela.tabela.item(item_id, "values") #valores do item
-        self.ref_caixa.excluir_do_carrinho(int(valores[0]))
+        self.ref_caixa.excluir_do_carrinho(valores[0])
         self.tela.atualizar_tabela()
         self.tela.atualizar_total()
 

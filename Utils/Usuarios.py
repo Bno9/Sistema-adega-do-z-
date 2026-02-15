@@ -81,6 +81,9 @@ class Usuario:
         return False
     
     def alterar_senha(self, usuario: str, nova_senha: str):
+        if len(nova_senha) < 3:
+            return Resultado(False, "Senha precisa de pelo menos 3 digitos")
+        
         self.cur.execute(
             "SELECT senha FROM usuarios WHERE usuario = ?",
             (usuario,)

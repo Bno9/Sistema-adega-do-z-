@@ -39,6 +39,8 @@ class Estoque:
             self.cur.execute("SELECT id FROM produtos WHERE codigo=?", (obj_produto.id_produto_pai,))
             produto = self.cur.fetchone()
             obj_produto.id_produto_pai = produto[0] if produto else None
+            if obj_produto.id_produto_pai is None:
+                return Resultado(False, "Produto pai referenciado inexistente", "aviso", 2000)
 
         #insere o produto na tabela         
         self.cur.execute("INSERT INTO produtos (codigo, nome, tipo, preco_custo, preco_venda, quantidade, id_produto_pai, quantidade_fardo) VALUES (?,?,?,?,?,?,?,?)",
@@ -84,6 +86,22 @@ class Estoque:
             logger.error("Erro ao gerar dados para atualizar produto")
             return None
         
+        id_produto_pai = dados.get("id_produto_pai")
+
+        if id_produto_pai:
+            self.cur.execute(
+                "SELECT id FROM produtos WHERE codigo=?",
+                (id_produto_pai,)
+            )
+            produto = self.cur.fetchone()
+
+            if produto is None:
+                return Resultado(False, "Produto pai referenciado inexistente", "aviso", 2000)
+
+            dados["id_produto_pai"] = produto[0]
+        else:
+            dados["id_produto_pai"] = None
+
 
         if dados["preco_custo"] <= 0 or dados["preco_venda"] <= 0:
             return Resultado(False, "Preço nao pode ser igual ou menor que 0", "aviso", 2000)
@@ -196,16 +214,19 @@ class Estoque:
 
         self.cur.execute("SELECT quantidade,quantidade_fardo FROM produtos WHERE id=?", (produto_pai_id,))
         produto_pai = self.cur.fetchone()
+        if produto_pai is None:
+            return
         if produto_pai[0] <=0:
             return
         
         quantidade_pai_atualizada = produto_pai[0] - 1
         quantidade_fardo = produto_pai[1]
+        quantidade_filho_atualizada = produto_filho[0] + quantidade_fardo
 
         self.cur.execute("UPDATE produtos SET quantidade=? WHERE id=?", (quantidade_pai_atualizada, produto_pai_id))
         self.con.commit()
 
-        self.cur.execute("UPDATE produtos SET quantidade=? WHERE codigo=?", (quantidade_fardo, codigo_produto))
+        self.cur.execute("UPDATE produtos SET quantidade=? WHERE codigo=?", (quantidade_filho_atualizada, codigo_produto))
         self.con.commit()
 
     def estoque_baixo(self, quantidade_aviso):

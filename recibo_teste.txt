@@ -2,13 +2,13 @@
        RUA JUAN VICENTE, 461 - OSASCO/SP        
               CPF/CPNJ:00000000-0               
 ------------------------------------------------
-Data/Hora: 15/02/2026 18:11:03
+Data/Hora: 15/02/2026 19:14:30
 Produto          Cod       Quant     Valor
 ------------------------------------------------
-teste              1          1      R$10.00
+cerveja            1          10     R$120.00
 
-Total                                R$10.00
-Valor pago                           R$100.00
-Troco                                 R$90.00
+Total                               R$120.00
+Valor pago                           R$120.00
+Troco                                  R$0.00
            Obrigado pela preferencia            
 
