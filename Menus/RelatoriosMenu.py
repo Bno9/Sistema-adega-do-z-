@@ -316,11 +316,18 @@ class RelatoriosMenu(ctk.CTkFrame):
         )
 
     def carregar_produto_selecionado(self):
-        id_movimentacao = self.tabela.selection()
-        if not id_movimentacao:
+        selecionado = self.tabela.selection()
+        if not selecionado:
             return
-    
-        CarregarProdutos(self.master, self.main.relatorios, id_movimentacao)
+        
+        id_movimentacao = int(selecionado[0])
+
+        tipo, observacao = self.main.relatorios.buscar_movimentacao_por_id(id_movimentacao)
+
+        if tipo == "SANGRIA":
+            DetalheSangria(self.master, observacao)
+        else:
+            CarregarProdutos(self.master, self.main.relatorios, id_movimentacao)
 
     def _aba_estoque(self):
         self.filtro_data_estoque = ctk.StringVar()
@@ -461,11 +468,11 @@ class RelatoriosMenu(ctk.CTkFrame):
             )
 
     def carregar_movimento_selecionado(self):
-        id_movimentacao = self.tabela_estoque.selection()
-        if not id_movimentacao:
+        selecionado = self.tabela_estoque.selection()
+        if not selecionado:
             return
-    
-        CarregarMovimentacao(self.master, self.main.relatorios, id_movimentacao)
+
+        CarregarMovimentacao(self.master, self.main.relatorios, selecionado)
 
     def _aba_produtos(self):
         self.tab_produtos.columnconfigure(0, weight=1)
@@ -673,6 +680,29 @@ class CarregarProdutos(ctk.CTkToplevel):
             command=self.destroy
         )
         btn_cancelar.grid(row=1, column=0, sticky="ew", pady=10)
+
+class DetalheSangria(ctk.CTkToplevel):
+    def __init__(self, master, observacao):
+        super().__init__(master)
+        
+        self.title("Detalhe da Sangria")
+        self.geometry("400x200")
+        self.transient(master)
+        self.grab_set()
+
+        texto = observacao if observacao else "Sem observação"
+
+        ctk.CTkLabel(
+            self,
+            text=f"Observação:\n\n{texto}",
+            font=("Arial", 18)
+        ).pack(expand=True, padx=20, pady=20)
+
+        ctk.CTkButton(
+            self,
+            text="Fechar",
+            command=self.destroy
+        ).pack(pady=10)
 
 
 class RelatorioController:

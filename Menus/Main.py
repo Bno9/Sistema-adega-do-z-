@@ -114,12 +114,14 @@ class Main:
     def iniciar_impressora(self):
         if self.impressora is None:
             try:
-                self.impressora = ImpressoraTxt()
-                return self.impressora
-                self.impressora = ImpressoraWindows("MP-4200 TH")
+                if sys.platform.startswith("win"):
+                    self.impressora = ImpressoraWindows("MP-4200 TH")
+                else:
+                    self.impressora = ImpressoraTxt()
             except Exception as e:
                 logger.error("Erro ao iniciar impressora | erro=%s", e)
-                self.impressora = ImpressoraTxt()
+                messagebox.showerror("Erro", "Não foi possivel iniciar a impressora")
+                return False
             
             return self.impressora
         
@@ -155,18 +157,19 @@ class Main:
         senha = senha.get()
         resultado = self.usuario.verificar_login(usuario, senha)
 
-        if resultado[0] and resultado[2] == "admin":
-            self.usuario_atual = resultado[1]
-            modal.destroy()
-            self.trocar_frame(MenuPrincipal(self.root, self))
-        
-        elif resultado[0] and resultado[2] == "funcionario":
-            self.usuario_atual = resultado[1]
-            modal.destroy()
-            self.trocar_frame(CaixaMenu(self.root, self, self.usuario_atual, on_sair=self.fechar_app))
+        if resultado:
+            if resultado[0] and resultado[2] == "admin":
+                self.usuario_atual = resultado[1]
+                modal.destroy()
+                self.trocar_frame(MenuPrincipal(self.root, self))
+            
+            elif resultado[0] and resultado[2] == "funcionario":
+                self.usuario_atual = resultado[1]
+                modal.destroy()
+                self.trocar_frame(CaixaMenu(self.root, self, self.usuario_atual, on_sair=self.fechar_app))
 
         else:
-            messagebox.showerror("Senha inválida") #nao funciona
+            messagebox.showerror("Senha inválida", "Senha está inválida") #nao funciona
         
     def fazer_backup(self):
         try:
@@ -261,7 +264,8 @@ class Main:
             try:
                 self.con.close()
             except:
-                pass
+                self.fazer_backup()
+                messagebox.showerror("Erro", "Não foi possivel fechar a conexão com o banco, um backup de segurança foi feito")
 
         python = sys.executable
         os.execl(python, python, *sys.argv)

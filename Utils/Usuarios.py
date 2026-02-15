@@ -71,14 +71,14 @@ class Usuario:
         resultado = self.cur.fetchone()
 
         if not resultado:
-            return Resultado(False, "Usuario nao encontrado", "info")
+            return False
 
         _, nome, hash_salvo, cargo = resultado
 
         if self._verificar_senha(senha, hash_salvo):
-            return True, nome, cargo # retorno inconsistente que vou precisar arrumar dps de definir como vai ser a interface
+            return True, nome, cargo
 
-        return Resultado(False, "")
+        return False
     
     def alterar_senha(self, usuario: str, nova_senha: str):
         self.cur.execute(

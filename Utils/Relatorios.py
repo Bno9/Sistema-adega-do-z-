@@ -23,6 +23,7 @@ class Relatorios:
             valor_pago REAL NOT NULL,
             desconto REAL DEFAULT 0,
             troco REAL DEFAULT 0,
+            observacao TEXT,
             FOREIGN KEY (caixa_id) REFERENCES caixa(id))""")
         #tipo é sangria, venda_pix, venda_dinheiro
 
@@ -115,8 +116,8 @@ class Relatorios:
         try:
             self.cur.execute("""
                 INSERT INTO movimentacao_caixa
-                (caixa_id, data, hora, funcionario, tipo, total, valor_pago, desconto, troco)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+                (caixa_id, data, hora, funcionario, tipo, total, valor_pago, desconto, troco, observacao)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             """, (
                 caixa_id,
                 data,
@@ -126,7 +127,8 @@ class Relatorios:
                 valor,
                 valor,
                 0,
-                0
+                0,
+                observacao
             ))
             self.con.commit()
             return Resultado(True, "Sangria lançada", "sucesso", 2000)
@@ -234,6 +236,15 @@ class Relatorios:
         self.cur.execute("""SELECT data, hora, valor_pago, desconto FROM movimentacao_caixa WHERE id=?""", (mov_id,))
         row = self.cur.fetchone()
         return row
+    
+    def buscar_movimentacao_por_id(self, mov_id):
+        self.cur.execute("""
+            SELECT tipo, observacao 
+            FROM movimentacao_caixa 
+            WHERE id=?
+        """, (mov_id,))
+        
+        return self.cur.fetchone()
     
     def mais_vendidos(self):
         self.cur.execute("""
