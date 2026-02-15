@@ -243,3 +243,7 @@ class Estoque:
         
 
         return produtos if produtos else None
+    
+    def codigo_produto_pai(self,id):
+        self.cur.execute("SELECT codigo FROM produtos WHERE id=?", (id,))
+        return self.cur.fetchone()

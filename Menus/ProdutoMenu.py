@@ -612,13 +612,24 @@ class ProdutoController:
     
     def buscar_produto(self, *args):
         codigo = self.tela.codigo.get()
-        
         produto = self.ref_estoque.get_produto(codigo)
+
+        if not produto:
+            self.limpar_variaveis()
+            return
+
+
+        codigo_produto_pai = None
+        if produto[7]:
+            codigo_produto_pai = self.ref_estoque.codigo_produto_pai(produto[7])
 
         if produto:
             for i, (texto, var) in enumerate(self.tela.entrys):
                 if produto[i+1] == None:
                     var.set("")
+                    continue
+                if i+1 == 7:
+                    var.set(codigo_produto_pai if codigo_produto_pai else "")
                     continue
                 var.set(produto[i+1])
             self.mudar_conteudo(produto[3])
