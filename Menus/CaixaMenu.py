@@ -467,22 +467,42 @@ Esc - Voltar""",
         
         self.compra_pendente.set("")
         
-        #criação botão ok
+        for widget in self.botoes_modal.winfo_children():
+            widget.destroy()
+
+        # Botão OK
         self.botao_ok = ctk.CTkButton(
             self.botoes_modal,
-            text="OK",
-            text_color="black", 
-            corner_radius=20,
-            border_color="black",
-            hover_color="white",
-            width=70,  
-            height=70,
-            font=("Arial", 16, "bold"),
-            fg_color="orange",
+            text="IMPRIMIR RECIBO",
+            text_color="white",
+            corner_radius=25,
+            border_width=0,
+            hover_color="#2e8b57",
+            width=250,
+            height=60,
+            font=("Arial", 18, "bold"),
+            fg_color="#3CB371",
             command=lambda: self.imprimir_recibo(resultado)
-            )
-        
-        self.botao_ok.grid(column=0, row=0)
+        )
+
+        self.botoes_modal.columnconfigure(0, weight=1)
+        self.botao_ok.grid(row=0, column=0, pady=20)
+
+        self.botao_cancelar_final = ctk.CTkButton(
+        self.botoes_modal,
+        text="FECHAR",
+        text_color="white",
+        corner_radius=25,
+        border_width=0,
+        hover_color="#8b1a1a",
+        width=200,
+        height=60,
+        font=("Arial", 16, "bold"),
+        fg_color="#CD5C5C",
+        command=lambda: self.fechar_modal(self.modal)
+    )
+
+        self.botao_cancelar_final.grid(row=0, column=1, padx=10, pady=20)
 
         self.master.bind("<Escape>", lambda e: self.fechar_modal(self.modal))
         self.modal.bind("<Return>", lambda e: self.imprimir_recibo(resultado))
@@ -501,71 +521,96 @@ Esc - Voltar""",
 
         return resultado
 
-    def imprimir_recibo(self, resultado): #nao finalizado
+    def imprimir_recibo(self, resultado):
         for widget in self.modal.winfo_children():
             widget.destroy()
 
-        self.cpf = ctk.IntVar()
+        self.cpf = ctk.StringVar()
 
-        self.modal.bind("<Return>", lambda e: self.controller.enviar_recibo(resultado.dados["linhas"]))
+        self.modal.bind(
+            "<Return>",
+            lambda e: self.controller.enviar_recibo(resultado.dados["linhas"])
+        )
 
-        self.label_cpf_frame = ctk.CTkFrame(self.modal, fg_color="#1e1e1e")
-        self.label_cpf_frame.columnconfigure(0, weight=1)
-        self.label_cpf_frame.rowconfigure(0, weight=1)
-        self.label_cpf_frame.grid(column=0, row=0, sticky="nsew")
+        # Configuração principal do modal
+        self.modal.columnconfigure(0, weight=1)
+        self.modal.rowconfigure((0, 1, 2), weight=1)
 
-        self.entry_cpf_frame = ctk.CTkFrame(self.modal, fg_color="#1e1e1e")
-        self.entry_cpf_frame.columnconfigure(0, weight=1)
-        self.entry_cpf_frame.rowconfigure(0, weight=1)
-        self.entry_cpf_frame.grid(column=0, row=1, sticky="nsew")
+        # Frames com leve contraste
+        self.label_cpf_frame = ctk.CTkFrame(
+            self.modal, fg_color="#2a2a2a", corner_radius=20
+        )
+        self.label_cpf_frame.grid(column=0, row=0, padx=20, pady=(20, 10), sticky="nsew")
 
-        self.botao_cpf_frame = ctk.CTkFrame(self.modal, fg_color="#1e1e1e")
-        self.botao_cpf_frame.columnconfigure(0, weight=1)
-        self.botao_cpf_frame.rowconfigure((0,1), weight=1)
-        self.botao_cpf_frame.grid(column=0, row=2, sticky="nsew")
+        self.entry_cpf_frame = ctk.CTkFrame(
+            self.modal, fg_color="#242424", corner_radius=20
+        )
+        self.entry_cpf_frame.grid(column=0, row=1, padx=20, pady=10, sticky="nsew")
 
-        self.label_cpf = ctk.CTkLabel(
+        self.botao_cpf_frame = ctk.CTkFrame(
+            self.modal, fg_color="#2a2a2a", corner_radius=20
+        )
+        self.botao_cpf_frame.grid(column=0, row=2, padx=20, pady=(10, 20), sticky="nsew")
+
+        # Título
+        ctk.CTkLabel(
             self.label_cpf_frame,
-            text="Digite o cpf",
+            text="RECIBO FISCAL",
             text_color="white",
-            fg_color="#1e1e1e",
-            font=("arial", 24, "bold")
-            ).grid(column=0, row=0, sticky="nsew")
+            font=("Arial", 24, "bold")
+        ).pack(pady=(15, 5))
 
-        self.entry_cpf = ctk.CTkEntry(self.entry_cpf_frame, 
-                                      width=300, 
-                                      textvariable=self.cpf,
-                                      font=("Arial", 20, "bold"))
-        self.entry_cpf.grid(column=0, row=0, sticky="ew")
+        ctk.CTkLabel(
+            self.label_cpf_frame,
+            text="Digite o CPF para emissão do recibo",
+            text_color="#cccccc",
+            font=("Arial", 16)
+        ).pack(pady=(0, 15))
+
+        # Campo CPF
+        self.entry_cpf = ctk.CTkEntry(
+            self.entry_cpf_frame,
+            width=300,
+            height=50,
+            textvariable=self.cpf,
+            font=("Arial", 20, "bold"),
+            corner_radius=15
+        )
+        self.entry_cpf.pack(pady=20)
         self.entry_cpf.focus_set()
 
-        self.botao_enviar = ctk.CTkButton(self.botao_cpf_frame,
-            text="Enviar",
-            text_color="black", 
-            corner_radius=20,
-            border_color="black",
-            border_width=5,
-            hover_color="white",
-            width=200,  
-            height=50,
-            font=("Arial", 16, "bold"),
-            fg_color="orange",
-            command=lambda: self.controller.enviar_recibo(resultado.dados["linhas"]))
-        self.botao_enviar.grid(column=0, row=0, pady=20)
+        # Botões lado a lado
+        self.botao_cpf_frame.columnconfigure((0, 1), weight=1)
 
-        self.botao_cancelar = ctk.CTkButton(self.botao_cpf_frame,
-            text="Cancelar",
-            text_color="black", 
-            corner_radius=20,
-            border_color="black",
-            border_width=5,
-            hover_color="white",
-            width=200,  
-            height=50,
+        self.botao_enviar = ctk.CTkButton(
+            self.botao_cpf_frame,
+            text="ENVIAR",
+            text_color="white",
+            corner_radius=30,
+            border_width=0,
+            hover_color="#2e8b57",
+            width=180,
+            height=55,
             font=("Arial", 16, "bold"),
-            fg_color="orange",
-            command=lambda: self.fechar_modal(self.modal))
-        self.botao_cancelar.grid(column=0, row=1, pady=20)
+            fg_color="#3CB371",
+            command=lambda: self.controller.enviar_recibo(resultado.dados["linhas"])
+        )
+        self.botao_enviar.grid(column=0, row=0, padx=15, pady=25)
+
+        self.botao_cancelar = ctk.CTkButton(
+            self.botao_cpf_frame,
+            text="CANCELAR",
+            text_color="white",
+            corner_radius=30,
+            border_width=0,
+            hover_color="#444444",
+            width=180,
+            height=55,
+            font=("Arial", 16, "bold"),
+            fg_color="#555555",
+            command=lambda: self.fechar_modal(self.modal)
+        )
+        self.botao_cancelar.grid(column=1, row=0, padx=15, pady=25)
 
     def fechar_modal(self, modal):
         try:
@@ -861,13 +906,13 @@ Esc - Voltar""",
             width=100,
             font=("Arial", 32, "bold")
         )
-        label_nome.grid(row=1, column=0, sticky="e")
+        label_nome.grid(row=1, column=0, sticky="e", padx=10)
         entry_nome = ctk.CTkEntry(frame_filtro,
                          textvariable=self.filtro_nome,
                          font=("Arial", 20, "bold"),
                          width=200,
                          height=50)
-        entry_nome.grid(row=1, column=1, sticky="w")
+        entry_nome.grid(row=1, column=1, sticky="w", padx=10)
         entry_nome.focus_set()
 
         self.carregar_tabela_pesquisa()
@@ -901,7 +946,7 @@ Esc - Voltar""",
         modal = ctk.CTkToplevel(self.frame_conteudo, fg_color="#1e1e1e")
 
         modal.bind("<Escape>", lambda e: self.fechar_modal(modal))
-        modal.bind("<F1>", lambda e: self.enviar_impressao()) #fazer uma função com select que criau m modal de confirmação que envia o recibo pra ser impresso
+        modal.bind("<F1>", lambda e: self.enviar_impressao(modal)) 
 
         modal.title("Reimpressao de recibo")
         modal.geometry("900x900")
@@ -1000,14 +1045,18 @@ Esc - Voltar""",
                 )
             )
 
-    def enviar_impressao(self):
+    def enviar_impressao(self, modal):
         selecionado = self.tabela_recibo.selection()
         if not selecionado:
             return
         
-        dados = self.tabela_recibo.item(selecionado[0], "values")
-        self.controller.reimpressao(dados)
+        mensagem = messagebox.askyesno("Confirmação", "Deseja realmente reimprimir o cupom?", parent=modal)
 
+        if mensagem:
+            dados = self.tabela_recibo.item(selecionado[0], "values")
+            self.controller.reimpressao(dados)
+        
+        return
 
     def filtrar(self, *args):
         digitado = self.filtro_nome.get()
@@ -1224,6 +1273,7 @@ class AberturaCaixa(ctk.CTkToplevel):
         )
         self.entry_valor.grid(row=3, column=0, columnspan=2, sticky="ew", pady=(5, 20))
         self.entry_valor.after(1000, self.entry_valor.focus_set)
+        self.entry_valor.bind("<Return>", lambda e: self._abrir_caixa())
 
         btn_abrir = ctk.CTkButton(
             frame,
@@ -1372,7 +1422,6 @@ class CaixaController:
 
         itens = self.tela.referencia_main.relatorios.retornar_produtos(id)
         for item in itens:
-            print(item)
             dado = {"codigo": item[0],
                     "nome": item[1],
                     "preco_custo": item[2],
@@ -1389,4 +1438,3 @@ class CaixaController:
 
         linhas = self.ref_caixa.recibo.gerar_linhas(venda, valor_pago, data_hora, desconto)
         self.ref_caixa.imprimir_recibo(linhas)
-        #logger.info("Recibo reimpresso | valor_total=%s | metodo_pagamento=%s | troco=%s | itens=", total, metodo_pagamento, troco) #adicionar os itens depois

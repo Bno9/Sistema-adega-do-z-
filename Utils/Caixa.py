@@ -163,8 +163,6 @@ class Caixa:
     def imprimir_recibo(self, linhas, cpf=None):
         logger.debug("Cpf=%s recebido", cpf)
         logger.debug("linhas=%s", linhas)
-        if cpf == "":
-            return
         
         impressora = self.iniciar_impressora()
         impressora.imprimir(linhas)
