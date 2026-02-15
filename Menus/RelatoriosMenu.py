@@ -178,6 +178,10 @@ class RelatoriosMenu(ctk.CTkFrame):
             style="Custom.Treeview"
         )
 
+        scroll_y = ctk.CTkScrollbar(self.frame_tabela, orientation="vertical", command=self.tabela.yview)
+        scroll_y.grid(row=1, column=1, sticky="ns")
+        self.tabela.configure(yscrollcommand=scroll_y.set)
+
         self.tabela.heading("caixa_id", text="ID")
         self.tabela.heading("data/hora", text="Data/Hora")
         self.tabela.heading("funcionario", text="Funcionário")
@@ -431,6 +435,10 @@ class RelatoriosMenu(ctk.CTkFrame):
             show="headings",
             style="Custom.Treeview"
         )
+
+        scroll_y = ctk.CTkScrollbar(self.frame_estoque, orientation="vertical", command=self.tabela_estoque.yview)
+        scroll_y.grid(row=1, column=1, sticky="ns")
+        self.tabela_estoque.configure(yscrollcommand=scroll_y.set)
 
         self.tabela_estoque.heading("mov_id", text="ID")
         self.tabela_estoque.heading("data/hora", text="Data/Hora")

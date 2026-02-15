@@ -59,7 +59,7 @@ class Estoque:
         self.con.commit()
         if self.cur.rowcount>0:
             logger.info("Código=%s removido com sucesso", dados.get("codigo"))
-            self.relatorios.relatorio_estoque.registrar_alteracao_estoque(obj_produto_antes, obj_produto_depois, "Exclusao", dados.get("funcionario", "Erro"))
+            self.relatorios.relatorio_estoque.registrar_alteracao_estoque(obj_produto_antes, obj_produto_depois, "Exclusão", dados.get("funcionario", "Erro"))
             return Resultado(True, "Produto removido com sucesso", "sucesso") 
             
         
@@ -141,7 +141,7 @@ class Estoque:
         dados["codigo"] = dados_antigo.get("codigo")
         produto_novo = Produto(**dados)
         produto_antigo = Produto(**dados_antigo)
-        self.relatorios.relatorio_estoque.registrar_alteracao_estoque(produto_antigo, produto_novo, "Alteraçao_dados", dados.get("funcionario", "Erro"))     
+        self.relatorios.relatorio_estoque.registrar_alteracao_estoque(produto_antigo, produto_novo, "Alteração", dados.get("funcionario", "Erro"))     
         logger.info("Produto=%s atualizado com sucesso", dados["nome"])
         return Resultado(True, "Produto atualizado com sucesso", "sucesso")
     
@@ -154,7 +154,7 @@ class Estoque:
         produto_antigo = Produto(**dados)
         dados["codigo"] = codigo_novo
         produto_novo = Produto(**dados)
-        self.relatorios.relatorio_estoque.registrar_alteracao_estoque(produto_antigo, produto_novo, "Alteraçao_codigo", dados.get("funcionario", "Erro"))
+        self.relatorios.relatorio_estoque.registrar_alteracao_estoque(produto_antigo, produto_novo, "Alteração", dados.get("funcionario", "Erro"))
         logger.info("Código do produto=%s alterado para código=%s | Código_antigo=%s", produto[2], codigo_novo, codigo_atual)
 
     def conferir_se_existe_no_estoque(self, codigo_produto):
