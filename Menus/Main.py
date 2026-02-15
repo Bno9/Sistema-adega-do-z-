@@ -979,7 +979,10 @@ class MenuPrincipal(ctk.CTkFrame):
             return
 
         escolhido = self.main.mapa.get(opcao)
-            
+
+        for tecla in ["<Return>", "<F1>", "<F2>", "<F3>", "<F5>", "<F7>", "<F10>", "<F12>"]:
+            self.master.unbind(tecla)
+
         escolhido()
 
     def teclas_menu(self, tecla):

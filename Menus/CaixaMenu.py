@@ -620,6 +620,7 @@ Esc - Voltar""",
             pass
 
         modal.destroy()
+        self.destruir_desconto()
 
         self.limpar_campos()
         self.entry_codigo.focus_set()
@@ -692,6 +693,8 @@ Esc - Voltar""",
         self.entry_desconto.bind("<Escape>", lambda e: self.destruir_desconto())
 
     def destruir_desconto(self):
+        self.controller.dar_desconto("0")
+        self.atualizar_total()
         if self.label_desconto:
             self.label_desconto.destroy()
             self.label_desconto = None
@@ -1019,6 +1022,14 @@ Esc - Voltar""",
         entry_data.bind("<Return>", lambda e: self.carregar_recibos(self.filtro_data.get()))
         entry_data.focus_set()
 
+        label_filtro = ctk.CTkLabel(frame_filtro,
+                         text="F1 para reimprimir",
+                         font=("Arial", 20, "bold"),
+                         justify="center",
+                         width=200,
+                         height=50)
+        label_filtro.grid(row=1, column=2, sticky="e")
+
         self.carregar_recibos(self.filtro_data.get())
 
     def carregar_recibos(self, data):
@@ -1032,7 +1043,7 @@ Esc - Voltar""",
             return
         
         for recibo in vendas:
-            id, _, data, hora, _, pagamento, total, _, _, _ = recibo
+            id, _, data, hora, _, pagamento, total, _, _, _, _ = recibo
             data = datetime.strptime(data, "%Y-%m-%d").strftime("%d/%m/%Y")
 
             self.tabela_recibo.insert(

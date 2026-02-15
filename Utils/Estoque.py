@@ -88,19 +88,25 @@ class Estoque:
         
         id_produto_pai = dados.get("id_produto_pai")
 
-        if id_produto_pai:
+        if isinstance(id_produto_pai, tuple):
+            id_produto_pai = id_produto_pai[0]
+
+        if isinstance(id_produto_pai, str):
+            id_produto_pai = id_produto_pai.strip()
+
+        if not id_produto_pai:
+            dados["id_produto_pai"] = None
+        else:
             self.cur.execute(
                 "SELECT id FROM produtos WHERE codigo=?",
                 (id_produto_pai,)
             )
             produto = self.cur.fetchone()
 
-            if produto is None:
+            if not produto:
                 return Resultado(False, "Produto pai referenciado inexistente", "aviso", 2000)
 
             dados["id_produto_pai"] = produto[0]
-        else:
-            dados["id_produto_pai"] = None
 
 
         if dados["preco_custo"] <= 0 or dados["preco_venda"] <= 0:
@@ -246,4 +252,5 @@ class Estoque:
     
     def codigo_produto_pai(self,id):
         self.cur.execute("SELECT codigo FROM produtos WHERE id=?", (id,))
-        return self.cur.fetchone()
+        resultado = self.cur.fetchone()
+        return resultado[0] if resultado else None

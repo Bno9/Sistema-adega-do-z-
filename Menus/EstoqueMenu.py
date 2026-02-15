@@ -82,7 +82,7 @@ class EstoqueMenu(ctk.CTkFrame):
         self.tabela.heading("codigo", text="Código", command=lambda: self.ordenar_estoque("codigo"))
         self.tabela.heading("nome", text="Nome", command=lambda: self.ordenar_estoque("nome"))
         self.tabela.heading("tipo", text="Tipo")
-        self.tabela.heading("preco", text="Preço")
+        self.tabela.heading("preco", text="Preço de custo")
         self.tabela.heading("preco_venda", text="Preço de venda")
         self.tabela.heading("quantidade", text="Quantidade")
         self.tabela.heading("margem lucro", text="Margem lucro")
@@ -151,6 +151,7 @@ class EstoqueMenu(ctk.CTkFrame):
                       font=("arial", 22, "bold")
                       )
         combobox.grid(row=0, column=0, sticky="e", padx=10)
+        combobox.set("Nome")
 
     def carregar_estoque(self, estoque=None):
         for item in self.tabela.get_children(): #retorna o id de cada linha
@@ -204,7 +205,7 @@ class EstoqueMenu(ctk.CTkFrame):
 
     def mudar_tabela(self):
         if not self.mostrando_estoque_baixo:
-            produtos = self.referencia_main.estoque.estoque_baixo(self.referencia_main.configs.get("quantidade_repor", 4))
+            produtos = self.referencia_main.estoque.estoque_baixo(self.referencia_main.configs.get("Quantidade_aviso", 4))
             if produtos is None:
                 for item in self.tabela.get_children():
                     self.tabela.delete(item)
