@@ -1002,6 +1002,10 @@ Esc - Voltar""",
         )
         self.tabela_recibo.configure(yscrollcommand=scroll.set)
 
+        scroll_y = ctk.CTkScrollbar(modal, orientation="vertical", command=self.tabela_recibo.yview)
+        scroll_y.grid(row=0, column=1, sticky="ns")
+        self.tabela_recibo.configure(yscrollcommand=scroll_y.set)
+
         scroll.grid(row=0, column=1, sticky="ns")
         modal.rowconfigure(0, weight=1)
         modal.rowconfigure(1, weight=0)
