@@ -246,7 +246,13 @@ class Relatorios:
         
         return self.cur.fetchone()
     
-    def mais_vendidos(self):
+    def mais_vendidos(self, data_inicio, data_fim):
+        data_inicio = datetime.strptime(data_inicio, "%d/%m/%Y").date().isoformat()
+        data_fim = datetime.strptime(data_fim, "%d/%m/%Y").date().isoformat()
+
+        if data_inicio > data_fim:
+            return []
+
         self.cur.execute("""
     SELECT
         i.codigo_produto,
@@ -254,15 +260,14 @@ class Relatorios:
         SUM(i.quantidade) AS total_vendido
     FROM itens_movimentacao i
     JOIN movimentacao_caixa m ON m.id = i.movimentacao_id
+    WHERE DATE(m.data) BETWEEN ? AND ?
     GROUP BY i.codigo_produto, i.nome_produto
     ORDER BY total_vendido DESC
     LIMIT 10
-""")
+""", (data_inicio, data_fim))
 
         rows = self.cur.fetchall()
-        return rows
-
-    
+        return rows 
 
 class RelatoriosEstoque():
     def __init__(self, con, main):

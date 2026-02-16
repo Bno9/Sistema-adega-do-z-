@@ -1,6 +1,6 @@
 import customtkinter as ctk
 from tkinter import ttk, messagebox
-from datetime import date, datetime
+from datetime import date, datetime, timedelta
 
 
 class RelatoriosMenu(ctk.CTkFrame):
@@ -483,8 +483,15 @@ class RelatoriosMenu(ctk.CTkFrame):
         CarregarMovimentacao(self.master, self.main.relatorios, selecionado)
 
     def _aba_produtos(self):
+        self.data_inicio = ctk.StringVar()
+        self.data_fim = ctk.StringVar()
+        hoje = date.today() - timedelta(days=30)
+        self.data_inicio.set(hoje.strftime("%d/%m/%Y"))
+        fim = date.today().strftime("%d/%m/%Y")
+        self.data_fim.set(fim)
+
         self.tab_produtos.columnconfigure(0, weight=1)
-        self.tab_produtos.rowconfigure(1, weight=1)
+        self.tab_produtos.rowconfigure(2, weight=1)
 
         titulo = ctk.CTkLabel(
             self.tab_produtos,
@@ -493,8 +500,28 @@ class RelatoriosMenu(ctk.CTkFrame):
         )
         titulo.grid(row=0, column=0, pady=20)
 
+        frame_filtro = ctk.CTkFrame(self.tab_produtos)
+        frame_filtro.grid(row=1, column=0, pady=10)
+
+        ctk.CTkLabel(frame_filtro, text="De: ").grid(row=0, column=0, padx=5)
+
+        self.entry_data_inicio = ctk.CTkEntry(frame_filtro, textvariable=self.data_inicio, width=120)
+        self.entry_data_inicio.grid(row=0, column=1, padx=5)
+
+        ctk.CTkLabel(frame_filtro, text="Até: ").grid(row=0, column=2, padx=5)
+
+        self.entry_data_fim = ctk.CTkEntry(frame_filtro, textvariable=self.data_fim, width=120)
+        self.entry_data_fim.grid(row=0, column=3, padx=5)
+
+        ctk.CTkButton(
+            frame_filtro,
+            text="Filtrar",
+            command=self.carregar_produtos_mais_vendidos
+        ).grid(row=0, column=4, padx=10)
+
+        # ===== Frame Tabela =====
         frame_tabela = ctk.CTkFrame(self.tab_produtos)
-        frame_tabela.grid(row=1, column=0, sticky="nsew", padx=20, pady=20)
+        frame_tabela.grid(row=2, column=0, sticky="nsew", padx=20, pady=20)
 
         frame_tabela.columnconfigure(0, weight=1)
         frame_tabela.rowconfigure(0, weight=1)
@@ -518,14 +545,22 @@ class RelatoriosMenu(ctk.CTkFrame):
 
         self.tabela_produtos.grid(row=0, column=0, sticky="nsew")
 
-        # carrega os dados
+        # Scroll vertical
+        scroll_y = ctk.CTkScrollbar(
+            frame_tabela,
+            orientation="vertical",
+            command=self.tabela_produtos.yview
+        )
+        scroll_y.grid(row=0, column=1, sticky="ns")
+        self.tabela_produtos.configure(yscrollcommand=scroll_y.set)
+
         self.carregar_produtos_mais_vendidos()
 
     def carregar_produtos_mais_vendidos(self):
         for item in self.tabela_produtos.get_children():
             self.tabela_produtos.delete(item)
 
-        produtos = self.main.relatorios.mais_vendidos()
+        produtos = self.main.relatorios.mais_vendidos(self.data_inicio.get(), self.data_fim.get())
 
         for produto in produtos:
             self.tabela_produtos.insert(
