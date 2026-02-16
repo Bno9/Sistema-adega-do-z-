@@ -146,11 +146,16 @@ class Estoque:
         return Resultado(True, "Produto atualizado com sucesso", "sucesso")
     
     def alterar_codigo(self, codigo_atual, codigo_novo, dados):
+        if not dados:
+            return Resultado(False, "Produto não encontrado", "erro")
+        
         self.cur.execute(f"SELECT * FROM produtos WHERE codigo=?", (codigo_atual,))
         produto = self.cur.fetchone()
         id_produto = produto[0]
+
         self.cur.execute(f"UPDATE produtos SET codigo=? WHERE id=?", (codigo_novo, id_produto))
         self.con.commit()
+
         produto_antigo = Produto(**dados)
         dados["codigo"] = codigo_novo
         produto_novo = Produto(**dados)

@@ -80,7 +80,7 @@ class RelatoriosMenu(ctk.CTkFrame):
         self.usuario = ctk.StringVar()
         self.usuario.set("Todos")
         usuarios = ["Todos"] + self.main.get_usuarios()
-        forma_pgt = ["Tudo", "Dinheiro", "Cartão", "Pix", "Sangria"]
+        forma_pgt = ["Tudo", "Dinheiro", "Cartão", "Pix", "SANGRIA"]
 
         hoje = date.today().strftime("%d/%m/%Y")
         self.filtro_data.set(hoje)

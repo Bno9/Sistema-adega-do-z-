@@ -248,185 +248,234 @@ Esc - Voltar""",
         self.pode_usar_atalho = False
 
         escolhido()
-        
+            
     def tela_cadastrar(self):
-        modal_cadastrar = ctk.CTkToplevel(self.frame_conteudo, fg_color="#1e1e1e")
 
+        self.entries = []
+
+        nome = ctk.StringVar()
+        valor = ctk.StringVar()
+        data = ctk.StringVar()
+        observacao = ctk.StringVar()
+
+        modal_cadastrar = ctk.CTkToplevel(self.frame_conteudo, fg_color="#1e1e1e")
         modal_cadastrar.title("Cadastro")
         modal_cadastrar.geometry("1000x800")
 
-        modal_cadastrar.transient(self.frame_conteudo)   #fica sobre a janela principal
+        modal_cadastrar.transient(self.frame_conteudo)
         modal_cadastrar.update_idletasks()
-        modal_cadastrar.grab_set()        #trava interação com a janela principal
+        modal_cadastrar.grab_set()
 
         modal_cadastrar.bind("<Escape>", lambda e: self.fechar_modal(modal_cadastrar))
 
         modal_cadastrar.columnconfigure(0, weight=1)
-        modal_cadastrar.rowconfigure((0,2), weight=1)
+        modal_cadastrar.rowconfigure((0, 2), weight=1)
         modal_cadastrar.rowconfigure(1, weight=2)
-        header =  ctk.CTkFrame(modal_cadastrar, fg_color="#1e1e1e")
-        entrys =  ctk.CTkFrame(modal_cadastrar)
+
+        header = ctk.CTkFrame(modal_cadastrar, fg_color="#1e1e1e")
+        entrys = ctk.CTkFrame(modal_cadastrar)
         botoes = ctk.CTkFrame(modal_cadastrar, fg_color="#1e1e1e")
 
         header.grid(row=0, column=0)
 
-        entrys.rowconfigure(0, weight=1)
-        entrys.columnconfigure((0,1), weight=1)
+        entrys.rowconfigure((0,1,2,3), weight=1)
+        entrys.columnconfigure((0, 1), weight=1)
         entrys.grid(row=1, column=0)
 
         botoes.rowconfigure(0, weight=1)
-        botoes.columnconfigure((0,1), weight=1)
+        botoes.columnconfigure((0, 1), weight=1)
         botoes.grid(row=2, column=0)
 
-        #label confirmação
-        ctk.CTkLabel(header, 
-                     text="Digite as informações",
-                     font=("arial", 36, "bold")
-                     ).grid(column=0, row=0)
-        
-        for i, (texto, variavel) in enumerate(self.campos):
-            ctk.CTkLabel(entrys,
-                         text=texto,
-                         font=("arial", 32, "bold")
-                        ).grid(column=1, row=i, sticky="w", padx=10, pady=20)
-            
-            entry = ctk.CTkEntry(entrys,
-                         textvariable=variavel,
-                         font=("Arial", 20, "bold"),
-                         width=200)
+        ctk.CTkLabel(
+            header,
+            text="Digite as informações",
+            font=("arial", 36, "bold")
+        ).grid(column=0, row=0)
+
+        campos = [
+            ("Nome", nome),
+            ("Valor", valor),
+            ("Data dd/mm/aa", data),
+            ("Observação", observacao),
+        ]
+
+        for i, (texto, variavel) in enumerate(campos):
+
+            ctk.CTkLabel(
+                entrys,
+                text=texto,
+                font=("arial", 32, "bold")
+            ).grid(column=1, row=i, sticky="w", padx=10, pady=20)
+
+            entry = ctk.CTkEntry(
+                entrys,
+                textvariable=variavel,
+                font=("Arial", 20, "bold"),
+                width=200
+            )
             entry.grid(column=0, row=i, padx=10, pady=20)
+
             self.entries.append(entry)
-        
 
         self.entries[0].focus_set()
-        
-        #botao cancelar
-        ctk.CTkButton(botoes, 
-                      text="Cancelar", 
-                      width=300,
-                      height=150,
-                      text_color="black",
-                      fg_color="red",
-                      font=("arial", 30, "bold"),
-                      command=lambda: self.fechar_modal(modal_cadastrar)
-                      ).grid(row=0, column=1, padx=70)
-        
-        #botao cadastrar
-        botao_cadastro = ctk.CTkButton(botoes, 
-                      text="Cadastrar",
-                      width=300,
-                      height=150, 
-                      text_color="black",
-                      fg_color="green",
-                      font=("arial", 30, "bold"),
-                      command=lambda: self.setar_status(resultado=self.controller.adicionar(modal_cadastrar, 
-                                                                                            self.nome.get(), 
-                                                                                            self.valor.get(), 
-                                                                                            self.data.get(), 
-                                                                                            self.observacao.get()),
-                                                        label_status=self.label_status, var_status=self.status)
-                      )
-        botao_cadastro.grid(row=0, column=0, padx=70)
-        
 
+        # Botão Cancelar
+        ctk.CTkButton(
+            botoes,
+            text="Cancelar",
+            width=300,
+            height=150,
+            text_color="black",
+            fg_color="red",
+            font=("arial", 30, "bold"),
+            command=lambda: self.fechar_modal(modal_cadastrar)
+        ).grid(row=0, column=1, padx=70)
+
+        # Botão Cadastrar
+        botao_cadastro = ctk.CTkButton(
+            botoes,
+            text="Cadastrar",
+            width=300,
+            height=150,
+            text_color="black",
+            fg_color="green",
+            font=("arial", 30, "bold"),
+            command=lambda: self.setar_status(
+                resultado=self.controller.adicionar(
+                    modal_cadastrar,
+                    nome.get(),
+                    valor.get(),
+                    data.get(),
+                    observacao.get()
+                ),
+                label_status=self.label_status,
+                var_status=self.status
+            )
+        )
+        botao_cadastro.grid(row=0, column=0, padx=70)
+
+        # Navegação entre campos
         for i, entry in enumerate(self.entries):
-                entry.bind("<Return>", lambda e, idx=i: self.proximo_campo(idx, botao_cadastro)) #enter
-                entry.bind("<Down>", lambda e, idx=i: self.proximo_campo(idx, botao_cadastro)) #seta pra baixo
-                entry.bind("<Up>", lambda e, idx=i: self.campo_anterior(idx)) #seta pra cima
-        
+            entry.bind("<Return>", lambda e, idx=i: self.proximo_campo(idx, botao_cadastro))
+            entry.bind("<Down>", lambda e, idx=i: self.proximo_campo(idx, botao_cadastro))
+            entry.bind("<Up>", lambda e, idx=i: self.campo_anterior(idx))
+              
     def tela_editar(self):
+
         id_despesa = self.pegar_id_selecionado()
-        
+
         if isinstance(id_despesa, Resultado):
             self.setar_status(id_despesa, self.label_status, self.status)
             return
-        
-        modal_editar = ctk.CTkToplevel(self.frame_conteudo, fg_color="#1e1e1e")
 
+        self.entries = []
+
+        nome = ctk.StringVar()
+        valor = ctk.StringVar()
+        data = ctk.StringVar()
+        observacao = ctk.StringVar()
+
+        modal_editar = ctk.CTkToplevel(self.frame_conteudo, fg_color="#1e1e1e")
         modal_editar.title("Edição")
         modal_editar.geometry("1000x800")
 
-        modal_editar.transient(self.frame_conteudo)   #fica sobre a janela principal
+        modal_editar.transient(self.frame_conteudo)
         modal_editar.update_idletasks()
-        modal_editar.grab_set()        #trava interação com a janela principal
+        modal_editar.grab_set()
 
         modal_editar.bind("<Escape>", lambda e: self.fechar_modal(modal_editar))
 
         modal_editar.columnconfigure(0, weight=1)
-        modal_editar.rowconfigure((0,2), weight=1)
+        modal_editar.rowconfigure((0, 2), weight=1)
         modal_editar.rowconfigure(1, weight=2)
-        header =  ctk.CTkFrame(modal_editar, fg_color="#1e1e1e")
-        entrys =  ctk.CTkFrame(modal_editar)
+
+        header = ctk.CTkFrame(modal_editar, fg_color="#1e1e1e")
+        entrys = ctk.CTkFrame(modal_editar)
         botoes = ctk.CTkFrame(modal_editar, fg_color="#1e1e1e")
 
         header.grid(row=0, column=0)
 
-        entrys.rowconfigure(0, weight=1)
-        entrys.columnconfigure((0,1), weight=1)
+        entrys.rowconfigure((0,1,2,3), weight=1)
+        entrys.columnconfigure((0, 1), weight=1)
         entrys.grid(row=1, column=0)
 
         botoes.rowconfigure(0, weight=1)
-        botoes.columnconfigure((0,1), weight=1)
+        botoes.columnconfigure((0, 1, 2), weight=1)
         botoes.grid(row=2, column=0)
 
-        #label confirmação
-        ctk.CTkLabel(header, 
-                    text="Digite as novas informações",
-                    font=("arial", 32, "bold")
-                    ).grid(row=0, column=0)
-        
-        for i, (texto, variavel) in enumerate(self.campos):
-            ctk.CTkLabel(entrys,
-                        text=texto,
-                        font=("arial", 32, "bold")
-                        ).grid(row=i, column=1,  padx=10, pady=20)
-            
-            entry = ctk.CTkEntry(entrys,
-                        textvariable=variavel,
-                        font=("Arial", 20, "bold"),
-                        width=200)
+        ctk.CTkLabel(
+            header,
+            text="Digite as novas informações",
+            font=("arial", 32, "bold")
+        ).grid(row=0, column=0)
+
+        campos = [
+            ("Nome", nome),
+            ("Valor", valor),
+            ("Data dd/mm/aa", data),
+            ("Observação", observacao),
+        ]
+
+        for i, (texto, variavel) in enumerate(campos):
+
+            ctk.CTkLabel(
+                entrys,
+                text=texto,
+                font=("arial", 32, "bold")
+            ).grid(row=i, column=1, padx=10, pady=20)
+
+            entry = ctk.CTkEntry(
+                entrys,
+                textvariable=variavel,
+                font=("Arial", 20, "bold"),
+                width=200
+            )
             entry.grid(row=i, column=0, padx=10, pady=20)
+
             self.entries.append(entry)
 
-        
         self.entries[0].focus_set()
 
-        #botao editar
-        botao_editar = ctk.CTkButton(botoes, 
-                    text="Editar",
-                    width=300,
-                    height=150, 
-                    text_color="black",
-                    fg_color="green",
-                    font=("arial", 30, "bold"),
-                    command=lambda: self.setar_status(resultado=self.controller.editar(modal_editar, 
-                                                                                        id_despesa, 
-                                                                                        self.nome.get(), 
-                                                                                        self.valor.get(), 
-                                                                                        self.data.get(), 
-                                                                                        self.observacao.get()),
-                                                        label_status=self.label_status,var_status=self.status)
-                    )
+        # Botão Editar
+        botao_editar = ctk.CTkButton(
+            botoes,
+            text="Editar",
+            width=300,
+            height=150,
+            text_color="black",
+            fg_color="green",
+            font=("arial", 30, "bold"),
+            command=lambda: self.setar_status(
+                resultado=self.controller.editar(
+                    modal_editar,
+                    id_despesa,
+                    nome.get(),
+                    valor.get(),
+                    data.get(),
+                    observacao.get()
+                ),
+                label_status=self.label_status,
+                var_status=self.status
+            )
+        )
         botao_editar.grid(row=0, column=1, padx=70)
-        
-        #botao cancelar
-        ctk.CTkButton(botoes, 
-                    text="Cancelar", 
-                    width=300,
-                    height=150,
-                    text_color="black",
-                    fg_color="red",
-                    font=("arial", 30, "bold"),
-                    command=lambda: self.fechar_modal(modal_editar)
-                    ).grid(row=0, column=2, padx=70)
-        
+
+        # Botão Cancelar
+        ctk.CTkButton(
+            botoes,
+            text="Cancelar",
+            width=300,
+            height=150,
+            text_color="black",
+            fg_color="red",
+            font=("arial", 30, "bold"),
+            command=lambda: self.fechar_modal(modal_editar)
+        ).grid(row=0, column=2, padx=70)
 
         for i, entry in enumerate(self.entries):
-                entry.bind("<Return>", lambda e, idx=i: self.proximo_campo(idx, botao_editar)) #enter
-                entry.bind("<Down>", lambda e, idx=i: self.proximo_campo(idx, botao_editar)) #seta pra baixo
-                entry.bind("<Up>", lambda e, idx=i: self.campo_anterior(idx)) #seta pra cima
-
-    
+            entry.bind("<Return>", lambda e, idx=i: self.proximo_campo(idx, botao_editar))
+            entry.bind("<Down>", lambda e, idx=i: self.proximo_campo(idx, botao_editar))
+            entry.bind("<Up>", lambda e, idx=i: self.campo_anterior(idx))
        
     def tela_deletar(self):
         id_despesa = self.pegar_id_selecionado()
@@ -440,9 +489,9 @@ Esc - Voltar""",
         modal_deletar.title("Confirmação")
         modal_deletar.geometry("500x300")
 
-        modal_deletar.transient(self.frame_conteudo)   #fica sobre a janela principal
+        modal_deletar.transient(self.frame_conteudo)   
         modal_deletar.update_idletasks()
-        modal_deletar.grab_set()        #trava interação com a janela principal
+        modal_deletar.grab_set()
 
         modal_deletar.bind("<Escape>", lambda e: self.fechar_modal(modal_deletar))
         modal_deletar.bind("<Return>", lambda e: self.setar_status(resultado=self.controller.deletar(modal_deletar, id_despesa), label_status=self.label_status, var_status=self.status))
@@ -565,6 +614,7 @@ class DespesaController:
         self.despesa = despesa_ref
 
     def adicionar(self, modal_cadastrar, nome, valor, data=None, observacao=None):
+        resultado = None
         if not nome.strip():
             return Resultado(False, "Nome da despesa é obrigatório", "info")
         
@@ -595,6 +645,7 @@ class DespesaController:
             return resultado
 
     def editar(self, modal_editar, id_despesa, nome, valor, data="", observacao=""):
+        resultado = None
         if not nome.strip():
              return Resultado(False, "Nome da despesa é obrigatório", "info")
         
@@ -625,6 +676,7 @@ class DespesaController:
             return resultado
 
     def deletar(self, modal_deletar, id):
+        resultado = None
         try:
             resultado = self.despesa.excluir_despesa(id)
             self.tela.carregar_tabela()
