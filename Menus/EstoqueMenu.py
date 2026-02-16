@@ -11,12 +11,16 @@ class EstoqueMenu(ctk.CTkFrame):
         self.referencia_main = referencia_main
         
         #frame
-        self.frame_conteudo = ttk.Frame(self)
+        self.frame_conteudo = ctk.CTkFrame(self, fg_color="#1e1e1e")
         self.frame_conteudo.grid(row=0, column=0, sticky="nsew")
         self.rowconfigure(0, weight=1)
         self.columnconfigure(0, weight=1)
-        self.frame_conteudo.rowconfigure(0, weight=1)
+        self.frame_conteudo.rowconfigure(0, weight=0)
+        self.frame_conteudo.rowconfigure(1, weight=1)
         self.frame_conteudo.columnconfigure(0, weight=1)
+        self.frame_filtro = ctk.CTkFrame(self.frame_conteudo, fg_color="#1e1e1e")
+        self.frame_filtro.grid(row=0, column=0, columnspan=2, sticky="ew", pady=10)
+        self.frame_filtro.columnconfigure(0, weight=1)
 
         rodape = ctk.CTkFrame(self, fg_color="#1e1e1e")
         rodape.grid(row=1, column=0, sticky="nsew")
@@ -61,7 +65,7 @@ class EstoqueMenu(ctk.CTkFrame):
 
         #scroll
         self.scroll = ttk.Scrollbar(self.frame_conteudo)
-        self.scroll.grid(row=0, column=1, sticky="ns")
+        self.scroll.grid(row=1, column=1, sticky="ns")
 
         #tabela
         self.tabela = ttk.Treeview(
@@ -73,7 +77,7 @@ class EstoqueMenu(ctk.CTkFrame):
         )
 
         #inserção da tabela
-        self.tabela.grid(row=0, column=0, sticky="nsew")
+        self.tabela.grid(row=1, column=0, sticky="nsew")
 
         #inserção do scroll
         self.scroll.config(command=self.tabela.yview)
@@ -134,15 +138,15 @@ class EstoqueMenu(ctk.CTkFrame):
         self.botao_mudar_tela.grid(row=0, column=0)
         
         #entry de pesquisa
-        entry_pesquisa = ctk.CTkEntry(canto_filtro,
+        entry_pesquisa = ctk.CTkEntry(self.frame_filtro,
                      textvariable=self.filtro,
                      width=300,
                      font=("arial", 32, "bold"),
                      )
-        entry_pesquisa.grid(row=0, column=1, sticky="e", padx=10) 
+        entry_pesquisa.grid(row=0, column=1, sticky="w", padx=10) 
         entry_pesquisa.focus_set()
 
-        combobox = ctk.CTkComboBox(canto_filtro,
+        combobox = ctk.CTkComboBox(self.frame_filtro,
                       values=["Nome", "Codigo"],
                       command=self.mudar_coluna,
                       state="readonly",
@@ -150,7 +154,7 @@ class EstoqueMenu(ctk.CTkFrame):
                       height=50,
                       font=("arial", 22, "bold")
                       )
-        combobox.grid(row=0, column=0, sticky="e", padx=10)
+        combobox.grid(row=0, column=0, sticky="w", padx=10)
         combobox.set("Nome")
 
     def carregar_estoque(self, estoque=None):
