@@ -9,6 +9,7 @@ import customtkinter as ctk
 from PIL import Image, UnidentifiedImageError
 import logging
 import json
+import subprocess
 from datetime import datetime, timedelta, date
 
 import sqlite3
@@ -783,6 +784,7 @@ class MenuPrincipal(ctk.CTkFrame):
         ctk.CTkButton(
             self.submenu_ajuda,
             text="Abrir manual",
+            command=self.abrir_manual,
             fg_color="#313030",
             hover_color="gray",
             font=("Arial", 16),
@@ -966,6 +968,14 @@ class MenuPrincipal(ctk.CTkFrame):
         )
 
         submenu.place(x=x, y=y)
+    
+    def abrir_manual(self):
+        caminho = "Manual/Manual_Sistema_Adega.pdf"
+
+        if sys.platform.startswith("win"):
+            os.startfile(caminho)
+        else:
+            subprocess.Popen(["xdg-open", caminho])
 
     def escolher(self, opcao):
         """Recebe a opção escolhida,
