@@ -189,7 +189,7 @@ class RelatoriosMenu(ctk.CTkFrame):
         self.tabela.heading("total", text="Total")
 
         self.tabela.column("caixa_id", anchor="center", width=60)
-        self.tabela.column("data/hora", anchor="center", width=200)
+        self.tabela.column("data/hora", anchor="center", minwidth=200, width=230, stretch=False)
         self.tabela.column("funcionario", anchor="center", width=180)
         self.tabela.column("pagamento", anchor="center", width=120)
         self.tabela.column("total", anchor="e", width=100)
@@ -220,34 +220,61 @@ class RelatoriosMenu(ctk.CTkFrame):
             )
 
     def carregar_header(self):
-        self.dados = self.main.caixa.retornar_dados_caixa(self.formatar_data(self.filtro_data), self.usuario.get())
+        self.dados = self.main.caixa.retornar_dados_caixa(
+            self.formatar_data(self.filtro_data),
+            self.usuario.get()
+        )
         if self.dados is None:
             return
         
         frame_header = ctk.CTkFrame(self.frame_tabela, fg_color="#1e1e1e")
         frame_header.grid(row=0, column=0, sticky="nsew", padx=10, pady=10)
 
-        frame_header.rowconfigure((0,1), weight=1)
-        frame_header.columnconfigure((0,1,2), weight=1)
+        frame_header.rowconfigure((0, 1), weight=1)
+        frame_header.columnconfigure((0, 1, 2), weight=1)
 
-        caixa_id_label = ctk.CTkLabel(frame_header, fg_color="#1e1e1e", font=("arial", 20), text=f"CAIXA ID: {self.dados[0]}")
-        caixa_id_label.grid(row=0, column=0, sticky="nsew")
+        caixa_id_label = ctk.CTkLabel(
+            frame_header, fg_color="#1e1e1e",
+            font=("arial", 20),
+            text=f"CAIXA ID: {self.dados[0]}"
+        )
+        caixa_id_label.grid(row=0, column=0, sticky="nsew", padx=10, pady=5)
 
         data_formatada = datetime.strptime(self.dados[1], "%Y-%m-%d").strftime("%d/%m/%Y")
-        data_label = ctk.CTkLabel(frame_header, fg_color="#1e1e1e", font=("arial", 20), text=f"Data: {data_formatada}")
-        data_label.grid(row=0, column=1, sticky="nsew")
+        data_label = ctk.CTkLabel(
+            frame_header, fg_color="#1e1e1e",
+            font=("arial", 20),
+            text=f"Data: {data_formatada}"
+        )
+        data_label.grid(row=0, column=1, sticky="nsew", padx=10, pady=5)
 
-        hora_abertura_label = ctk.CTkLabel(frame_header, fg_color="#1e1e1e", font=("arial", 20), text=f"Hora abertura: {self.dados[2]}")
-        hora_abertura_label.grid(row=0, column=2, sticky="nsew")
+        hora_abertura_label = ctk.CTkLabel(
+            frame_header, fg_color="#1e1e1e",
+            font=("arial", 20),
+            text=f"Hora abertura: {self.dados[2]}"
+        )
+        hora_abertura_label.grid(row=0, column=2, sticky="nsew", padx=10, pady=5)
 
-        hora_fechamento_label = ctk.CTkLabel(frame_header, fg_color="#1e1e1e", font=("arial", 20), text=f"Hora fechamento: {self.dados[3]}")
-        hora_fechamento_label.grid(row=1, column=0, sticky="nsew")
+        hora_fechamento_label = ctk.CTkLabel(
+            frame_header, fg_color="#1e1e1e",
+            font=("arial", 20),
+            text=f"Hora fechamento: {self.dados[3]}"
+        )
+        hora_fechamento_label.grid(row=1, column=0, sticky="nsew", padx=10, pady=5)
 
-        funcionario_label = ctk.CTkLabel(frame_header, fg_color="#1e1e1e", font=("arial", 20), text=f"Funcionario: {self.dados[4]}")
-        funcionario_label.grid(row=1, column=1, sticky="nsew")
+        funcionario_label = ctk.CTkLabel(
+            frame_header, fg_color="#1e1e1e",
+            font=("arial", 20),
+            text=f"Funcionario: {self.dados[4]}"
+        )
+        funcionario_label.grid(row=1, column=1, sticky="nsew", padx=10, pady=5)
 
-        abertura_caixa_label = ctk.CTkLabel(frame_header, fg_color="#1e1e1e", font=("arial", 20), text=f"Abertura de caixa: R${self.dados[5]:.2f}")
-        abertura_caixa_label.grid(row=1, column=2, sticky="nsew")
+        abertura_caixa_label = ctk.CTkLabel(
+            frame_header, fg_color="#1e1e1e",
+            font=("arial", 20),
+            text=f"Abertura de caixa: R${self.dados[5]:.2f}"
+        )
+        abertura_caixa_label.grid(row=1, column=2, sticky="nsew", padx=10, pady=5)
 
     def carregar_bottom(self):
         frame_bottom = ctk.CTkFrame(self.frame_tabela)
@@ -446,7 +473,7 @@ class RelatoriosMenu(ctk.CTkFrame):
         self.tabela_estoque.heading("tipo_movimento", text="Movimentação")
 
         self.tabela_estoque.column("mov_id", anchor="center", width=60)
-        self.tabela_estoque.column("data/hora", anchor="center", width=200)
+        self.tabela_estoque.column("data/hora", anchor="center", minwidth=200, width=230, stretch=False)
         self.tabela_estoque.column("funcionario", anchor="center", width=180)
         self.tabela_estoque.column("tipo_movimento", anchor="center", width=120)
 
@@ -455,7 +482,7 @@ class RelatoriosMenu(ctk.CTkFrame):
         self.tabela_estoque.bind("<Return>", lambda e: self.carregar_movimento_selecionado())
 
         for item in self.tabela_estoque.get_children():
-            self.tabela.delete(item)
+            self.tabela_estoque.delete(item)
 
 
         if registros is None:

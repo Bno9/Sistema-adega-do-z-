@@ -97,14 +97,15 @@ class Caixa:
 
         data_abertura = datetime.strptime(row[0], "%Y-%m-%d").date()
 
-        if date.today() <= data_abertura:
+        if date.today() == data_abertura:
+            logger.warning("Tentativa de fechar caixa no mesmo dia da abertura.")
             return False
         
         logger.debug("Caixa finalizado, hora de fechamento=%s", hora_fechamento)
         self.cur.execute("""
             UPDATE caixa
             SET status = 0,
-                hora_fechamento = ?
+            hora_fechamento = ?
             WHERE id = ?
         """, (hora_fechamento, caixa_id))
 

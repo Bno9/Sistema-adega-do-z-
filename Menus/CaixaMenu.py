@@ -843,7 +843,7 @@ Esc - Voltar""",
         modal.bind("<Return>", lambda e: self.controller.adicionar_ao_carrinho())
 
         modal.title("Pesquisar produto")
-        modal.geometry("900x900")
+        modal.geometry("700x700")
 
         modal.transient(self.frame_conteudo)
         modal.update_idletasks()
@@ -953,7 +953,7 @@ Esc - Voltar""",
         modal.bind("<F1>", lambda e: self.enviar_impressao(modal)) 
 
         modal.title("Reimpressao de recibo")
-        modal.geometry("900x900")
+        modal.geometry("700x700")
 
         modal.transient(self.frame_conteudo)
         modal.update_idletasks()
