@@ -970,12 +970,18 @@ class MenuPrincipal(ctk.CTkFrame):
         submenu.place(x=x, y=y)
     
     def abrir_manual(self):
-        caminho = "Manual/Manual_Sistema_Adega.pdf"
-
-        if sys.platform.startswith("win"):
-            os.startfile(caminho)
+        if getattr(sys, 'frozen', False):
+            base_path = os.path.dirname(sys.executable)
         else:
-            subprocess.Popen(["xdg-open", caminho])
+            # sobe um nível (sai da pasta menus)
+            base_path = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
+        caminho_manual = os.path.join(base_path, "Manual", "Manual_Sistema_Adega.pdf")
+
+        if os.path.exists(caminho_manual):
+            os.startfile(caminho_manual)
+        else:
+            print("Manual não encontrado em:", caminho_manual)
 
     def escolher(self, opcao):
         """Recebe a opção escolhida,
