@@ -167,6 +167,8 @@ class RelatoriosMenu(ctk.CTkFrame):
 
         entry_data.focus_set()
         entry_data.bind("<Return>", lambda e: self.controller.filtrar_relatorio_caixa(usuario=self.usuario.get(), data=self.formatar_data(self.filtro_data), forma_pgt=self.forma_pgt.get()))
+        entry_data.bind("<F1>", lambda e: self.mudar_combobox(combobox_usuario))
+        entry_data.bind("<F2>", lambda e: self.mudar_combobox(combobox_pgt))
 
     def carregar_relatorio_caixa(self, vendas=None):
         colunas = ("caixa_id", "data/hora", "funcionario", "pagamento", "total")
@@ -450,8 +452,11 @@ class RelatoriosMenu(ctk.CTkFrame):
         combobox_tipo_mov = ctk.CTkComboBox(frame_filtros, state="readonly", height=50, width=300, fg_color="#1e1e1e", font=("arial", 32, "bold"), variable=self.tipo, values=tipo, command=self.mudar_forma_pgt)
         combobox_tipo_mov.grid(row=3, column=0, sticky="n")
 
-        entry_data_estoque.focus_set()
         entry_data_estoque.bind("<Return>", lambda e: self.controller.filtrar_relatorio_estoque(usuario=self.usuario_estoque.get(), data=self.formatar_data(self.filtro_data_estoque), tipo=self.tipo.get()))
+        entry_data_estoque.bind("<F1>", lambda e: self.mudar_combobox(combobox_usuario))
+        entry_data_estoque.bind("<F2>", lambda e: self.mudar_combobox(combobox_tipo_mov))
+
+
 
     def carregar_relatorio_estoque(self, registros=None):
         colunas = ("mov_id", "data/hora", "funcionario", "tipo_movimento")
@@ -613,6 +618,13 @@ class RelatoriosMenu(ctk.CTkFrame):
         except ValueError:
             messagebox.showerror("Erro", "Formato de data inválido. Use DD/MM/AAAA")
             return None
+        
+    
+    def mudar_combobox(self, combobox):
+        valores = combobox.cget("values")
+        atual = valores.index(combobox.get())
+        novo = (atual + 1) % len(valores)
+        combobox.set(valores[novo])
 
 class CarregarMovimentacao(ctk.CTkToplevel):
     def __init__(self, master, relatorios, id_mov):

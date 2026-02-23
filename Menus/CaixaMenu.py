@@ -380,6 +380,8 @@ Esc - Voltar""",
         )
         self.entry_valor_pago.grid(row=0, column=0, pady=5)
         self.modal.after(1000, lambda: self.entry_valor_pago.focus_set())
+        self.entry_valor_pago.bind("<Down>", lambda e: self.mudar_combobox(+1))
+        self.entry_valor_pago.bind("<Up>", lambda e: self.mudar_combobox(-1))
 
         self.entry_valor_pago.bind("<Return>", lambda e: self.setar_status(
                                                                             resultado=self.finalizar_compra(),
@@ -919,6 +921,8 @@ Esc - Voltar""",
         entry_nome.grid(row=1, column=1, sticky="w", padx=10)
         entry_nome.focus_set()
 
+        modal.bind("<Down>", lambda e: self.selecionar_primeiro_item_da_tabela())
+
         self.carregar_tabela_pesquisa()
 
     def carregar_tabela_pesquisa(self, estoque=None):
@@ -938,10 +942,17 @@ Esc - Voltar""",
                 values=(
                     codigo,
                     nome,
-                    preco_venda,
+                    f" R$ {preco_venda:.2f}",
                     quantidade
                 )
             )
+
+    def selecionar_primeiro_item_da_tabela(self):
+        if not self.tabela_estoque.selection():
+            itens = self.tabela_estoque.get_children()
+            self.tabela_estoque.selection_set(itens[0])
+            self.tabela_estoque.focus(itens[0])
+            self.tabela_estoque.see(itens[0])
 
     def reimprimir_recibo(self, event=None):
         self.filtro_data = StringVar()
@@ -1211,6 +1222,12 @@ Esc - Voltar""",
             pass
         self.status_after_id = None
 
+    def mudar_combobox(self, direcao):
+        valores = self.metodo_pagamento_box.cget("values")
+        atual = valores.index(self.metodo_pagamento_box.get())
+        novo = (atual + direcao) % len(valores)
+        self.metodo_pagamento_box.set(valores[novo])
+        self.alterar_metodo_pagamento(valores[novo])
 
     def voltar(self, event=None):
         resultado = self.referencia_main.caixa.validar_compra_existente()
