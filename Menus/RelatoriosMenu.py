@@ -7,6 +7,8 @@ class RelatoriosMenu(ctk.CTkFrame):
     def __init__(self, master, main):
         super().__init__(master=master, fg_color="#1e1e1e")
         self.main = main
+        self.master.bind("<Control-Right>", lambda e: self.mudar_aba(1))
+        self.master.bind("<Control-Left>", lambda e: self.mudar_aba(-1))
 
         self.controller = RelatorioController(self, self.main.relatorios)
 
@@ -42,6 +44,12 @@ class RelatoriosMenu(ctk.CTkFrame):
 
         self._criar_header()
         self._criar_tabs()
+
+    def mudar_aba(self, direcao):
+        abas = list(self.tabs._tab_dict.keys())
+        atual = abas.index(self.tabs.get())
+        novo = (atual + direcao) % len(abas)
+        self.tabs.set(abas[novo])
 
     def _criar_header(self):
         header = ctk.CTkFrame(self, fg_color="#1e1e1e")
@@ -164,6 +172,22 @@ class RelatoriosMenu(ctk.CTkFrame):
         label_pgt.grid(row=2, column=0, sticky="s")
         combobox_pgt = ctk.CTkComboBox(frame_filtros, state="readonly", height=50, width=300, fg_color="#1e1e1e", font=("arial", 32, "bold"), variable=self.forma_pgt, values=forma_pgt, command=self.mudar_forma_pgt)
         combobox_pgt.grid(row=3, column=0, sticky="n")
+
+        label_atalhos = ctk.CTkLabel(
+            frame_filtros,
+            text=(
+                "ATALHOS (Clique na entrada de data)\n\n"
+                "Enter → Filtrar\n"
+                "F1 → Alterar Usuário\n"
+                "F2 → Alterar Metodo Pagamento\n"
+                "Control + -> - Proxima aba\n"
+                "Control + <- - Aba anterior\n"
+            ),
+            font=("arial", 22),
+            justify="left"
+        )
+
+        label_atalhos.grid(row=2, column=1, rowspan=2, sticky="nsew", padx=20)
 
         entry_data.focus_set()
         entry_data.bind("<Return>", lambda e: self.controller.filtrar_relatorio_caixa(usuario=self.usuario.get(), data=self.formatar_data(self.filtro_data), forma_pgt=self.forma_pgt.get()))
@@ -451,6 +475,20 @@ class RelatoriosMenu(ctk.CTkFrame):
         label_tipo_mov.grid(row=2, column=0, sticky="s")
         combobox_tipo_mov = ctk.CTkComboBox(frame_filtros, state="readonly", height=50, width=300, fg_color="#1e1e1e", font=("arial", 32, "bold"), variable=self.tipo, values=tipo, command=self.mudar_forma_pgt)
         combobox_tipo_mov.grid(row=3, column=0, sticky="n")
+
+        label_atalhos = ctk.CTkLabel(
+            frame_filtros,
+            text=(
+                "ATALHOS (Clique na entrada de data)\n\n" 
+                "Enter → Filtrar\n"
+                "F1 → Alterar Usuário\n"
+                "F2 → Alterar Tipo Movimento\n"
+            ),
+            font=("arial", 22),
+            justify="left"
+        )
+
+        label_atalhos.grid(row=2, column=1, rowspan=2, sticky="nsew", padx=20)
 
         entry_data_estoque.bind("<Return>", lambda e: self.controller.filtrar_relatorio_estoque(usuario=self.usuario_estoque.get(), data=self.formatar_data(self.filtro_data_estoque), tipo=self.tipo.get()))
         entry_data_estoque.bind("<F1>", lambda e: self.mudar_combobox(combobox_usuario))
