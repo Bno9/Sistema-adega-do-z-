@@ -15,7 +15,7 @@ class Recibo:
 
         linhas.append("Adega do ze".center(largura))
         linhas.append("RUA JUAN VICENTE, 461 - OSASCO/SP".center(largura))
-        linhas.append("CPF/CPNJ:00000000-0".center(largura))
+        linhas.append("CPF/CPNJ: 60.711.569/0001-97".center(largura))
         linhas.append("-" * largura)
         linhas.append(f"Data/Hora: {horario}")
         linhas.append("Produto" + " " * 10 + "Cod" + " " * 7 + "Quant" + " " * 5 + "Valor")
@@ -57,7 +57,10 @@ class ImpressoraWindows(ImpressoraBase): #classe para cliente
         self.nome = nome_impressora
 
     def imprimir(self, linhas: list):
-        import win32print
+        try:
+            import win32print
+        except ImportError as e:
+            logger.error("Erro ao importar módulo de impressão erro=%s", e)
         
         if not hasattr(self, "nome") or not self.nome:
             logger.warning("Nome da impressora não definido. Tentando usar impressora padrão")
@@ -88,14 +91,14 @@ class ImpressoraWindows(ImpressoraBase): #classe para cliente
             win32print.StartPagePrinter(self.handle)
 
             texto = "\n".join(linhas)
-            texto += b"\n\n\n\n"
-            texto+= b"\x1d\x56\x01"
+            texto += "\n\n\n\n"
+            texto_bytes = texto.encode("utf-8")
+            texto_bytes += b"\x1d\x56\x01"  # comando de corte
 
-            for linha in linhas:
-                win32print.WritePrinter(
-                    self.handle,
-                    (texto).encode("utf-8")
-                )
+            win32print.WritePrinter(
+                self.handle,
+                texto_bytes
+)
 
             win32print.EndPagePrinter(self.handle)
             win32print.EndDocPrinter(self.handle)
